@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
-import { completeWorkoutAction, logSetAction, swapExerciseAction } from "@/app/actions/workout";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import { completeWorkoutAction, swapExerciseAction } from "@/app/actions/workout";
 import { PlateCalc } from "@/components/plate-calc";
+import { SpiritMascot } from "@/components/spirit-mascot";
 import type { Exercise } from "@/lib/types";
 import { kgToDisplay } from "@/lib/utils";
 
@@ -18,17 +19,29 @@ type SetRow = {
   completed: number;
 };
 
+type LiveAdvice = {
+  message: string;
+  restSeconds: number;
+  nextAction: string;
+  weightDeltaKg: number | null;
+  swapToExerciseId: string | null;
+  mood: "proud" | "encouraging" | "caution" | "celebrate" | "thinking";
+  citeIds: string[];
+  source?: "llm" | "rules";
+};
+
 export function WorkoutPlayer({
   workoutId,
   dayName,
   week,
   phase,
   units,
-  sets,
+  sets: initialSets,
   exercises,
   swaps,
   estimatedMinutes,
   decisions,
+  aiAvailable,
 }: {
   workoutId: string;
   dayName: string;
@@ -40,7 +53,9 @@ export function WorkoutPlayer({
   swaps: Record<string, Exercise[]>;
   estimatedMinutes: number;
   decisions: { exerciseId: string; reason: string }[];
+  aiAvailable: boolean;
 }) {
+  const [sets, setSets] = useState(initialSets);
   const grouped = useMemo(() => {
     const map = new Map<string, SetRow[]>();
     for (const set of sets) {
@@ -51,22 +66,97 @@ export function WorkoutPlayer({
     return [...map.entries()];
   }, [sets]);
 
-  const [active, setActive] = useState<string | null>(grouped[0]?.[0] ?? null);
   const [seconds, setSeconds] = useState(0);
   const [running, setRunning] = useState(false);
   const [started] = useState(() => Date.now());
+  const [spiritAdvice, setSpiritAdvice] = useState<LiveAdvice | null>(null);
+  const [spiritLoading, setSpiritLoading] = useState(false);
+  const [lastExerciseId, setLastExerciseId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
   useEffect(() => {
-    if (!running) return;
-    const id = window.setInterval(() => setSeconds((s) => Math.max(0, s - 1)), 1000);
+    if (!running || seconds <= 0) return;
+    const id = window.setInterval(() => {
+      setSeconds((s) => {
+        if (s <= 1) {
+          setRunning(false);
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
     return () => window.clearInterval(id);
-  }, [running]);
+  }, [running, seconds]);
 
   function startRest(rest: number) {
     setSeconds(rest);
     setRunning(true);
   }
+
+  const logSet = useCallback(
+    async (set: SetRow, form: HTMLFormElement) => {
+      const fd = new FormData(form);
+      const weight = Number(fd.get("weight"));
+      const reps = Number(fd.get("reps"));
+      const rpe = Number(fd.get("rpe"));
+      const elapsedMinutes = Math.max(1, Math.round((Date.now() - started) / 60000));
+      const doneGroups = new Set(
+        sets.filter((s) => s.completed || s.id === set.id).map((s) => s.exerciseId),
+      );
+      const remainingExercises = grouped.length - doneGroups.size;
+
+      setSpiritLoading(true);
+      setSpiritAdvice({ message: "*tail swish* Crunching your set...", restSeconds: 90, nextAction: "repeat_load", weightDeltaKg: null, swapToExerciseId: null, mood: "thinking", citeIds: [] });
+
+      try {
+        const res = await fetch("/api/workout/log-set", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            setId: set.id,
+            weight,
+            reps,
+            rpe,
+            elapsedMinutes,
+            remainingExercises,
+          }),
+        });
+        if (!res.ok) throw new Error("log failed");
+        const data = await res.json();
+        setSpiritAdvice(data.advice);
+        startRest(data.advice.restSeconds);
+        setLastExerciseId(set.exerciseId);
+        setSets((prev) =>
+          prev.map((s) =>
+            s.id === set.id
+              ? {
+                  ...s,
+                  completed: 1,
+                  weightKg: Number.isFinite(weight) ? (units === "lb" ? weight / 2.20462 : weight) : s.weightKg,
+                  reps: Number.isFinite(reps) ? reps : s.reps,
+                  rpe: Number.isFinite(rpe) ? rpe : s.rpe,
+                }
+              : s,
+          ),
+        );
+      } catch {
+        setSpiritAdvice({
+          message: "Signal lost on the mountain — logged locally? Try again. Default 90s rest, nya~",
+          restSeconds: 90,
+          nextAction: "repeat_load",
+          weightDeltaKg: null,
+          swapToExerciseId: null,
+          mood: "caution",
+          citeIds: [],
+          source: "rules",
+        });
+        startRest(90);
+      } finally {
+        setSpiritLoading(false);
+      }
+    },
+    [grouped.length, sets, started, units],
+  );
 
   return (
     <div className="space-y-6">
@@ -80,7 +170,7 @@ export function WorkoutPlayer({
         </div>
         <div className="rounded-2xl border border-line bg-surface px-5 py-3 text-center">
           <p className="text-xs uppercase text-muted">Rest</p>
-          <p className="display text-4xl tabular-nums">
+          <p className={`display text-4xl tabular-nums ${running && seconds <= 10 ? "text-copper-2" : ""}`}>
             {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, "0")}
           </p>
           <div className="mt-2 flex gap-2 text-xs">
@@ -96,6 +186,53 @@ export function WorkoutPlayer({
           </div>
         </div>
       </div>
+
+      {/* Spirit live coach */}
+      <aside className="rounded-3xl border border-copper/30 bg-gradient-to-br from-surface to-bg-2 p-4 md:p-5">
+        <div className="flex gap-4">
+          <SpiritMascot mood={spiritAdvice?.mood ?? "encouraging"} size={80} />
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="display text-xl text-copper-2">Spirit</h2>
+              <span className="rounded-full bg-bg px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted">
+                snow leopard spotter
+              </span>
+              {aiAvailable ? (
+                <span className="rounded-full bg-moss/20 px-2 py-0.5 text-[10px] text-moss">LLM live</span>
+              ) : (
+                <span className="rounded-full bg-line px-2 py-0.5 text-[10px] text-muted">rules + KB</span>
+              )}
+            </div>
+            <p className="mt-2 text-sm leading-relaxed text-ink">
+              {spiritLoading
+                ? "*ears perk* Reading your set..."
+                : spiritAdvice?.message ??
+                  "Log a set and I'll pick your rest, load tweak, or safe swap. I'm watching, nya~"}
+            </p>
+            {spiritAdvice && spiritAdvice.restSeconds > 0 && (
+              <p className="mt-2 text-xs text-muted">
+                Rest cue: {spiritAdvice.restSeconds}s
+                {spiritAdvice.weightDeltaKg
+                  ? ` · Load hint: ${spiritAdvice.weightDeltaKg > 0 ? "+" : ""}${kgToDisplay(spiritAdvice.weightDeltaKg, units)} ${units} next set`
+                  : ""}
+                {spiritAdvice.source === "llm" ? " · AI" : spiritAdvice.source === "rules" ? " · evidence rules" : ""}
+              </p>
+            )}
+            {spiritAdvice?.swapToExerciseId && swaps[spiritAdvice.swapToExerciseId] ? null : null}
+            {spiritAdvice?.swapToExerciseId && lastExerciseId && (
+              <form action={swapExerciseAction} className="mt-2">
+                <input type="hidden" name="workoutId" value={workoutId} />
+                <input type="hidden" name="fromId" value={lastExerciseId} />
+                <input type="hidden" name="toId" value={spiritAdvice.swapToExerciseId} />
+                <button type="submit" className="text-sm text-copper-2 underline-offset-2 hover:underline">
+                  Apply Spirit&apos;s swap → {exercises[spiritAdvice.swapToExerciseId]?.name ?? spiritAdvice.swapToExerciseId}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      </aside>
+
       <PlateCalc units={units} />
 
       {grouped.map(([exerciseId, rows]) => {
@@ -134,14 +271,12 @@ export function WorkoutPlayer({
               {rows.map((set) => (
                 <form
                   key={set.id}
-                  action={(fd) => {
-                    startTransition(() => logSetAction(fd));
-                    startRest(ex?.restSeconds ?? 90);
-                    setActive(set.id);
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    logSet(set, e.currentTarget);
                   }}
                   className="grid grid-cols-12 items-end gap-2 rounded-2xl bg-bg-2 p-3"
                 >
-                  <input type="hidden" name="setId" value={set.id} />
                   <p className="col-span-1 text-sm text-muted">{set.setIndex + 1}</p>
                   <label className="col-span-3 text-xs text-muted">
                     Weight
@@ -155,12 +290,7 @@ export function WorkoutPlayer({
                   </label>
                   <label className="col-span-3 text-xs text-muted">
                     Reps
-                    <input
-                      name="reps"
-                      type="number"
-                      defaultValue={set.reps ?? ""}
-                      className="mt-1 py-2"
-                    />
+                    <input name="reps" type="number" defaultValue={set.reps ?? ""} className="mt-1 py-2" />
                   </label>
                   <label className="col-span-3 text-xs text-muted">
                     RPE
@@ -179,6 +309,7 @@ export function WorkoutPlayer({
                       set.completed ? "bg-moss text-bg" : "bg-copper text-bg"
                     }`}
                     type="submit"
+                    disabled={spiritLoading}
                   >
                     {set.completed ? "✓" : "Log"}
                   </button>
@@ -192,7 +323,7 @@ export function WorkoutPlayer({
       <form action={completeWorkoutAction} className="rounded-3xl border border-line bg-surface p-6">
         <input type="hidden" name="workoutId" value={workoutId} />
         <h2 className="text-xl">Finish</h2>
-        <p className="text-sm text-muted">Session RPE is how hard the whole workout felt, 0–10. Not a set RIR.</p>
+        <p className="text-sm text-muted">Session RPE is how hard the whole workout felt, 0–10.</p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <label className="text-sm text-muted">
             Session RPE
@@ -215,7 +346,6 @@ export function WorkoutPlayer({
         <button className="mt-4 w-full rounded-2xl bg-copper py-3 font-semibold text-bg" type="submit">
           Save session
         </button>
-        {active ? null : null}
       </form>
     </div>
   );
