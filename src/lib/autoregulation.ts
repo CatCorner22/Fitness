@@ -58,10 +58,18 @@ export function suggestNextLoad(input: {
 
 export function lastWorkingSets(userId: string) {
   const rows = db
-    .select()
+    .select({
+      exerciseId: setLogs.exerciseId,
+      weightKg: setLogs.weightKg,
+      reps: setLogs.reps,
+      rpe: setLogs.rpe,
+      startedAt: workouts.startedAt,
+      setIndex: setLogs.setIndex,
+    })
     .from(setLogs)
-    .where(and(eq(setLogs.userId, userId), eq(setLogs.completed, 1)))
-    .orderBy(desc(setLogs.id))
+    .innerJoin(workouts, eq(setLogs.workoutId, workouts.id))
+    .where(and(eq(setLogs.userId, userId), eq(setLogs.completed, 1), eq(workouts.status, "completed")))
+    .orderBy(desc(workouts.startedAt), desc(setLogs.setIndex))
     .all();
 
   const map: Record<string, { weightKg: number; reps: number; rpe: number | null }> = {};

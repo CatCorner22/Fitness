@@ -94,7 +94,11 @@ export async function saveSettingsAction(formData: FormData) {
       programStartDate:
         programId && programId !== existing?.activeProgramId ? todayISO() : existing?.programStartDate,
       currentWeek: programId && programId !== existing?.activeProgramId ? 1 : existing?.currentWeek ?? 1,
-      equipment: JSON.stringify(formData.getAll("equipment")),
+      equipment: JSON.stringify(
+        formData.getAll("equipment").length
+          ? formData.getAll("equipment")
+          : ["bodyweight"],
+      ),
     })
     .where(eq(profiles.userId, user.id))
     .run();
