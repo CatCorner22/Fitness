@@ -162,7 +162,7 @@ export async function completeWorkoutAction(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/progress");
-  redirect("/");
+  redirect(`/workout/${workoutId}/complete`);
 }
 
 export async function skipWorkoutAction(dayId: string, dayName: string, programId: string, week: number) {
@@ -182,4 +182,5 @@ export async function skipWorkoutAction(dayId: string, dayName: string, programI
     })
     .run();
   revalidatePath("/");
+  redirect("/?toast=skipped");
 }

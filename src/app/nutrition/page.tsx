@@ -1,5 +1,6 @@
-import { addCustomFoodAction, addFoodLogAction, deleteFoodLogAction } from "@/app/actions/nutrition";
+import { addCustomFoodAction, deleteFoodLogAction } from "@/app/actions/nutrition";
 import { AppShell } from "@/components/app-shell";
+import { MealFoodForm } from "@/components/meal-food-form";
 import { db } from "@/lib/db";
 import { foods } from "@/lib/db/schema";
 import { adaptiveCalories } from "@/lib/nutrition/targets";
@@ -14,6 +15,12 @@ export default async function NutritionPage() {
   const day = todayNutrition(user.id);
   const targets = adaptiveCalories(user.id, profile);
   const calorieGoal = targets.calories ?? 2200;
+  const foodList = catalog.map((f) => ({
+    id: f.id,
+    name: f.name,
+    calories: f.calories,
+    protein: f.protein,
+  }));
 
   return (
     <AppShell user={user} profile={profile}>
@@ -63,22 +70,7 @@ export default async function NutritionPage() {
                   </li>
                 ))}
               </ul>
-              <form action={addFoodLogAction} className="mt-4 space-y-2">
-                <input type="hidden" name="meal" value={meal} />
-                <select name="foodId" required>
-                  {catalog.map((food) => (
-                    <option key={food.id} value={food.id}>
-                      {food.name}
-                    </option>
-                  ))}
-                </select>
-                <div className="flex gap-2">
-                  <input name="servings" type="number" step="0.5" defaultValue={1} />
-                  <button className="rounded-xl bg-copper px-3 text-sm text-bg" type="submit">
-                    Add
-                  </button>
-                </div>
-              </form>
+              <MealFoodForm foods={foodList} meal={meal} />
             </section>
           );
         })}

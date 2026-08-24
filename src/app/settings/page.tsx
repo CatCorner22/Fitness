@@ -3,6 +3,23 @@ import { AppShell } from "@/components/app-shell";
 import { PROGRAMS } from "@/lib/programs/catalog";
 import { requireAuthed } from "@/lib/session-page";
 import { kgToDisplay } from "@/lib/utils";
+import type { Equipment } from "@/lib/types";
+
+const EQUIPMENT_OPTIONS: { value: Equipment; label: string }[] = [
+  { value: "barbell", label: "Barbell" },
+  { value: "dumbbell", label: "Dumbbell" },
+  { value: "cable", label: "Cable" },
+  { value: "machine", label: "Machine" },
+  { value: "kettlebell", label: "Kettlebell" },
+  { value: "bands", label: "Bands" },
+  { value: "bodyweight", label: "Bodyweight" },
+  { value: "pullup_bar", label: "Pull-up bar" },
+  { value: "bench", label: "Bench" },
+  { value: "hip_thrust_bench", label: "Hip thrust bench" },
+  { value: "trap_bar", label: "Trap bar" },
+  { value: "landmine", label: "Landmine" },
+  { value: "cardio_machine", label: "Cardio machine" },
+];
 
 export default async function SettingsPage() {
   const { user, profile } = await requireAuthed();
@@ -116,6 +133,24 @@ export default async function SettingsPage() {
               {i.replace("_", " ")}
             </label>
           ))}
+        </fieldset>
+        <fieldset className="space-y-2">
+          <legend className="text-sm text-muted">Equipment available</legend>
+          <p className="text-xs text-muted">Exercises swap automatically when gear is missing.</p>
+          <div className="mt-2 grid gap-2 sm:grid-cols-2">
+            {EQUIPMENT_OPTIONS.map((eq) => (
+              <label key={eq.value} className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  name="equipment"
+                  value={eq.value}
+                  defaultChecked={profile.equipment.includes(eq.value)}
+                  className="w-auto"
+                />
+                {eq.label}
+              </label>
+            ))}
+          </div>
         </fieldset>
         <button className="rounded-2xl bg-copper px-5 py-3 font-semibold text-bg" type="submit">
           Save

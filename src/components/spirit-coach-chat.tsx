@@ -7,6 +7,14 @@ import { useChat } from "@ai-sdk/react";
 import { SpiritMascot } from "@/components/spirit-mascot";
 import { parseCoachMeta, textFromUIMessageParts } from "@/lib/spirit/client-utils";
 
+const PROMPTS = [
+  "What should I eat after leg day?",
+  "Am I doing too much volume this week?",
+  "Swap for shoulder-friendly pressing?",
+  "How do I autoregulate RPE on squats?",
+  "Pole prep — what to prioritize?",
+];
+
 function messageText(message: UIMessage) {
   return textFromUIMessageParts(message.parts);
 }
@@ -28,7 +36,29 @@ export function SpiritCoachChat({
 
   return (
     <>
+      <div className="mt-4 flex flex-wrap gap-2">
+        {PROMPTS.map((prompt) => (
+          <button
+            key={prompt}
+            type="button"
+            disabled={streaming}
+            onClick={() => {
+              sendMessage({ text: prompt });
+            }}
+            className="rounded-full border border-line px-3 py-1.5 text-xs text-muted hover:border-copper/40 hover:text-copper-2 disabled:opacity-50"
+          >
+            {prompt}
+          </button>
+        ))}
+      </div>
+
       <div className="mt-6 space-y-3">
+        {messages.length === 0 && (
+          <div className="flex items-start gap-3 rounded-2xl border border-line bg-surface p-4 text-sm text-muted">
+            <SpiritMascot mood="encouraging" size={48} />
+            <p>Ask about swaps, volume, pole prep, protein, or rest. Spirit cites the knowledge base when it matters.</p>
+          </div>
+        )}
         {messages.map((msg) => {
           const raw = messageText(msg);
           const isStreamingAssistant =

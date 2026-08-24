@@ -94,6 +94,7 @@ export async function saveSettingsAction(formData: FormData) {
       programStartDate:
         programId && programId !== existing?.activeProgramId ? todayISO() : existing?.programStartDate,
       currentWeek: programId && programId !== existing?.activeProgramId ? 1 : existing?.currentWeek ?? 1,
+      equipment: JSON.stringify(formData.getAll("equipment")),
     })
     .where(eq(profiles.userId, user.id))
     .run();
@@ -105,6 +106,7 @@ export async function saveSettingsAction(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/settings");
+  redirect("/settings?toast=settings");
 }
 
 export async function advanceWeekAction() {
@@ -152,6 +154,7 @@ export async function logBodyweightAction(formData: FormData) {
   revalidatePath("/");
   revalidatePath("/nutrition");
   revalidatePath("/progress");
+  redirect("/?toast=weight");
 }
 
 export async function logCheckinAction(formData: FormData) {
@@ -176,4 +179,5 @@ export async function logCheckinAction(formData: FormData) {
       .run();
   }
   revalidatePath("/");
+  redirect("/?toast=checkin");
 }

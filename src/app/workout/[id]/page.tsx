@@ -8,7 +8,7 @@ import { setLogs, workouts } from "@/lib/db/schema";
 import { getProgram } from "@/lib/programs/catalog";
 import { estimateSessionMinutes } from "@/lib/programs/plan";
 import { requireAuthed } from "@/lib/session-page";
-import { suggestionsForExercises } from "@/lib/autoregulation";
+import { suggestionsForExercises, lastWorkingSets } from "@/lib/autoregulation";
 import { aiEnabled } from "@/lib/ai/spirit";
 
 export default async function WorkoutPage({ params }: { params: Promise<{ id: string }> }) {
@@ -37,6 +37,7 @@ export default async function WorkoutPage({ params }: { params: Promise<{ id: st
       reps: sets.find((s) => s.exerciseId === eid)?.targetReps ?? "8",
     })),
   );
+  const ghostSets = lastWorkingSets(user.id);
 
   return (
     <AppShell user={user} profile={profile}>
@@ -60,6 +61,7 @@ export default async function WorkoutPage({ params }: { params: Promise<{ id: st
         )}
         decisions={decisions}
         aiAvailable={aiEnabled()}
+        ghostSets={ghostSets}
       />
     </AppShell>
   );
