@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
+import { SpiritTodayBriefing } from "@/components/spirit-today-briefing";
 import { advanceWeekAction, logBodyweightAction, logCheckinAction } from "@/app/actions/profile";
 import { skipWorkoutAction, startWorkoutAction } from "@/app/actions/workout";
+import { aiEnabled } from "@/lib/ai/spirit";
 import { requireAuthed } from "@/lib/session-page";
+import { offlineBriefing } from "@/lib/spirit/context";
 import { todayNutrition, todaysPlan } from "@/lib/today";
 import { adaptiveCalories } from "@/lib/nutrition/targets";
 import { kgToDisplay } from "@/lib/utils";
@@ -17,6 +20,11 @@ export default async function TodayPage() {
 
   return (
     <AppShell user={user} profile={profile}>
+      <SpiritTodayBriefing
+        aiAvailable={aiEnabled()}
+        fallbackText={offlineBriefing(user.id, profile)}
+      />
+
       <div className="mb-6">
         <p className="text-sm uppercase tracking-[0.18em] text-copper">
           {profile.persona === "garanimal" ? "Stay hard" : "Today"}

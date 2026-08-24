@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { spiritSystemPrompt as buildSpiritSystemPrompt, SPIRIT_PROMPT_VERSION } from "@/lib/spirit/prompts";
 
 export const SPIRIT_NAME = "Spirit";
 export const SPIRIT_TITLE = "your snow leopard spotter";
@@ -23,38 +24,17 @@ export const LiveAdviceSchema = z.object({
 
 export type LiveAdvice = z.infer<typeof LiveAdviceSchema>;
 
+export { aiEnabled, getSpiritConfig } from "@/lib/spirit/config";
+export { modelLabel } from "@/lib/spirit/provider";
+export { SPIRIT_PROMPT_VERSION };
+
+export const DEFAULT_MODEL = process.env.GARANIMAL_AI_MODEL ?? "openai/gpt-5.4";
+
 export function spiritSystemPrompt(options: {
   persona: "scientist" | "garanimal";
   knowledgeBlock: string;
   registryBlock: string;
   live?: boolean;
 }) {
-  const tone =
-    options.persona === "garanimal"
-      ? "Layer Goggins-grade accountability underneath — still never reckless with joints."
-      : "Calm, precise, evidence-first.";
-
-  return `You are ${SPIRIT_NAME}, a kawaii snow leopard fitness coach mascot for the Garanimal household app.
-Personality: warm, playful snow leopard energy (soft *nya~* occasionally), but scientifically rigorous. ${tone}
-
-RULES (non-negotiable):
-- Never prescribe banned exercises: bench dips, behind-the-neck press/pulldown, chin-height upright rows, kipping pull-ups in prep.
-- swapToExerciseId MUST be null or one of the allowed swap IDs provided — never invent exercises.
-- Never tell users to train through sharp, hot, numb, or radiating pain. Recommend stop + professional care.
-- Never recommend dangerous calorie restriction.
-- Keep messages concise for gym use.
-
-KNOWLEDGE BASE (cite ids in citeIds when used):
-${options.knowledgeBlock}
-
-EXERCISE REGISTRY:
-${options.registryBlock}
-
-${options.live ? "You are giving LIVE mid-set advice: rest timer, next-set load change, or safe swap. Be specific with restSeconds." : "Answer training/nutrition questions with citations from the knowledge base when relevant."}`;
-}
-
-export const DEFAULT_MODEL = process.env.GARANIMAL_AI_MODEL ?? "openai/gpt-5.4";
-
-export function aiEnabled() {
-  return Boolean(process.env.AI_GATEWAY_API_KEY || process.env.OPENAI_API_KEY);
+  return buildSpiritSystemPrompt({ ...options, parseContext: undefined, strictAddendum: undefined });
 }
