@@ -1,24 +1,27 @@
 import Link from "next/link";
-import { askCoachAction } from "@/app/actions/coach";
 import { AppShell } from "@/components/app-shell";
+import { SpiritCoachChat } from "@/components/spirit-coach-chat";
 import { SpiritMascot } from "@/components/spirit-mascot";
 import { aiEnabled, modelLabel } from "@/lib/ai/spirit";
 import { generateBriefing } from "@/lib/ai/live-advice";
-import { coachContext } from "@/lib/coach/engine";
-import { historyForUser } from "@/lib/coach/engine";
+import { coachContext, historyForUser } from "@/lib/coach/engine";
 import { bannedExercises } from "@/lib/exercises/registry";
 import { searchKnowledge } from "@/lib/knowledge/search";
+import { buildCoachContextSummary, parseCoachMeta } from "@/lib/spirit/context";
 import { requireAuthed } from "@/lib/session-page";
+import type { UIMessage } from "ai";
 
-function parseCoachMeta(content: string): { text: string; citeIds: string[] } {
-  const match = content.match(/\n\n<!-- spirit-meta: ([\s\S]*) -->$/);
-  if (!match) return { text: content, citeIds: [] };
-  try {
-    const meta = JSON.parse(match[1]!) as { citeIds?: string[] };
-    return { text: content.replace(/\n\n<!-- spirit-meta:[\s\S]* -->$/, ""), citeIds: meta.citeIds ?? [] };
-  } catch {
-    return { text: content, citeIds: [] };
-  }
+function historyToUIMessages(
+  history: ReturnType<typeof historyForUser>,
+): UIMessage[] {
+  return history.map((msg) => {
+    const parsed = msg.role === "coach" ? parseCoachMeta(msg.content) : { text: msg.content, citeIds: [] };
+    return {
+      id: msg.id,
+      role: msg.role === "coach" ? "assistant" : "user",
+      parts: [{ type: "text" as const, text: parsed.text }],
+    };
+  });
 }
 
 export default async function CoachPage() {
@@ -32,15 +35,12 @@ export default async function CoachPage() {
     limit: 3,
   });
 
-  const contextSummary = `Program: ${ctx.program?.name ?? "none"}, week ${profile.currentWeek}, ${profile.sessionMinutes} min sessions.
-Last 14 days: ${ctx.completed.length} completed, ${ctx.missed.length} skipped.
-Deload: ${ctx.deload.deload ? "yes — " + ctx.deload.reason : ctx.deload.reason}
-Goal: ${profile.goal}. Injuries: ${profile.injuries.join(", ") || "none"}.
-Today's fatigue check-in: ${ctx.checkin?.fatigue ?? "not logged"}/5.`;
-
+  const contextSummary = buildCoachContextSummary(user.id, profile);
   const briefing = aiEnabled()
     ? await generateBriefing({ profile, contextSummary })
     : null;
+
+  const initialMessages = historyToUIMessages(history);
 
   return (
     <AppShell user={user} profile={profile}>
@@ -50,8 +50,7 @@ Today's fatigue check-in: ${ctx.checkin?.fatigue ?? "not logged"}/5.`;
           <p className="text-sm uppercase tracking-[0.18em] text-copper">Spirit · snow leopard spotter</p>
           <h1 className="display text-4xl">Coach</h1>
           <p className="mt-2 max-w-2xl text-muted">
-            SuperByte-inspired pipeline: deterministic gauges + risk routing + LLM with citation cage. Live coaching
-            on every logged set.
+            Streaming chat with citation cage. Live mid-set coaching on every logged set.
             {profile.persona === "garanimal" ? " Garanimal intensity layered in." : ""}
           </p>
           <p className="mt-1 text-xs text-muted">
@@ -81,38 +80,7 @@ Today's fatigue check-in: ${ctx.checkin?.fatigue ?? "not logged"}/5.`;
         </Link>
       </section>
 
-      <div className="mt-6 space-y-3">
-        {history.map((msg) => {
-          const parsed = msg.role === "coach" ? parseCoachMeta(msg.content) : { text: msg.content, citeIds: [] };
-          return (
-            <article
-              key={msg.id}
-              className={`rounded-2xl p-4 text-sm ${
-                msg.role === "user" ? "ml-8 bg-surface-2" : "mr-8 border border-line bg-surface"
-              }`}
-            >
-              <p className="text-xs uppercase text-muted">{msg.role === "user" ? "You" : "Spirit"}</p>
-              <p className="mt-1 whitespace-pre-wrap">{parsed.text}</p>
-              {parsed.citeIds.length ? (
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {parsed.citeIds.map((id) => (
-                    <Link key={id} href={`/knowledge#${id}`} className="text-[10px] text-copper-2">
-                      {id}
-                    </Link>
-                  ))}
-                </div>
-              ) : null}
-            </article>
-          );
-        })}
-      </div>
-
-      <form action={askCoachAction} className="mt-6 flex gap-2">
-        <input name="question" placeholder="Ask about swaps, volume, pole prep, protein, rest..." />
-        <button className="rounded-2xl bg-copper px-4 text-sm font-semibold text-bg" type="submit">
-          Ask Spirit
-        </button>
-      </form>
+      <SpiritCoachChat initialMessages={initialMessages} aiAvailable={aiEnabled()} />
 
       <section className="mt-10 grid gap-4 md:grid-cols-2">
         <div>
