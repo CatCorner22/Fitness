@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
+import { SkipWorkoutButton } from "@/components/skip-workout-button";
 import { SpiritTodayBriefing } from "@/components/spirit-today-briefing";
+import { WeekProgressStrip } from "@/components/week-progress-strip";
 import { advanceWeekAction, logBodyweightAction, logCheckinAction } from "@/app/actions/profile";
 import { skipWorkoutAction, startWorkoutAction } from "@/app/actions/workout";
+import { shouldDeload } from "@/lib/autoregulation";
 import { aiEnabled } from "@/lib/ai/spirit";
 import { requireAuthed } from "@/lib/session-page";
 import { offlineBriefing } from "@/lib/spirit/context";
@@ -17,6 +20,18 @@ export default async function TodayPage() {
   const food = todayNutrition(user.id);
   const targets = adaptiveCalories(user.id, profile);
   const planned = plan?.planned;
+  const deload = shouldDeload(user.id);
+
+  const weekDays =
+    plan?.program.days.map((day) => {
+      const session = plan.weekWorkouts.find((w) => w.dayId === day.id);
+      let status: "done" | "skipped" | "open" | "today" | "upcoming" = "upcoming";
+      if (session?.status === "completed") status = "done";
+      else if (session?.status === "skipped") status = "skipped";
+      else if (session?.status === "in_progress") status = "open";
+      else if (!plan.allDone && day.id === planned?.day.id) status = "today";
+      return { id: day.id, name: day.name, status };
+    }) ?? [];
 
   return (
     <AppShell user={user} profile={profile}>
@@ -24,6 +39,25 @@ export default async function TodayPage() {
         aiAvailable={aiEnabled()}
         fallbackText={offlineBriefing(user.id, profile)}
       />
+
+      {!profile.activeProgramId && (
+        <section className="mb-6 rounded-3xl border border-dashed border-line bg-surface p-8 text-center">
+          <h2 className="display text-2xl">No program yet</h2>
+          <p className="mt-2 text-muted">Pick a evidence-based block and Garanimal will plan your week.</p>
+          <Link href="/programs" className="mt-4 inline-block rounded-2xl bg-copper px-6 py-3 font-semibold text-bg">
+            Browse programs
+          </Link>
+        </section>
+      )}
+
+      {deload.deload && (
+        <div className="mb-6 rounded-2xl border border-copper/40 bg-copper/5 px-4 py-3 text-sm">
+          <p className="font-medium text-copper-2">Deload suggested</p>
+          <p className="mt-1 text-muted">{deload.reason}</p>
+        </div>
+      )}
+
+      {weekDays.length > 0 && <WeekProgressStrip days={weekDays} />}
 
       <div className="mb-6">
         <p className="text-sm uppercase tracking-[0.18em] text-copper">
@@ -92,19 +126,13 @@ export default async function TodayPage() {
                     </button>
                   </form>
                 )}
-                <form
-                  action={skipWorkoutAction.bind(
-                    null,
-                    planned.day.id,
-                    planned.day.name,
-                    planned.program.id,
-                    planned.week,
-                  )}
-                >
-                  <button className="rounded-2xl border border-line px-5 py-3 text-muted" type="submit">
-                    Skip today
-                  </button>
-                </form>
+                <SkipWorkoutButton
+                  dayId={planned.day.id}
+                  dayName={planned.day.name}
+                  programId={planned.program.id}
+                  week={planned.week}
+                  skipAction={skipWorkoutAction}
+                />
               </div>
             </>
           )}

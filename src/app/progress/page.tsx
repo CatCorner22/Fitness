@@ -1,4 +1,5 @@
 import { and, asc, desc, eq } from "drizzle-orm";
+import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { Spark } from "@/components/spark";
 import { bestSets, VOLUME_LANDMARKS, weeklyVolume } from "@/lib/autoregulation";
@@ -108,10 +109,10 @@ export default async function ProgressPage() {
           {sessions.length === 0 && <li className="text-muted">No completed sessions yet.</li>}
           {sessions.slice(0, 20).map((s) => (
             <li key={s.id} className="flex justify-between border-b border-line/50 py-2">
-              <span>
+              <Link href={`/progress/${s.id}`} className="hover:text-copper-2">
                 {s.date} · {s.dayName}
                 <span className="block text-xs text-muted">{s.notes}</span>
-              </span>
+              </Link>
               <span className="text-muted">
                 {s.durationMinutes ?? "—"} min · sRPE {s.sessionRpe ?? "—"}
               </span>

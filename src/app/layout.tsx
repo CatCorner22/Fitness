@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Outfit } from "next/font/google";
+import { SaveToast } from "@/components/save-toast";
 import "./globals.css";
 
 const sans = Outfit({
@@ -26,7 +28,12 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${sans.variable} ${display.variable} h-full`}>
-      <body className="min-h-full antialiased">{children}</body>
+      <body className="min-h-full antialiased">
+        <Suspense fallback={null}>
+          <SaveToast />
+        </Suspense>
+        {children}
+      </body>
     </html>
   );
 }

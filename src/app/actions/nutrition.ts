@@ -39,6 +39,7 @@ export async function addFoodLogAction(formData: FormData) {
     .run();
   revalidatePath("/nutrition");
   revalidatePath("/");
+  redirect("/nutrition?toast=food");
 }
 
 export async function addCustomFoodAction(formData: FormData) {
