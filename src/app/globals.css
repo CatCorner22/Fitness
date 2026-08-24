@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #12110e;
+  --bg-2: #1b1914;
+  --surface: #221f19;
+  --surface-2: #2b261e;
+  --line: #3a3429;
+  --text: #f4efe6;
+  --muted: #a69c8b;
+  --copper: #e07a3d;
+  --copper-2: #f0a36a;
+  --moss: #8f9a6b;
+  --danger: #d46a6a;
+  --font-display: var(--font-display);
+  --font-sans: var(--font-sans);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-ink: var(--text);
+  --color-muted: var(--muted);
+  --color-copper: var(--copper);
+  --color-copper-2: var(--copper-2);
+  --color-moss: var(--moss);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  background-image:
+    radial-gradient(1200px 600px at 10% -10%, rgba(224, 122, 61, 0.12), transparent 50%),
+    radial-gradient(800px 400px at 100% 0%, rgba(143, 154, 107, 0.08), transparent 40%);
+}
+
+h1,
+h2,
+.display {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.03em;
+}
+
+input,
+select,
+textarea {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--text);
+  border-radius: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  width: 100%;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid rgba(224, 122, 61, 0.45);
+  outline-offset: 1px;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+::selection {
+  background: rgba(224, 122, 61, 0.35);
+}
