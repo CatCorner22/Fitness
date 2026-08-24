@@ -1,0 +1,110 @@
+import { cookies } from "next/headers";
+import { SignJWT, jwtVerify } from "jose";
+import { eq } from "drizzle-orm";
+import bcrypt from "bcryptjs";
+import { db } from "@/lib/db";
+import { profiles, users } from "@/lib/db/schema";
+import type { Experience, Goal, Injury, Persona, Units } from "@/lib/types";
+
+const COOKIE = "garanimal_session";
+
+function secret() {
+  return new TextEncoder().encode(
+    process.env.AUTH_SECRET || "garanimal-dev-secret-change-me-please-32b",
+  );
+}
+
+export type SessionUser = {
+  id: string;
+  username: string;
+  displayName: string;
+};
+
+export async function createSession(user: SessionUser) {
+  const token = await new SignJWT(user)
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("30d")
+    .sign(secret());
+  (await cookies()).set(COOKIE, token, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 30,
+  });
+}
+
+export async function destroySession() {
+  (await cookies()).delete(COOKIE);
+}
+
+export async function getSession(): Promise<SessionUser | null> {
+  const token = (await cookies()).get(COOKIE)?.value;
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, secret());
+    return {
+      id: String(payload.id),
+      username: String(payload.username),
+      displayName: String(payload.displayName),
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function verifyLogin(username: string, password: string): SessionUser | null {
+  const user = db
+    .select()
+    .from(users)
+    .where(eq(users.username, username.trim().toLowerCase()))
+    .get();
+  if (!user) return null;
+  if (!bcrypt.compareSync(password, user.passwordHash)) return null;
+  return { id: user.id, username: user.username, displayName: user.displayName };
+}
+
+export type ProfileRow = {
+  userId: string;
+  goal: Goal;
+  experience: Experience;
+  daysPerWeek: number;
+  sessionMinutes: number;
+  equipment: string[];
+  injuries: Injury[];
+  units: Units;
+  persona: Persona;
+  sex: "female" | "male" | "unspecified";
+  age: number | null;
+  heightCm: number | null;
+  weightKg: number | null;
+  onboarded: boolean;
+  activeProgramId: string | null;
+  programStartDate: string | null;
+  currentWeek: number;
+};
+
+export function getProfile(userId: string): ProfileRow | null {
+  const row = db.select().from(profiles).where(eq(profiles.userId, userId)).get();
+  if (!row) return null;
+  return {
+    userId: row.userId,
+    goal: row.goal as Goal,
+    experience: row.experience as Experience,
+    daysPerWeek: row.daysPerWeek,
+    sessionMinutes: row.sessionMinutes,
+    equipment: JSON.parse(row.equipment) as string[],
+    injuries: JSON.parse(row.injuries) as Injury[],
+    units: row.units as Units,
+    persona: row.persona as Persona,
+    sex: row.sex as ProfileRow["sex"],
+    age: row.age,
+    heightCm: row.heightCm,
+    weightKg: row.weightKg,
+    onboarded: row.onboarded === 1,
+    activeProgramId: row.activeProgramId,
+    programStartDate: row.programStartDate,
+    currentWeek: row.currentWeek,
+  };
+}
