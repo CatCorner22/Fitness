@@ -25,7 +25,7 @@ export default async function KnowledgePage({
     <AppShell user={user} profile={profile}>
       <h1 className="display text-4xl">Knowledge base</h1>
       <p className="mt-2 max-w-2xl text-muted">
-        Dynamic retrieval feeds Spirit during workouts and chat. Search updates what the LLM sees in real time.
+        Dynamic retrieval feeds Spirit during workouts and chat. With HF_TOKEN set, semantic search uses sentence-transformers/all-MiniLM-L6-v2 embeddings.
       </p>
       <form className="mt-6 flex gap-2" action="/knowledge" method="get">
         <input name="q" defaultValue={q} placeholder="Search: glutes, rest, RPE, pole, protein..." />

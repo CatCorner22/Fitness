@@ -4,8 +4,8 @@ import { getProfile, getSession } from "@/lib/auth";
 import { generateLiveAdvice } from "@/lib/ai/live-advice";
 import { allowedSubstitutes } from "@/lib/exercises/registry";
 import { db } from "@/lib/db";
-import { setLogs, workouts } from "@/lib/db/schema";
-import { displayToKg } from "@/lib/utils";
+import { dailyCheckins, setLogs, workouts } from "@/lib/db/schema";
+import { displayToKg, todayISO } from "@/lib/utils";
 import { getExercise } from "@/lib/exercises/registry";
 
 export async function POST(request: Request) {
@@ -45,10 +45,24 @@ export async function POST(request: Request) {
   const exercise = getExercise(row.exerciseId);
   const allSets = db.select().from(setLogs).where(eq(setLogs.workoutId, row.workoutId)).all();
   const exerciseSets = allSets.filter((s) => s.exerciseId === row.exerciseId);
+  const priorSets = exerciseSets
+    .filter((s) => s.setIndex < row.setIndex && s.completed)
+    .map((s) => ({
+      setIndex: s.setIndex,
+      weightKg: s.weightKg,
+      reps: s.reps,
+      rpe: s.rpe,
+    }));
   const exerciseGroups = [...new Set(allSets.map((s) => s.exerciseId))];
   const currentIdx = exerciseGroups.indexOf(row.exerciseId);
   const remaining =
     remainingExercises || Math.max(0, exerciseGroups.length - currentIdx - 1);
+
+  const checkin = db
+    .select()
+    .from(dailyCheckins)
+    .where(and(eq(dailyCheckins.userId, user.id), eq(dailyCheckins.date, todayISO())))
+    .get();
 
   const swaps = allowedSubstitutes(row.exerciseId, profile.injuries).map((s) => s.id);
 
@@ -68,6 +82,8 @@ export async function POST(request: Request) {
     sessionMinutesBudget: profile.sessionMinutes,
     elapsedMinutes,
     remainingExercises: remaining,
+    priorSets,
+    fatigue: checkin?.fatigue ?? null,
   });
 
   return NextResponse.json({ advice, workoutDay: workout?.dayName });

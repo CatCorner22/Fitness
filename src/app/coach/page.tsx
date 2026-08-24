@@ -2,12 +2,24 @@ import Link from "next/link";
 import { askCoachAction } from "@/app/actions/coach";
 import { AppShell } from "@/components/app-shell";
 import { SpiritMascot } from "@/components/spirit-mascot";
-import { aiEnabled } from "@/lib/ai/spirit";
+import { aiEnabled, modelLabel } from "@/lib/ai/spirit";
+import { generateBriefing } from "@/lib/ai/live-advice";
 import { coachContext } from "@/lib/coach/engine";
 import { historyForUser } from "@/lib/coach/engine";
 import { bannedExercises } from "@/lib/exercises/registry";
 import { searchKnowledge } from "@/lib/knowledge/search";
 import { requireAuthed } from "@/lib/session-page";
+
+function parseCoachMeta(content: string): { text: string; citeIds: string[] } {
+  const match = content.match(/\n\n<!-- spirit-meta: ([\s\S]*) -->$/);
+  if (!match) return { text: content, citeIds: [] };
+  try {
+    const meta = JSON.parse(match[1]!) as { citeIds?: string[] };
+    return { text: content.replace(/\n\n<!-- spirit-meta:[\s\S]* -->$/, ""), citeIds: meta.citeIds ?? [] };
+  } catch {
+    return { text: content, citeIds: [] };
+  }
+}
 
 export default async function CoachPage() {
   const { user, profile } = await requireAuthed();
@@ -20,47 +32,79 @@ export default async function CoachPage() {
     limit: 3,
   });
 
+  const contextSummary = `Program: ${ctx.program?.name ?? "none"}, week ${profile.currentWeek}, ${profile.sessionMinutes} min sessions.
+Last 14 days: ${ctx.completed.length} completed, ${ctx.missed.length} skipped.
+Deload: ${ctx.deload.deload ? "yes — " + ctx.deload.reason : ctx.deload.reason}
+Goal: ${profile.goal}. Injuries: ${profile.injuries.join(", ") || "none"}.
+Today's fatigue check-in: ${ctx.checkin?.fatigue ?? "not logged"}/5.`;
+
+  const briefing = aiEnabled()
+    ? await generateBriefing({ profile, contextSummary })
+    : null;
+
   return (
     <AppShell user={user} profile={profile}>
       <div className="flex flex-wrap items-start gap-4">
-        <SpiritMascot mood="encouraging" size={96} />
+        <SpiritMascot mood={briefing?.mood ?? "encouraging"} size={96} />
         <div>
           <p className="text-sm uppercase tracking-[0.18em] text-copper">Spirit · snow leopard spotter</p>
           <h1 className="display text-4xl">Coach</h1>
           <p className="mt-2 max-w-2xl text-muted">
-            Real LLM when <code className="text-xs">AI_GATEWAY_API_KEY</code> is set — otherwise evidence rules +
-            knowledge base. Live mid-set coaching runs on every logged set during workouts.
+            SuperByte-inspired pipeline: deterministic gauges + risk routing + LLM with citation cage. Live coaching
+            on every logged set.
             {profile.persona === "garanimal" ? " Garanimal intensity layered in." : ""}
           </p>
           <p className="mt-1 text-xs text-muted">
-            Model: {process.env.GARANIMAL_AI_MODEL ?? "openai/gpt-5.4"} ·{" "}
-            {aiEnabled() ? "connected" : "offline (rules fallback)"}
+            {modelLabel()} · {aiEnabled() ? "LLM connected" : "offline (rules + KB)"}
+            {process.env.HF_TOKEN || process.env.HUGGINGFACE_HUB_TOKEN ? " · HF semantic search" : ""}
           </p>
         </div>
       </div>
 
-      <section className="mt-6 rounded-3xl border border-line bg-surface p-6">
-        <p className="text-sm leading-relaxed whitespace-pre-wrap">
-          *stretches paws* You&apos;re on {ctx.program?.name ?? "no program"}, week {profile.currentWeek}.{" "}
-          {ctx.completed.length} sessions in 14 days. {ctx.deload.reason}
+      <section className="rounded-3xl border border-line bg-surface p-6 mt-6">
+        <p className="text-xs uppercase tracking-wider text-copper">Daily briefing</p>
+        <p className="mt-2 text-sm leading-relaxed whitespace-pre-wrap">
+          {briefing?.text ??
+            `*stretches paws* You're on ${ctx.program?.name ?? "no program"}, week ${profile.currentWeek}. ${ctx.completed.length} sessions in 14 days. ${ctx.deload.reason}`}
         </p>
+        {briefing?.citeIds?.length ? (
+          <div className="mt-3 flex flex-wrap gap-1">
+            {briefing.citeIds.map((id) => (
+              <Link key={id} href={`/knowledge#${id}`} className="rounded-full bg-bg px-2 py-0.5 text-[10px] text-copper-2">
+                {id}
+              </Link>
+            ))}
+          </div>
+        ) : null}
         <Link href="/knowledge" className="mt-3 inline-block text-sm text-copper-2">
           Browse full knowledge base →
         </Link>
       </section>
 
       <div className="mt-6 space-y-3">
-        {history.map((msg) => (
-          <article
-            key={msg.id}
-            className={`rounded-2xl p-4 text-sm ${
-              msg.role === "user" ? "ml-8 bg-surface-2" : "mr-8 border border-line bg-surface"
-            }`}
-          >
-            <p className="text-xs uppercase text-muted">{msg.role === "user" ? "You" : "Spirit"}</p>
-            <p className="mt-1 whitespace-pre-wrap">{msg.content}</p>
-          </article>
-        ))}
+        {history.map((msg) => {
+          const parsed = msg.role === "coach" ? parseCoachMeta(msg.content) : { text: msg.content, citeIds: [] };
+          return (
+            <article
+              key={msg.id}
+              className={`rounded-2xl p-4 text-sm ${
+                msg.role === "user" ? "ml-8 bg-surface-2" : "mr-8 border border-line bg-surface"
+              }`}
+            >
+              <p className="text-xs uppercase text-muted">{msg.role === "user" ? "You" : "Spirit"}</p>
+              <p className="mt-1 whitespace-pre-wrap">{parsed.text}</p>
+              {parsed.citeIds.length ? (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {parsed.citeIds.map((id) => (
+                    <Link key={id} href={`/knowledge#${id}`} className="text-[10px] text-copper-2">
+                      {id}
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
+            </article>
+          );
+        })}
       </div>
 
       <form action={askCoachAction} className="mt-6 flex gap-2">

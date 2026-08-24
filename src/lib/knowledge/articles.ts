@@ -147,6 +147,45 @@ Pain that is sharp, radiating, or worsening = stop — that is medical territory
       "Upper/Lower or PPL usually recover better than bro splits for the same volume. Bro split works if you rarely miss days.",
     body: `When weekly sets are equated, split style barely changes hypertrophy. Pick the schedule you will actually adhere to. Conjugate and powerlifting need more specificity on competition lifts.`,
   },
+  {
+    id: "e1rm-tracking",
+    title: "Estimated 1RM and load jumps",
+    tags: ["e1rm", "progression", "strength", "load", "autoregulation"],
+    summary:
+      "Use logged sets to estimate e1RM (Epley). Jump loads in small increments: +2.5 kg compounds, +1.25 kg isolation when RPE is easy.",
+    body: `Epley: weight × (1 + reps/30). Track trend over 4–6 weeks, not session to session noise.
+If RPE ≤ target − 1 on working sets, add the smallest plate increment. If RPE ≥ target + 1 or reps missed, repeat or drop 5%.`,
+    citations: ["Helms et al. 2016"],
+  },
+  {
+    id: "sleep-recovery",
+    title: "Sleep and recovery for lifters",
+    tags: ["sleep", "recovery", "fatigue", "deload", "check-in"],
+    summary:
+      "Chronic sleep debt raises session RPE and blunts performance. High fatigue check-ins should trigger shorter, simpler sessions.",
+    body: `7–9 h is the practical target for most lifters. When sleep is poor 3+ nights, keep compounds, cut optional volume, and avoid RPE 9+ grind sets.
+Spirit reads your daily fatigue check-in — treat it honestly.`,
+  },
+  {
+    id: "progressive-overload",
+    title: "Progressive overload without ego",
+    tags: ["progression", "volume", "load", "hypertrophy", "strength"],
+    summary:
+      "Overload via load, reps, sets, or quality — not all at once. Double progression (reps then load) works well for accessories.",
+    body: `Main lifts: small load jumps when RPE allows. Accessories: add reps within range first, then load.
+Stalled for 3 weeks with rising session RPE → deload or reduce weekly sets before chasing heavier weights.`,
+    citations: ["Schoenfeld 2017"],
+  },
+  {
+    id: "mind-muscle",
+    title: "Mind-muscle connection — when it matters",
+    tags: ["hypertrophy", "isolation", "technique", "glutes", "cues"],
+    summary:
+      "Internal focus helps isolation and glute work; external focus often wins on heavy compounds for force output.",
+    body: `Calatayud et al.: internal focus increases EMG on isolation but can reduce 1RM on heavy multi-joint lifts.
+Use cues on hip thrusts, abduction, and curls; on squats/deadlifts prioritize bracing and bar path.`,
+    citations: ["Calatayud et al. 2016"],
+  },
 ];
 
 export function getArticle(id: string) {
