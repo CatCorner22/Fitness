@@ -3,9 +3,11 @@
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth";
+import { getProfile, getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { foods, nutritionLogs } from "@/lib/db/schema";
+import { suggestedPlans } from "@/lib/nutrition/meal-plans";
+import { todayNutrition } from "@/lib/today";
 import { todayISO } from "@/lib/utils";
 
 async function requireUser() {
@@ -65,6 +67,54 @@ export async function addCustomFoodAction(formData: FormData) {
     })
     .run();
   revalidatePath("/nutrition");
+}
+
+export async function applyMealPlanAction(formData: FormData) {
+  const user = await requireUser();
+  const planId = String(formData.get("planId") || "");
+  const calories = Number(formData.get("calories"));
+  const protein = Number(formData.get("protein"));
+  const replace = String(formData.get("replace") || "") === "1";
+  const profile = getProfile(user.id);
+  if (!profile) redirect("/onboarding");
+
+  const calTarget = Number.isFinite(calories) && calories > 0 ? calories : 2200;
+  const proteinTarget = Number.isFinite(protein) && protein > 0 ? protein : 140;
+  const match = suggestedPlans(profile.goal, calTarget, proteinTarget).find((p) => p.template.id === planId);
+  if (!match) return;
+
+  const date = todayISO();
+  const existing = todayNutrition(user.id);
+  const filledMeals = new Set(existing.logs.map((l) => l.meal));
+
+  if (replace) {
+    db.delete(nutritionLogs)
+      .where(and(eq(nutritionLogs.userId, user.id), eq(nutritionLogs.date, date)))
+      .run();
+  }
+
+  for (const item of match.items) {
+    if (!replace && filledMeals.has(item.meal)) continue;
+    db.insert(nutritionLogs)
+      .values({
+        id: crypto.randomUUID(),
+        userId: user.id,
+        date,
+        meal: item.meal,
+        foodId: item.foodId,
+        foodName: item.foodName,
+        calories: item.calories,
+        protein: item.protein,
+        carbs: item.carbs,
+        fat: item.fat,
+        servings: item.servings,
+      })
+      .run();
+  }
+
+  revalidatePath("/nutrition");
+  revalidatePath("/");
+  redirect("/nutrition?toast=food");
 }
 
 export async function deleteFoodLogAction(id: string) {

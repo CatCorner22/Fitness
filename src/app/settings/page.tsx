@@ -90,12 +90,12 @@ export default async function SettingsPage() {
           <label className="text-sm text-muted">
             Goal
             <select name="goal" defaultValue={profile.goal} className="mt-1">
-              <option value="general">General</option>
-              <option value="powerlifting">Powerlifting</option>
-              <option value="bodybuilding">Bodybuilding</option>
-              <option value="strength_endurance">Strength + endurance</option>
-              <option value="pole_stage">Pole / stage</option>
-              <option value="glute_specialization">Glute specialization</option>
+              <option value="general">General — maintain</option>
+              <option value="powerlifting">Powerlifting — +150 kcal</option>
+              <option value="bodybuilding">Bodybuilding — +250 kcal</option>
+              <option value="strength_endurance">Strength + endurance — +100 kcal</option>
+              <option value="pole_stage">Pole / stage — maintain</option>
+              <option value="glute_specialization">Glute specialization — +200 kcal</option>
             </select>
           </label>
           <label className="text-sm text-muted">
