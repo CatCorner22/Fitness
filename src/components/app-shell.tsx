@@ -14,7 +14,7 @@ export function AppShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mx-auto flex min-h-screen max-w-5xl flex-col px-4 pb-24 pt-6 md:pb-10">
+    <div className="mx-auto flex min-h-screen max-w-5xl flex-col px-4 pb-24 pt-6 lg:pb-10">
       <header className="mb-8 flex items-center justify-between gap-4">
         <Link href="/" className="display text-2xl text-copper-2">
           Garanimal

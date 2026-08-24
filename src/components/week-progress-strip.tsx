@@ -6,11 +6,13 @@ export function WeekProgressStrip({
   days: { id: string; name: string; status: DayStatus }[];
 }) {
   return (
-    <div className="mb-6 flex gap-1.5 overflow-x-auto pb-1">
+    <section className="mb-6" aria-label="This week's sessions">
+      <p className="mb-2 text-xs uppercase tracking-[0.16em] text-muted">This week</p>
+      <div className="flex gap-1.5 overflow-x-auto pb-1">
       {days.map((day) => (
         <div
           key={day.id}
-          className={`min-w-[4.5rem] flex-1 rounded-2xl border px-2 py-2 text-center text-xs ${
+          className={`min-w-[5.5rem] flex-1 rounded-2xl border px-2 py-2 text-center text-xs ${
             day.status === "today"
               ? "border-copper bg-copper/10 text-copper-2"
               : day.status === "done"
@@ -23,7 +25,7 @@ export function WeekProgressStrip({
           }`}
           title={day.name}
         >
-          <p className="truncate font-medium">{day.name.split(" ")[0]}</p>
+          <p className="truncate font-medium">{day.name}</p>
           <p className="mt-0.5 text-[10px] uppercase tracking-wide opacity-70">
             {day.status === "done"
               ? "done"
@@ -37,6 +39,7 @@ export function WeekProgressStrip({
           </p>
         </div>
       ))}
-    </div>
+      </div>
+    </section>
   );
 }

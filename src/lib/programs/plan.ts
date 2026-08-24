@@ -112,11 +112,29 @@ export function buildPlannedSession(options: {
   const day = rotateConjugate(rawDay, options.week);
   const phased = day.exercises.map((e) => applyPhase(e, phase));
   const resolved: TemplateExercise[] = [];
+  const usedIds = new Set<string>();
 
   for (const item of phased) {
     const chosen = pickSubstitute(item.exerciseId, options.injuries, options.equipment);
     if (!chosen) continue;
-    resolved.push({ ...item, exerciseId: chosen.id });
+    if (!usedIds.has(chosen.id)) {
+      usedIds.add(chosen.id);
+      resolved.push({ ...item, exerciseId: chosen.id });
+      continue;
+    }
+    const alt = allowedSubstitutes(item.exerciseId, options.injuries).find(
+      (ex) =>
+        !usedIds.has(ex.id) &&
+        (ex.equipment.some((eq) => options.equipment.includes(eq) || eq === "bodyweight") ||
+          ex.equipment.includes("bodyweight")),
+    );
+    if (alt) {
+      usedIds.add(alt.id);
+      resolved.push({ ...item, exerciseId: alt.id });
+      continue;
+    }
+    const existing = resolved.find((r) => r.exerciseId === chosen.id);
+    if (existing) existing.sets += item.sets;
   }
 
   const trimmed = trimForDuration(resolved, options.sessionMinutes);

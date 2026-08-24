@@ -88,8 +88,8 @@ export default async function TodayPage() {
             <>
               <p className="text-sm text-muted">{planned.day.focus}</p>
               <ul className="mt-4 space-y-2">
-                {planned.exercises.map((ex) => (
-                  <li key={ex.exerciseId} className="flex justify-between gap-4 border-b border-line/60 py-2 text-sm">
+                {planned.exercises.map((ex, i) => (
+                  <li key={`${ex.exerciseId}-${i}`} className="flex justify-between gap-4 border-b border-line/60 py-2 text-sm">
                     <span>
                       {ex.exercise.name}
                       <span className="block text-xs text-muted">

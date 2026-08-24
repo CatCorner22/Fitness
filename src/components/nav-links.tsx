@@ -41,7 +41,7 @@ function linkClass(active: boolean, compact = false) {
 export function DesktopNav() {
   const pathname = usePathname();
   return (
-    <nav className="hidden items-center gap-1 md:flex">
+    <nav className="hidden items-center gap-1 lg:flex">
       {NAV_LINKS.map((l) => {
         const active = isActive(pathname, l.href);
         const Icon = l.icon;
@@ -68,12 +68,12 @@ export function MobileNav() {
       {moreOpen && (
         <button
           type="button"
-          className="fixed inset-0 z-30 bg-bg/60 md:hidden"
+          className="fixed inset-0 z-30 bg-bg/60 lg:hidden"
           aria-label="Close menu"
           onClick={() => setMoreOpen(false)}
         />
       )}
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-bg/95 px-1 py-1.5 backdrop-blur md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-bg/95 px-1 py-1.5 backdrop-blur lg:hidden">
         <div className="grid grid-cols-5 gap-0.5">
           {primary.map((l) => {
             const active = isActive(pathname, l.href);

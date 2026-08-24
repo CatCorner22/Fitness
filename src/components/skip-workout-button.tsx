@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 export function SkipWorkoutButton({
   dayId,
@@ -16,29 +16,35 @@ export function SkipWorkoutButton({
   skipAction: (dayId: string, dayName: string, programId: string, week: number) => Promise<void>;
 }) {
   const [confirming, setConfirming] = useState(false);
-  const formRef = useRef<HTMLFormElement>(null);
+
+  if (!confirming) {
+    return (
+      <button
+        className="rounded-2xl border border-line px-5 py-3 text-muted"
+        type="button"
+        onClick={() => setConfirming(true)}
+      >
+        Skip today
+      </button>
+    );
+  }
 
   return (
     <form
-      ref={formRef}
       action={async () => {
         await skipAction(dayId, dayName, programId, week);
       }}
-      onSubmit={(e) => {
-        if (!confirming) {
-          e.preventDefault();
-          setConfirming(true);
-        }
-      }}
+      className="flex flex-wrap gap-2"
     >
+      <button className="rounded-2xl border border-danger px-5 py-3 text-danger" type="submit">
+        Confirm skip
+      </button>
       <button
-        className={`rounded-2xl border px-5 py-3 ${
-          confirming ? "border-danger text-danger" : "border-line text-muted"
-        }`}
-        type="submit"
-        onBlur={() => window.setTimeout(() => setConfirming(false), 150)}
+        className="rounded-2xl border border-line px-5 py-3 text-muted"
+        type="button"
+        onClick={() => setConfirming(false)}
       >
-        {confirming ? "Tap again to skip" : "Skip today"}
+        Cancel
       </button>
     </form>
   );
