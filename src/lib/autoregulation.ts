@@ -31,8 +31,9 @@ export function suggestNextLoad(input: {
   targetRpe: number;
   targetReps: string;
   missed?: boolean;
+  exerciseId?: string;
 }): { weightKg: number | null; reason: string } {
-  const { lastWeightKg, lastRpe, targetRpe } = input;
+  const { lastWeightKg, lastRpe, targetRpe, exerciseId = "back-squat" } = input;
   if (lastWeightKg == null) {
     return { weightKg: null, reason: "No history yet — pick a load that leaves 2–3 reps in reserve on the first working set." };
   }
@@ -45,7 +46,7 @@ export function suggestNextLoad(input: {
   }
   if (lastRpe != null && lastRpe <= targetRpe - 1) {
     return {
-      weightKg: lastWeightKg + incrementKg(lastWeightKg, "back-squat"),
+      weightKg: lastWeightKg + incrementKg(lastWeightKg, exerciseId),
       reason: `Last top set was ≥1 RPE under target (${lastRpe} vs ${targetRpe}). Add a small jump.`,
     };
   }
@@ -91,6 +92,7 @@ export function suggestionsForExercises(
       lastReps: prev?.reps ?? null,
       targetRpe: item.targetRpe,
       targetReps: item.reps,
+      exerciseId: item.exerciseId,
     });
     // use exercise-specific increment
     if (prev && prev.rpe != null && prev.rpe <= item.targetRpe - 1) {

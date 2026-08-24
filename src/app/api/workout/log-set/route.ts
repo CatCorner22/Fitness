@@ -1,0 +1,74 @@
+import { NextResponse } from "next/server";
+import { and, eq } from "drizzle-orm";
+import { getProfile, getSession } from "@/lib/auth";
+import { generateLiveAdvice } from "@/lib/ai/live-advice";
+import { allowedSubstitutes } from "@/lib/exercises/registry";
+import { db } from "@/lib/db";
+import { setLogs, workouts } from "@/lib/db/schema";
+import { displayToKg } from "@/lib/utils";
+import { getExercise } from "@/lib/exercises/registry";
+
+export async function POST(request: Request) {
+  const user = await getSession();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const profile = getProfile(user.id);
+  if (!profile) return NextResponse.json({ error: "Profile missing" }, { status: 400 });
+
+  const body = await request.json();
+  const setId = String(body.setId ?? "");
+  const weight = Number(body.weight);
+  const reps = Number(body.reps);
+  const rpe = Number(body.rpe);
+  const elapsedMinutes = Number(body.elapsedMinutes) || 0;
+  const remainingExercises = Number(body.remainingExercises) || 0;
+
+  const row = db
+    .select()
+    .from(setLogs)
+    .where(and(eq(setLogs.id, setId), eq(setLogs.userId, user.id)))
+    .get();
+  if (!row) return NextResponse.json({ error: "Set not found" }, { status: 404 });
+
+  const weightKg = Number.isFinite(weight) ? displayToKg(weight, profile.units) : null;
+
+  db.update(setLogs)
+    .set({
+      weightKg,
+      reps: Number.isFinite(reps) ? reps : null,
+      rpe: Number.isFinite(rpe) ? rpe : null,
+      completed: 1,
+    })
+    .where(eq(setLogs.id, setId))
+    .run();
+
+  const workout = db.select().from(workouts).where(eq(workouts.id, row.workoutId)).get();
+  const exercise = getExercise(row.exerciseId);
+  const allSets = db.select().from(setLogs).where(eq(setLogs.workoutId, row.workoutId)).all();
+  const exerciseSets = allSets.filter((s) => s.exerciseId === row.exerciseId);
+  const exerciseGroups = [...new Set(allSets.map((s) => s.exerciseId))];
+  const currentIdx = exerciseGroups.indexOf(row.exerciseId);
+  const remaining =
+    remainingExercises || Math.max(0, exerciseGroups.length - currentIdx - 1);
+
+  const swaps = allowedSubstitutes(row.exerciseId, profile.injuries).map((s) => s.id);
+
+  const advice = await generateLiveAdvice({
+    profile,
+    workoutId: row.workoutId,
+    exerciseId: row.exerciseId,
+    exerciseName: exercise?.name ?? row.exerciseId,
+    setIndex: row.setIndex,
+    totalSets: exerciseSets.length,
+    targetReps: row.targetReps ?? "8",
+    targetRpe: row.targetRpe ?? 8,
+    weightKg,
+    reps: Number.isFinite(reps) ? reps : null,
+    rpe: Number.isFinite(rpe) ? rpe : null,
+    allowedSwapIds: swaps,
+    sessionMinutesBudget: profile.sessionMinutes,
+    elapsedMinutes,
+    remainingExercises: remaining,
+  });
+
+  return NextResponse.json({ advice, workoutDay: workout?.dayName });
+}

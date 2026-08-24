@@ -8,6 +8,7 @@ const LINKS = [
   { href: "/programs", label: "Programs" },
   { href: "/nutrition", label: "Nutrition" },
   { href: "/coach", label: "Coach" },
+  { href: "/knowledge", label: "Knowledge" },
   { href: "/progress", label: "Progress" },
   { href: "/settings", label: "Settings" },
 ];
