@@ -1,15 +1,17 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
+import { ExerciseCalendarBlock } from "@/components/exercise-calendar-block";
 import { FastingStrip } from "@/components/fasting-timer";
 import { SkipWorkoutButton } from "@/components/skip-workout-button";
 import { advanceWeekAction } from "@/app/actions/profile";
 import { skipWorkoutAction, startWorkoutAction } from "@/app/actions/workout";
 import { shouldDeload } from "@/lib/autoregulation";
+import { courseForProgram } from "@/lib/course/catalog";
+import { lessonForExercise } from "@/lib/course/skills";
 import { runningFast } from "@/lib/fasting/queries";
 import { requireAuthed } from "@/lib/session-page";
 import { todayNutrition, todaysPlan } from "@/lib/today";
 import { calorieTarget, macroTargets, nutritionSpec, proteinTargetG } from "@/lib/nutrition/targets";
-import { courseForProgram } from "@/lib/course/catalog";
 
 export default async function TodayPage() {
   const { user, profile } = await requireAuthed();
@@ -18,6 +20,10 @@ export default async function TodayPage() {
   const spec = nutritionSpec(profile);
   const targets = macroTargets(calorieTarget(profile), proteinTargetG(profile), spec);
   const planned = plan?.planned;
+  const course = courseForProgram(planned?.program.id ?? "");
+  const lessonCtx = course
+    ? { courseId: course.id, skillIds: course.modules.flatMap((m) => m.skillIds) }
+    : undefined;
   const deload = shouldDeload(user.id);
   const open = plan?.open;
   const fast = runningFast(user.id);
@@ -30,6 +36,14 @@ export default async function TodayPage() {
           <p className="mt-3 text-muted">Pick a plan and we will put one workout here.</p>
           <Link href="/programs" className="btn-primary mt-6">
             Choose a plan
+          </Link>
+          <p className="mt-4">
+            <Link href="/course" className="text-sm text-copper-2">
+              Or open Nyx courses
+            </Link>
+          </p>
+          <Link href="/course" className="mt-4 inline-block text-sm text-copper-2">
+            Or open Nyx courses
           </Link>
         </section>
       ) : plan?.allDone ? (
@@ -57,20 +71,28 @@ export default async function TodayPage() {
           ) : null}
           {planned && planned.exercises.length > 0 ? (
             <ul className="mt-4 space-y-1 text-sm">
-              {planned.exercises.map((ex) => (
-                <li key={`${ex.exerciseId}-${ex.role ?? "x"}`}>
-                  {ex.exercise.name}
-                  <span className="text-muted">
-                    {" "}
-                    · {ex.sets} × {ex.reps}
-                  </span>
-                </li>
-              ))}
+              {planned.exercises.map((ex) => {
+                const lesson = lessonForExercise(ex.exerciseId, lessonCtx);
+                return (
+                  <li key={`${ex.exerciseId}-${ex.role ?? "x"}`}>
+                    {ex.exercise.name}
+                    <span className="text-muted">
+                      {" "}
+                      · {ex.sets} × {ex.reps}
+                    </span>
+                    {lesson ? (
+                      <Link href={lesson.href} className="ml-2 text-xs text-copper-2">
+                        How
+                      </Link>
+                    ) : null}
+                  </li>
+                );
+              })}
             </ul>
           ) : null}
-          {courseForProgram(planned?.program.id ?? "") ? (
+          {course ? (
             <Link
-              href={`/course/${courseForProgram(planned!.program.id)!.id}`}
+              href={`/course/${course.id}`}
               className="mt-4 inline-block text-sm text-copper-2"
             >
               Nyx course for this plan
@@ -114,6 +136,7 @@ export default async function TodayPage() {
         </Link>
       </section>
       {fast ? <div className="mt-4"><FastingStrip running={fast} /></div> : null}
+      <ExerciseCalendarBlock userId={user.id} />
     </AppShell>
   );
 }

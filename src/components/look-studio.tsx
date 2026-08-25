@@ -1,0 +1,212 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { saveLookAction } from "@/app/actions/look";
+import { KawaiiAvatar } from "@/components/kawaii-avatar";
+import {
+  ACCENTS,
+  AVATAR_GROUPS,
+  FONTS,
+  LOOK_PREVIEW_EVENT,
+  PALETTES,
+  TYPE_SIZES,
+  avatarById,
+  type LookPrefs,
+} from "@/lib/look";
+
+type LookState = LookPrefs & { theme: "dark" | "light" };
+
+function applyLook(next: LookState) {
+  const html = document.documentElement;
+  html.classList.toggle("light", next.theme === "light");
+  html.dataset.palette = next.palette;
+  html.dataset.size = next.size;
+  html.dataset.font = next.font;
+  html.dataset.accent = next.accent;
+  window.dispatchEvent(new CustomEvent(LOOK_PREVIEW_EVENT, { detail: next }));
+}
+
+export function LookStudio({ initial }: { initial: LookState }) {
+  const [look, setLook] = useState(initial);
+  const persist = useRef(false);
+  const selected = avatarById(look.avatar);
+
+  useEffect(() => {
+    return () => {
+      if (!persist.current) applyLook(initial);
+    };
+  }, [initial]);
+
+  function update<K extends keyof LookState>(key: K, value: LookState[K]) {
+    const next = { ...look, [key]: value };
+    setLook(next);
+    applyLook(next);
+  }
+
+  return (
+    <form
+      action={saveLookAction}
+      onSubmit={() => {
+        persist.current = true;
+      }}
+      className="space-y-6 rounded-3xl border border-line bg-surface p-5"
+    >
+      <div className="flex items-center gap-4">
+        <KawaiiAvatar id={look.avatar} size={72} />
+        <div>
+          <h2 className="display text-2xl">Look</h2>
+          <p className="mt-1 text-sm text-muted">
+            {selected.name} · colors, type, cute face. Preview now. Save to keep.
+          </p>
+        </div>
+      </div>
+
+      {AVATAR_GROUPS.map((group) => (
+        <fieldset key={group.id}>
+          <legend className="text-sm text-muted">{group.label}</legend>
+          <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-6">
+            {group.ids.map((id) => {
+              const avatar = avatarById(id);
+              return (
+                <label
+                  key={avatar.id}
+                  className={`flex cursor-pointer flex-col items-center gap-1 rounded-2xl border p-2 ${
+                    look.avatar === avatar.id ? "border-copper bg-copper/15" : "border-line"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="avatar"
+                    value={avatar.id}
+                    checked={look.avatar === avatar.id}
+                    onChange={() => update("avatar", avatar.id)}
+                    className="sr-only"
+                  />
+                  <KawaiiAvatar id={avatar.id} size={52} />
+                  <span className="text-[11px] text-muted">{avatar.name}</span>
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
+      ))}
+
+      <fieldset>
+        <legend className="text-sm text-muted">Colors</legend>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          {PALETTES.map((palette) => (
+            <label
+              key={palette.id}
+              className={`flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border px-3 ${
+                look.palette === palette.id ? "border-copper bg-copper/15" : "border-line"
+              }`}
+            >
+              <input
+                type="radio"
+                name="palette"
+                value={palette.id}
+                checked={look.palette === palette.id}
+                onChange={() => update("palette", palette.id)}
+                className="sr-only"
+              />
+              <span className={`swatch swatch-${palette.id} h-8 w-8 shrink-0 rounded-full border border-line`} />
+              <span>
+                <span className="block text-sm font-semibold text-ink">{palette.label}</span>
+                <span className="block text-xs text-muted">{palette.hint}</span>
+              </span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <label className="flex min-h-11 items-center gap-3 text-sm">
+        <input
+          type="checkbox"
+          name="theme"
+          value="light"
+          checked={look.theme === "light"}
+          onChange={(e) => update("theme", e.target.checked ? "light" : "dark")}
+          className="w-auto"
+        />
+        Light screen
+      </label>
+
+      <fieldset>
+        <legend className="text-sm text-muted">Text size</legend>
+        <div className="mt-3 grid grid-cols-4 gap-2">
+          {TYPE_SIZES.map((size) => (
+            <label
+              key={size.id}
+              className={`flex min-h-11 cursor-pointer items-center justify-center rounded-2xl border text-sm ${
+                look.size === size.id ? "border-copper bg-copper/15 text-copper-2" : "border-line text-muted"
+              }`}
+            >
+              <input
+                type="radio"
+                name="size"
+                value={size.id}
+                checked={look.size === size.id}
+                onChange={() => update("size", size.id)}
+                className="sr-only"
+              />
+              {size.label}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend className="text-sm text-muted">Font</legend>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          {FONTS.map((font) => (
+            <label
+              key={font.id}
+              className={`flex min-h-14 cursor-pointer flex-col justify-center rounded-2xl border px-3 ${
+                look.font === font.id ? "border-copper bg-copper/15" : "border-line"
+              }`}
+            >
+              <input
+                type="radio"
+                name="font"
+                value={font.id}
+                checked={look.font === font.id}
+                onChange={() => update("font", font.id)}
+                className="sr-only"
+              />
+              <span className={`font-preview font-preview-${font.id} text-base font-semibold text-ink`}>{font.label}</span>
+              <span className="text-xs text-muted">{font.sample}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend className="text-sm text-muted">Visual accents</legend>
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          {ACCENTS.map((accent) => (
+            <label
+              key={accent.id}
+              className={`flex min-h-11 cursor-pointer items-center justify-center rounded-2xl border text-sm ${
+                look.accent === accent.id ? "border-copper bg-copper/15 text-copper-2" : "border-line text-muted"
+              }`}
+            >
+              <input
+                type="radio"
+                name="accent"
+                value={accent.id}
+                checked={look.accent === accent.id}
+                onChange={() => update("accent", accent.id)}
+                className="sr-only"
+              />
+              {accent.label}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <button className="btn-primary" type="submit">
+        Save look
+      </button>
+    </form>
+  );
+}

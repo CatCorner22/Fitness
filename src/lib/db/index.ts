@@ -43,6 +43,14 @@ function migrate(sqlite: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_fasts_user_status ON fasts(user_id, status);
     CREATE INDEX IF NOT EXISTS idx_fasts_user_started ON fasts(user_id, started_at);
     CREATE INDEX IF NOT EXISTS idx_fast_adj_fast ON fast_adjustments(fast_id, created_at);
+    CREATE TABLE IF NOT EXISTS calendar_marks (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id),
+      date TEXT NOT NULL,
+      fill TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_calendar_marks_user_date ON calendar_marks(user_id, date);
   `);
   const cols = sqlite.prepare("PRAGMA table_info(profiles)").all() as { name: string }[];
   const names = new Set(cols.map((c) => c.name));

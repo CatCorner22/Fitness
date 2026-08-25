@@ -850,7 +850,7 @@ const CORE_EXERCISES: Exercise[] = [
     equipment: ["pullup_bar"],
     safety: "recommended",
     safetyNote: "Active shoulders (not a full dump). Build time slowly. The first limiter for most new pole athletes.",
-    substitutes: ["farmer-carry", "towel-row"],
+    substitutes: ["towel-row", "farmer-carry"],
     restSeconds: 60,
     priority: 3,
     avoidIf: ["shoulder"],

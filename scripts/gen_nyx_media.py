@@ -27,10 +27,10 @@ PHOTO = {
     "seated-hips": "nyx-chair.webp",
     "chair-approach": "nyx-chair.webp",
     "chair-roll": "nyx-chair.webp",
-    "descent": "nyx-walk.webp",
-    "tabletop": "nyx-walk.webp",
-    "knee-circle": "nyx-walk.webp",
-    "floor-roll": "nyx-walk.webp",
+    "descent": "nyx-floor.webp",
+    "tabletop": "nyx-floor.webp",
+    "knee-circle": "nyx-floor.webp",
+    "floor-roll": "nyx-floor.webp",
     "layers": "nyx-portrait.webp",
     "eight-count": "nyx-walk.webp",
     "show-run": "nyx-walk.webp",
@@ -39,8 +39,8 @@ PHOTO = {
     "fireman": "nyx-sit.webp",
     "hook": "nyx-sit.webp",
     "sit": "nyx-sit.webp",
-    "climb": "nyx-sit.webp",
-    "descent-pole": "nyx-sit.webp",
+    "climb": "nyx-climb.webp",
+    "descent-pole": "nyx-climb.webp",
     "tuck": "nyx-sit.webp",
     "hang": "nyx-hang.webp",
     "capacity": "nyx-walk.webp",
@@ -54,19 +54,29 @@ PHOTO = {
     "stage-map": "nyx-walk.webp",
     "shimmy": "nyx-portrait.webp",
     "grind": "nyx-chair.webp",
-    "crawl": "nyx-walk.webp",
-    "mermaid": "nyx-walk.webp",
-    "ladder": "nyx-walk.webp",
-    "floor-grind": "nyx-walk.webp",
+    "crawl": "nyx-floor.webp",
+    "mermaid": "nyx-floor.webp",
+    "ladder": "nyx-floor.webp",
+    "floor-grind": "nyx-floor.webp",
     "reverse-chair": "nyx-chair.webp",
     "lap-phrase": "nyx-chair.webp",
     "skirt": "nyx-walk.webp",
     "peel": "nyx-portrait.webp",
-    "heel-floor": "nyx-walk.webp",
+    "heel-floor": "nyx-floor.webp",
     "rail": "nyx-walk.webp",
     "two-song": "nyx-walk.webp",
     "close": "nyx-walk.webp",
     "recovery": "nyx-portrait.webp",
+    "ankle-prep": "nyx-walk.webp",
+    "table-edge": "nyx-floor.webp",
+    "fan-kick": "nyx-walk.webp",
+    "jacket-peel": "nyx-portrait.webp",
+    "pirouette": "nyx-walk.webp",
+    "tip-tray": "nyx-walk.webp",
+    "olh": "nyx-hang.webp",
+    "carousel": "nyx-pole.webp",
+    "climb-to-sit": "nyx-climb.webp",
+    "back-hook": "nyx-sit.webp",
 }
 
 
@@ -106,7 +116,26 @@ async def tts(skill_id: str, script: str) -> Path:
             last_err = err
             dest.unlink(missing_ok=True)
             await asyncio.sleep(1.5 * (attempt + 1))
-    raise RuntimeError(f"tts failed for {skill_id}: {last_err}")
+    print("tts fallback silence", skill_id, last_err)
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-y",
+            "-f",
+            "lavfi",
+            "-i",
+            "anullsrc=r=24000:cl=mono",
+            "-t",
+            "8",
+            "-q:a",
+            "9",
+            str(dest),
+        ],
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    return dest
 
 
 def ken_burns(src: Path, dest: Path, seconds: float) -> None:

@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getProfile, getSession } from "@/lib/auth";
 import { planAdjustFromAssessment } from "@/lib/assessment/plan-adjust";
+import { upsertCalendarMark } from "@/lib/calendar";
+import { CALENDAR_EPOCH, compareISO } from "@/lib/calendar-core";
 import { db } from "@/lib/db";
 import { setLogs, workouts } from "@/lib/db/schema";
 import { lastWorkingSets, suggestionsForExercises } from "@/lib/autoregulation";
@@ -190,6 +192,10 @@ export async function completeWorkoutAction(formData: FormData) {
     .where(and(eq(workouts.id, workoutId), eq(workouts.userId, user.id)))
     .run();
 
+  if (compareISO(existing.date, CALENDAR_EPOCH) >= 0) {
+    upsertCalendarMark(user.id, existing.date, "did");
+  }
+
   revalidatePath("/");
   revalidatePath("/progress");
   if (stopped) redirect("/?toast=saved");
@@ -198,6 +204,7 @@ export async function completeWorkoutAction(formData: FormData) {
 
 export async function skipWorkoutAction(dayId: string, dayName: string, programId: string, week: number) {
   const user = await requireUser();
+  const date = todayISO();
   db.insert(workouts)
     .values({
       id: crypto.randomUUID(),
@@ -206,12 +213,16 @@ export async function skipWorkoutAction(dayId: string, dayName: string, programI
       dayId,
       dayName,
       week,
-      date: todayISO(),
+      date,
       startedAt: new Date().toISOString(),
       completedAt: new Date().toISOString(),
       status: "skipped",
     })
     .run();
+  if (compareISO(date, CALENDAR_EPOCH) >= 0) {
+    upsertCalendarMark(user.id, date, "skipped");
+  }
   revalidatePath("/");
+  revalidatePath("/progress");
   redirect("/?toast=skipped");
 }

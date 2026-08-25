@@ -1,6 +1,7 @@
 import { and, asc, desc, eq } from "drizzle-orm";
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
+import { ExerciseCalendarBlock } from "@/components/exercise-calendar-block";
 import { Spark } from "@/components/spark";
 import { bestSets, VOLUME_LANDMARKS, weeklyVolume } from "@/lib/autoregulation";
 import { db } from "@/lib/db";
@@ -44,7 +45,8 @@ export default async function ProgressPage() {
   return (
     <AppShell user={user} profile={profile}>
       <h1 className="display text-4xl">History</h1>
-      <p className="mt-2 text-muted">Sessions you finished.</p>
+      <p className="mt-2 text-muted">Green trained. Red rest or miss. Gray is locked.</p>
+      <ExerciseCalendarBlock userId={user.id} />
 
       <section className="mt-6 rounded-3xl border border-line bg-surface p-5">
         <ul className="space-y-2 text-sm">

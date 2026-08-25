@@ -20,7 +20,8 @@ PLATES: list[tuple[str, str, str]] = [
     ("nyx-portrait.webp", "nyx-plate-portrait.webp", "Instructor"),
     ("nyx-walk.webp", "nyx-plate-walk.webp", "Performance walk"),
     ("nyx-wave.webp", "nyx-plate-wave.webp", "Body wave"),
-    ("nyx-walk.webp", "nyx-plate-floor.webp", "Floorwork"),
+    ("nyx-floor.webp", "nyx-plate-floor.webp", "Floorwork"),
+    ("nyx-climb.webp", "nyx-plate-climb.webp", "Climb"),
     ("nyx-chair.webp", "nyx-plate-chair.webp", "Chair phrase"),
     ("nyx-sit.webp", "nyx-plate-sit.webp", "Pole sit"),
     ("nyx-pole.webp", "nyx-plate-pole.webp", "On the pole"),
@@ -62,7 +63,7 @@ def plate(src_name: str, dest_name: str, title: str) -> None:
     draw.text((36, 64), title, fill=CREAM, font=font(42))
     draw.text(
         (36, h - 48),
-        "Fictional adult instructor  ·  photoreal plate",
+        "Fictional adult instructor  ·  smoky photoreal plate",
         fill=MUTED,
         font=font(16),
     )
