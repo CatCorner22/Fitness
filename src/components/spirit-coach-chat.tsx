@@ -8,11 +8,9 @@ import { SpiritMascot } from "@/components/spirit-mascot";
 import { parseCoachMeta, textFromUIMessageParts } from "@/lib/spirit/client-utils";
 
 const PROMPTS = [
-  "What should I eat after leg day?",
-  "Am I doing too much volume this week?",
-  "Swap for shoulder-friendly pressing?",
-  "How do I autoregulate RPE on squats?",
-  "Pole prep — what to prioritize?",
+  "What should I eat after lifting?",
+  "Should I rest this week?",
+  "Swap for a sore shoulder?",
 ];
 
 function messageText(message: UIMessage) {

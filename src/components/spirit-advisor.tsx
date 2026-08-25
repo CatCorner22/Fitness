@@ -94,9 +94,7 @@ export function SpiritAdvisor({
           </div>
 
           <p className="mt-2 text-sm leading-relaxed text-ink">
-            {loading
-              ? "*ears perk* Reading your set..."
-              : advice?.message ?? "Log a set and I'll pick your rest, load tweak, or safe swap. I'm watching, nya~"}
+            {loading ? "Reading your set…" : advice?.message ?? "Log a set if you want a cue. Coaching stays optional."}
           </p>
 
           {advice?.why && !loading ? (

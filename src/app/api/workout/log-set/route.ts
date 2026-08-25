@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { dailyCheckins, setLogs, workouts } from "@/lib/db/schema";
 import { displayToKg, todayISO } from "@/lib/utils";
 import { getExercise } from "@/lib/exercises/registry";
+import { getAiOptIn } from "@/lib/prefs";
 
 export async function POST(request: Request) {
   const user = await getSession();
@@ -18,7 +19,7 @@ export async function POST(request: Request) {
   const setId = String(body.setId ?? "");
   const weight = Number(body.weight);
   const reps = Number(body.reps);
-  const rpe = Number(body.rpe);
+  const rpe = body.rpe == null || body.rpe === "" ? Number.NaN : Number(body.rpe);
   const elapsedMinutes = Number(body.elapsedMinutes) || 0;
   const remainingExercises = Number(body.remainingExercises) || 0;
 
@@ -57,6 +58,21 @@ export async function POST(request: Request) {
   const currentIdx = exerciseGroups.indexOf(row.exerciseId);
   const remaining =
     remainingExercises || Math.max(0, exerciseGroups.length - currentIdx - 1);
+
+  const silentAdvice = {
+    message: "",
+    restSeconds: 90,
+    nextAction: "repeat_load" as const,
+    weightDeltaKg: null,
+    swapToExerciseId: null,
+    mood: "encouraging" as const,
+    citeIds: [] as string[],
+    source: "rules" as const,
+  };
+
+  if (!(await getAiOptIn())) {
+    return NextResponse.json({ advice: silentAdvice, workoutDay: workout?.dayName });
+  }
 
   const checkin = db
     .select()

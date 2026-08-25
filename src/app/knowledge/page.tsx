@@ -23,10 +23,8 @@ export default async function KnowledgePage({
 
   return (
     <AppShell user={user} profile={profile}>
-      <h1 className="display text-4xl">Knowledge base</h1>
-      <p className="mt-2 max-w-2xl text-muted">
-        Dynamic retrieval feeds Spirit during workouts and chat. With HF_TOKEN set, semantic search uses sentence-transformers/all-MiniLM-L6-v2 embeddings.
-      </p>
+      <h1 className="display text-4xl">Guide</h1>
+      <p className="mt-2 max-w-2xl text-muted">Short notes on lifting and food. Search if you want.</p>
       <form className="mt-6 flex gap-2" action="/knowledge" method="get">
         <input name="q" defaultValue={q} placeholder="Search: glutes, rest, RPE, pole, protein..." />
         <button className="rounded-2xl bg-copper px-4 text-sm text-bg" type="submit">

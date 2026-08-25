@@ -5,30 +5,39 @@ import { addFoodLogAction } from "@/app/actions/nutrition";
 
 type Food = { id: string; name: string; calories: number; protein: number };
 
-function rememberFood(foodId: string) {
+function rememberFood(userId: string, foodId: string) {
   try {
-    const raw = localStorage.getItem("garanimal-recent-foods");
+    const key = `garanimal-recent-foods-${userId}`;
+    const raw = localStorage.getItem(key);
     const ids = raw ? (JSON.parse(raw) as string[]) : [];
     const next = [foodId, ...ids.filter((id) => id !== foodId)].slice(0, 8);
-    localStorage.setItem("garanimal-recent-foods", JSON.stringify(next));
+    localStorage.setItem(key, JSON.stringify(next));
   } catch {
     /* ignore */
   }
 }
 
-export function MealFoodForm({ foods, meal }: { foods: Food[]; meal: string }) {
+export function MealFoodForm({
+  foods,
+  meal,
+  userId,
+}: {
+  foods: Food[];
+  meal: string;
+  userId: string;
+}) {
   const [query, setQuery] = useState("");
   const [foodId, setFoodId] = useState("");
   const [recents, setRecents] = useState<string[]>([]);
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem("garanimal-recent-foods");
+      const raw = localStorage.getItem(`garanimal-recent-foods-${userId}`);
       setRecents(raw ? (JSON.parse(raw) as string[]) : []);
     } catch {
       setRecents([]);
     }
-  }, []);
+  }, [userId]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -42,11 +51,11 @@ export function MealFoodForm({ foods, meal }: { foods: Food[]; meal: string }) {
     <form
       action={async (formData) => {
         const id = String(formData.get("foodId") || "");
-        if (id) rememberFood(id);
+        if (id) rememberFood(userId, id);
         await addFoodLogAction(formData);
         setRecents(() => {
           try {
-            const raw = localStorage.getItem("garanimal-recent-foods");
+            const raw = localStorage.getItem(`garanimal-recent-foods-${userId}`);
             return raw ? (JSON.parse(raw) as string[]) : [];
           } catch {
             return [];
@@ -97,7 +106,7 @@ export function MealFoodForm({ foods, meal }: { foods: Food[]; meal: string }) {
       </select>
       <div className="flex gap-2">
         <input name="servings" type="number" step="0.5" defaultValue={1} />
-        <button className="rounded-xl bg-copper px-3 text-sm text-bg" type="submit">
+        <button className="min-h-12 rounded-xl bg-copper px-4 text-sm font-semibold text-[color:var(--on-copper)]" type="submit">
           Add
         </button>
       </div>

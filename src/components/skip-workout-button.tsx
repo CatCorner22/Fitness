@@ -19,12 +19,8 @@ export function SkipWorkoutButton({
 
   if (!confirming) {
     return (
-      <button
-        className="rounded-2xl border border-line px-5 py-3 text-muted"
-        type="button"
-        onClick={() => setConfirming(true)}
-      >
-        Skip today
+      <button className="btn-quiet w-full" type="button" onClick={() => setConfirming(true)}>
+        Not today
       </button>
     );
   }
@@ -34,17 +30,13 @@ export function SkipWorkoutButton({
       action={async () => {
         await skipAction(dayId, dayName, programId, week);
       }}
-      className="flex flex-wrap gap-2"
+      className="flex flex-wrap items-center justify-center gap-3"
     >
-      <button className="rounded-2xl border border-danger px-5 py-3 text-danger" type="submit">
-        Confirm skip
+      <button className="rounded-2xl border border-line px-4 py-2 text-sm" type="submit">
+        Rest today
       </button>
-      <button
-        className="rounded-2xl border border-line px-5 py-3 text-muted"
-        type="button"
-        onClick={() => setConfirming(false)}
-      >
-        Cancel
+      <button className="btn-quiet" type="button" onClick={() => setConfirming(false)}>
+        Keep the workout
       </button>
     </form>
   );

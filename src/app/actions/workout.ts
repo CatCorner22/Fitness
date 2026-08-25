@@ -9,6 +9,7 @@ import { setLogs, workouts } from "@/lib/db/schema";
 import { lastWorkingSets, suggestionsForExercises } from "@/lib/autoregulation";
 import { buildPlannedSession } from "@/lib/programs/plan";
 import { todayISO } from "@/lib/utils";
+import { parseRepTarget } from "@/lib/copy";
 import { getExercise } from "@/lib/exercises/registry";
 
 async function requireUser() {
@@ -87,7 +88,7 @@ export async function startWorkoutAction(dayId?: string) {
           targetReps: item.reps,
           targetRpe: item.targetRpe,
           weightKg: item.suggestedWeightKg,
-          reps: null,
+          reps: last[item.exerciseId]?.reps ?? parseRepTarget(item.reps),
           rpe: null,
           completed: 0,
         })
@@ -145,9 +146,13 @@ export async function swapExerciseAction(formData: FormData) {
 export async function completeWorkoutAction(formData: FormData) {
   const user = await requireUser();
   const workoutId = String(formData.get("workoutId") || "");
-  const sessionRpe = Number(formData.get("sessionRpe"));
+  const sessionRaw = String(formData.get("sessionRpe") || "");
+  const sessionRpe = sessionRaw === "" ? Number.NaN : Number(sessionRaw);
   const durationMinutes = Number(formData.get("durationMinutes"));
-  const notes = String(formData.get("notes") || "");
+  const stopped = String(formData.get("stop") || "") === "1";
+  const notes = stopped
+    ? "Stopped early — something hurt."
+    : String(formData.get("notes") || "");
 
   db.update(workouts)
     .set({
@@ -162,6 +167,7 @@ export async function completeWorkoutAction(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/progress");
+  if (stopped) redirect("/?toast=saved");
   redirect(`/workout/${workoutId}/complete`);
 }
 
