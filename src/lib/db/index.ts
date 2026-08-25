@@ -8,6 +8,15 @@ import { seedIfNeeded } from "./seed";
 const dataDir = path.join(process.cwd(), "data");
 const dbPath = path.join(dataDir, "garanimal.db");
 
+const PROFILE_COLUMNS: { name: string; sql: string }[] = [
+  { name: "assessment_json", sql: "ALTER TABLE profiles ADD COLUMN assessment_json TEXT" },
+  { name: "fitness_tier", sql: "ALTER TABLE profiles ADD COLUMN fitness_tier TEXT" },
+  { name: "assessed_at", sql: "ALTER TABLE profiles ADD COLUMN assessed_at TEXT" },
+  { name: "active_diet_id", sql: "ALTER TABLE profiles ADD COLUMN active_diet_id TEXT" },
+  { name: "diet_start_date", sql: "ALTER TABLE profiles ADD COLUMN diet_start_date TEXT" },
+  { name: "diet_week", sql: "ALTER TABLE profiles ADD COLUMN diet_week INTEGER NOT NULL DEFAULT 1" },
+];
+
 function migrate(sqlite: Database.Database) {
   sqlite.exec(`
     CREATE TABLE IF NOT EXISTS fitness_assessments (
@@ -54,12 +63,9 @@ function migrate(sqlite: Database.Database) {
   `);
   const cols = sqlite.prepare("PRAGMA table_info(profiles)").all() as { name: string }[];
   const names = new Set(cols.map((c) => c.name));
-  if (!names.has("assessment_json")) sqlite.exec("ALTER TABLE profiles ADD COLUMN assessment_json TEXT");
-  if (!names.has("fitness_tier")) sqlite.exec("ALTER TABLE profiles ADD COLUMN fitness_tier TEXT");
-  if (!names.has("assessed_at")) sqlite.exec("ALTER TABLE profiles ADD COLUMN assessed_at TEXT");
-  if (!names.has("active_diet_id")) sqlite.exec("ALTER TABLE profiles ADD COLUMN active_diet_id TEXT");
-  if (!names.has("diet_start_date")) sqlite.exec("ALTER TABLE profiles ADD COLUMN diet_start_date TEXT");
-  if (!names.has("diet_week")) sqlite.exec("ALTER TABLE profiles ADD COLUMN diet_week INTEGER NOT NULL DEFAULT 1");
+  for (const column of PROFILE_COLUMNS) {
+    if (!names.has(column.name)) sqlite.exec(column.sql);
+  }
 }
 
 function createConnection() {
@@ -213,6 +219,10 @@ if (!globalForDb.db) {
   migrate(globalForDb.sqlite);
 }
 export const db = globalForDb.db;
+
+export function ensureMigrated() {
+  if (globalForDb.sqlite) migrate(globalForDb.sqlite);
+}
 
 if (!globalForDb.seeded) {
   seedIfNeeded(db);

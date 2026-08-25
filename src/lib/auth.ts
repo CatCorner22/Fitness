@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
-import { db } from "@/lib/db";
+import { db, ensureMigrated } from "@/lib/db";
 import { profiles, users } from "@/lib/db/schema";
 import type { AssessmentResult, FitnessTier } from "@/lib/assessment/types";
 import { parseAssessment } from "@/lib/assessment/parse";
@@ -104,6 +104,17 @@ function parseStringList(raw: string | null | undefined): string[] {
 }
 
 export function getProfile(userId: string): ProfileRow | null {
+  try {
+    return readProfile(userId);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!message.includes("no such column")) throw error;
+    ensureMigrated();
+    return readProfile(userId);
+  }
+}
+
+function readProfile(userId: string): ProfileRow | null {
   const row = db.select().from(profiles).where(eq(profiles.userId, userId)).get();
   if (!row) return null;
   return {

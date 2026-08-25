@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import { saveLookAction } from "@/app/actions/look";
 import { KawaiiAvatar } from "@/components/kawaii-avatar";
@@ -26,6 +27,32 @@ function applyLook(next: LookState) {
   window.dispatchEvent(new CustomEvent(LOOK_PREVIEW_EVENT, { detail: next }));
 }
 
+function LookChoice({
+  selected,
+  onPick,
+  className,
+  label,
+  children,
+}: {
+  selected: boolean;
+  onPick: () => void;
+  className: string;
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={selected}
+      aria-label={label}
+      onClick={onPick}
+      className={`w-full cursor-pointer appearance-none bg-transparent ${className}`}
+    >
+      {children}
+    </button>
+  );
+}
+
 export function LookStudio({ initial }: { initial: LookState }) {
   const [look, setLook] = useState(initial);
   const persist = useRef(false);
@@ -49,8 +76,14 @@ export function LookStudio({ initial }: { initial: LookState }) {
       onSubmit={() => {
         persist.current = true;
       }}
-      className="space-y-6 rounded-3xl border border-line bg-surface p-5"
+      className="relative z-10 space-y-6 rounded-3xl border border-line bg-surface p-5"
     >
+      <input type="hidden" name="avatar" value={look.avatar} />
+      <input type="hidden" name="palette" value={look.palette} />
+      <input type="hidden" name="size" value={look.size} />
+      <input type="hidden" name="font" value={look.font} />
+      <input type="hidden" name="accent" value={look.accent} />
+      <input type="hidden" name="theme" value={look.theme} />
       <div className="flex items-center gap-4">
         <KawaiiAvatar id={look.avatar} size={72} />
         <div>
@@ -67,24 +100,20 @@ export function LookStudio({ initial }: { initial: LookState }) {
           <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-6">
             {group.ids.map((id) => {
               const avatar = avatarById(id);
+              const on = look.avatar === avatar.id;
               return (
-                <label
+                <LookChoice
                   key={avatar.id}
-                  className={`flex cursor-pointer flex-col items-center gap-1 rounded-2xl border p-2 ${
-                    look.avatar === avatar.id ? "border-copper bg-copper/15" : "border-line"
+                  selected={on}
+                  label={avatar.name}
+                  onPick={() => update("avatar", avatar.id)}
+                  className={`flex min-h-16 flex-col items-center gap-1 rounded-2xl border p-2 ${
+                    on ? "border-copper bg-copper/15" : "border-line"
                   }`}
                 >
-                  <input
-                    type="radio"
-                    name="avatar"
-                    value={avatar.id}
-                    checked={look.avatar === avatar.id}
-                    onChange={() => update("avatar", avatar.id)}
-                    className="sr-only"
-                  />
                   <KawaiiAvatar id={avatar.id} size={52} />
                   <span className="text-[11px] text-muted">{avatar.name}</span>
-                </label>
+                </LookChoice>
               );
             })}
           </div>
@@ -94,36 +123,32 @@ export function LookStudio({ initial }: { initial: LookState }) {
       <fieldset>
         <legend className="text-sm text-muted">Colors</legend>
         <div className="mt-3 grid grid-cols-2 gap-2">
-          {PALETTES.map((palette) => (
-            <label
-              key={palette.id}
-              className={`flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border px-3 ${
-                look.palette === palette.id ? "border-copper bg-copper/15" : "border-line"
-              }`}
-            >
-              <input
-                type="radio"
-                name="palette"
-                value={palette.id}
-                checked={look.palette === palette.id}
-                onChange={() => update("palette", palette.id)}
-                className="sr-only"
-              />
-              <span className={`swatch swatch-${palette.id} h-8 w-8 shrink-0 rounded-full border border-line`} />
-              <span>
-                <span className="block text-sm font-semibold text-ink">{palette.label}</span>
-                <span className="block text-xs text-muted">{palette.hint}</span>
-              </span>
-            </label>
-          ))}
+          {PALETTES.map((palette) => {
+            const on = look.palette === palette.id;
+            return (
+              <LookChoice
+                key={palette.id}
+                selected={on}
+                label={palette.label}
+                onPick={() => update("palette", palette.id)}
+                className={`flex min-h-14 items-center gap-3 rounded-2xl border px-3 text-left ${
+                  on ? "border-copper bg-copper/15" : "border-line"
+                }`}
+              >
+                <span className={`swatch swatch-${palette.id} h-8 w-8 shrink-0 rounded-full border border-line`} />
+                <span>
+                  <span className="block text-sm font-semibold text-ink">{palette.label}</span>
+                  <span className="block text-xs text-muted">{palette.hint}</span>
+                </span>
+              </LookChoice>
+            );
+          })}
         </div>
       </fieldset>
 
       <label className="flex min-h-11 items-center gap-3 text-sm">
         <input
           type="checkbox"
-          name="theme"
-          value="light"
           checked={look.theme === "light"}
           onChange={(e) => update("theme", e.target.checked ? "light" : "dark")}
           className="w-auto"
@@ -134,73 +159,67 @@ export function LookStudio({ initial }: { initial: LookState }) {
       <fieldset>
         <legend className="text-sm text-muted">Text size</legend>
         <div className="mt-3 grid grid-cols-4 gap-2">
-          {TYPE_SIZES.map((size) => (
-            <label
-              key={size.id}
-              className={`flex min-h-11 cursor-pointer items-center justify-center rounded-2xl border text-sm ${
-                look.size === size.id ? "border-copper bg-copper/15 text-copper-2" : "border-line text-muted"
-              }`}
-            >
-              <input
-                type="radio"
-                name="size"
-                value={size.id}
-                checked={look.size === size.id}
-                onChange={() => update("size", size.id)}
-                className="sr-only"
-              />
-              {size.label}
-            </label>
-          ))}
+          {TYPE_SIZES.map((size) => {
+            const on = look.size === size.id;
+            return (
+              <LookChoice
+                key={size.id}
+                selected={on}
+                label={size.label}
+                onPick={() => update("size", size.id)}
+                className={`flex min-h-11 items-center justify-center rounded-2xl border text-sm ${
+                  on ? "border-copper bg-copper/15 text-copper-2" : "border-line text-muted"
+                }`}
+              >
+                {size.label}
+              </LookChoice>
+            );
+          })}
         </div>
       </fieldset>
 
       <fieldset>
         <legend className="text-sm text-muted">Font</legend>
         <div className="mt-3 grid grid-cols-2 gap-2">
-          {FONTS.map((font) => (
-            <label
-              key={font.id}
-              className={`flex min-h-14 cursor-pointer flex-col justify-center rounded-2xl border px-3 ${
-                look.font === font.id ? "border-copper bg-copper/15" : "border-line"
-              }`}
-            >
-              <input
-                type="radio"
-                name="font"
-                value={font.id}
-                checked={look.font === font.id}
-                onChange={() => update("font", font.id)}
-                className="sr-only"
-              />
-              <span className={`font-preview font-preview-${font.id} text-base font-semibold text-ink`}>{font.label}</span>
-              <span className="text-xs text-muted">{font.sample}</span>
-            </label>
-          ))}
+          {FONTS.map((font) => {
+            const on = look.font === font.id;
+            return (
+              <LookChoice
+                key={font.id}
+                selected={on}
+                label={font.label}
+                onPick={() => update("font", font.id)}
+                className={`flex min-h-14 flex-col justify-center rounded-2xl border px-3 text-left ${
+                  on ? "border-copper bg-copper/15" : "border-line"
+                }`}
+              >
+                <span className={`font-preview font-preview-${font.id} text-base font-semibold text-ink`}>{font.label}</span>
+                <span className="text-xs text-muted">{font.sample}</span>
+              </LookChoice>
+            );
+          })}
         </div>
       </fieldset>
 
       <fieldset>
         <legend className="text-sm text-muted">Visual accents</legend>
         <div className="mt-3 grid grid-cols-3 gap-2">
-          {ACCENTS.map((accent) => (
-            <label
-              key={accent.id}
-              className={`flex min-h-11 cursor-pointer items-center justify-center rounded-2xl border text-sm ${
-                look.accent === accent.id ? "border-copper bg-copper/15 text-copper-2" : "border-line text-muted"
-              }`}
-            >
-              <input
-                type="radio"
-                name="accent"
-                value={accent.id}
-                checked={look.accent === accent.id}
-                onChange={() => update("accent", accent.id)}
-                className="sr-only"
-              />
-              {accent.label}
-            </label>
-          ))}
+          {ACCENTS.map((accent) => {
+            const on = look.accent === accent.id;
+            return (
+              <LookChoice
+                key={accent.id}
+                selected={on}
+                label={accent.label}
+                onPick={() => update("accent", accent.id)}
+                className={`flex min-h-11 items-center justify-center rounded-2xl border text-sm ${
+                  on ? "border-copper bg-copper/15 text-copper-2" : "border-line text-muted"
+                }`}
+              >
+                {accent.label}
+              </LookChoice>
+            );
+          })}
         </div>
       </fieldset>
 
