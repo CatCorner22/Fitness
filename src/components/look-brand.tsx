@@ -6,16 +6,13 @@ import { KawaiiAvatar } from "@/components/kawaii-avatar";
 import { LOOK_PREVIEW_EVENT } from "@/lib/look";
 
 export function LookBrand({ avatarId }: { avatarId: string }) {
-  const [id, setId] = useState(avatarId);
-
-  useEffect(() => {
-    setId(avatarId);
-  }, [avatarId]);
+  const [preview, setPreview] = useState<string | null>(null);
+  const id = preview ?? avatarId;
 
   useEffect(() => {
     function onPreview(event: Event) {
       const avatar = (event as CustomEvent<{ avatar?: string }>).detail?.avatar;
-      if (avatar) setId(avatar);
+      if (avatar) setPreview(avatar);
     }
     window.addEventListener(LOOK_PREVIEW_EVENT, onPreview);
     return () => window.removeEventListener(LOOK_PREVIEW_EVENT, onPreview);

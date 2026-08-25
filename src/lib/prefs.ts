@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { DEFAULT_LOOK, parseLook, type LookPrefs } from "@/lib/look";
 
@@ -11,17 +12,17 @@ const COOKIE_OPTS = {
   sameSite: "lax" as const,
 };
 
-export async function getAiOptIn() {
+export const getAiOptIn = cache(async () => {
   return (await cookies()).get(AI_COOKIE)?.value === "1";
-}
+});
 
-export async function getTheme(): Promise<"dark" | "light"> {
+export const getTheme = cache(async (): Promise<"dark" | "light"> => {
   return (await cookies()).get(THEME_COOKIE)?.value === "light" ? "light" : "dark";
-}
+});
 
-export async function getLook(): Promise<LookPrefs> {
+export const getLook = cache(async (): Promise<LookPrefs> => {
   return parseLook((await cookies()).get(LOOK_COOKIE)?.value) ?? DEFAULT_LOOK;
-}
+});
 
 export async function setPrefCookies(
   aiOptIn: boolean | undefined,

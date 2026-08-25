@@ -57,7 +57,7 @@ function Round({ fill, children }: { fill: string; children?: ReactNode }) {
 
 function KindMarks({ avatar }: { avatar: AvatarDef }) {
   const kind: AvatarKind = avatar.kind;
-  const { fur, inner, blush } = avatar;
+  const { fur, inner } = avatar;
 
   if (kind === "cat" || kind === "calico") {
     return (

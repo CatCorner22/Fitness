@@ -6,7 +6,6 @@ import { KawaiiAvatar } from "@/components/kawaii-avatar";
 import {
   ACCENTS,
   AVATAR_GROUPS,
-  AVATARS,
   FONTS,
   LOOK_PREVIEW_EVENT,
   PALETTES,
@@ -67,8 +66,7 @@ export function LookStudio({ initial }: { initial: LookState }) {
           <legend className="text-sm text-muted">{group.label}</legend>
           <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-6">
             {group.ids.map((id) => {
-              const avatar = AVATARS.find((item) => item.id === id);
-              if (!avatar) return null;
+              const avatar = avatarById(id);
               return (
                 <label
                   key={avatar.id}

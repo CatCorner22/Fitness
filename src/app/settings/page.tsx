@@ -35,8 +35,7 @@ export default async function SettingsPage() {
       ? Math.round((profile.heightCm / 2.54) * 10) / 10
       : profile.heightCm ?? "";
   const weightDisplay = profile.weightKg ? kgToDisplay(profile.weightKg, profile.units) : "";
-  const aiOptIn = await getAiOptIn();
-  const theme = await getTheme();
+  const [aiOptIn, theme, look] = await Promise.all([getAiOptIn(), getTheme(), getLook()]);
 
   return (
     <AppShell user={user} profile={profile}>
@@ -44,7 +43,7 @@ export default async function SettingsPage() {
       <p className="mt-2 text-muted">This is {user.displayName}&apos;s log. Other people in the house stay separate.</p>
 
       <div className="mt-6">
-        <LookStudio initial={{ ...(await getLook()), theme }} />
+        <LookStudio initial={{ ...look, theme }} />
       </div>
 
       <nav className="mt-6 grid grid-cols-2 gap-2">
