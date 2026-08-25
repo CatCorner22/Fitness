@@ -42,24 +42,27 @@ export default async function SettingsPage() {
       <h1 className="display text-4xl">You</h1>
       <p className="mt-2 text-muted">This is {user.displayName}&apos;s log. Other people in the house stay separate.</p>
 
-      <nav className="mt-6 grid grid-cols-2 gap-2 text-sm">
-        <Link className="rounded-2xl border border-line bg-surface px-4 py-3" href="/programs">
-          Plans
-        </Link>
-        <Link className="rounded-2xl border border-line bg-surface px-4 py-3" href="/assess">
-          Fitness check
-        </Link>
-        <Link className="rounded-2xl border border-line bg-surface px-4 py-3" href="/diets">
-          Diet
-        </Link>
-        <Link className="rounded-2xl border border-line bg-surface px-4 py-3" href="/coach">
-          Coach
-        </Link>
-        <Link className="rounded-2xl border border-line bg-surface px-4 py-3" href="/knowledge">
-          Guide
-        </Link>
-        <a className="rounded-2xl border border-line bg-surface px-4 py-3" href="/api/export">
-          Download data
+      <nav className="mt-6 grid grid-cols-2 gap-2">
+        {[
+          ["/programs", "Plans", "Every drill, listed"],
+          ["/assess", "Fitness check", "Scale from a baseline"],
+          ["/diets", "Diet", "Cut, bulk, reverse, peak"],
+          ["/course", "Nyx course", "Amateur night and pole class"],
+          ["/coach", "Coach", "Ask why a lift is banned"],
+          ["/knowledge", "Guide", "The research notes"],
+        ].map(([href, label, hint]) => (
+          <Link
+            key={href}
+            className="min-h-16 rounded-2xl border border-line bg-surface px-4 py-3 transition-colors hover:border-copper/40 hover:bg-surface-2"
+            href={href}
+          >
+            <span className="block text-sm font-semibold text-ink">{label}</span>
+            <span className="mt-0.5 block text-xs text-muted">{hint}</span>
+          </Link>
+        ))}
+        <a className="min-h-16 rounded-2xl border border-line bg-surface px-4 py-3 transition-colors hover:border-copper/40 hover:bg-surface-2" href="/api/export">
+          <span className="block text-sm font-semibold text-ink">Download data</span>
+          <span className="mt-0.5 block text-xs text-muted">CSV of your logs</span>
         </a>
       </nav>
 
@@ -75,7 +78,8 @@ export default async function SettingsPage() {
             <option value="powerlifting">Get stronger</option>
             <option value="bodybuilding">Build muscle</option>
             <option value="strength_endurance">Lift and cardio</option>
-            <option value="pole_stage">Pole / stage</option>
+            <option value="pole_stage">Pole class</option>
+            <option value="exotic_stage">Amateur night / exotic</option>
             <option value="glute_specialization">Glute focus</option>
           </select>
         </label>
@@ -170,7 +174,7 @@ export default async function SettingsPage() {
             </label>
             <fieldset className="space-y-2">
               <legend className="text-sm text-muted">Sore joints (not a medical screen)</legend>
-              {["shoulder", "knee", "low_back", "wrist", "elbow", "hip"].map((i) => (
+              {["shoulder", "knee", "low_back", "wrist", "elbow", "hip", "ankle"].map((i) => (
                 <label key={i} className="flex min-h-11 items-center gap-2 capitalize">
                   <input
                     type="checkbox"

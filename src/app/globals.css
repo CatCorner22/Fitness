@@ -1,35 +1,35 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #12110e;
-  --bg-2: #1b1914;
-  --surface: #221f19;
-  --surface-2: #2b261e;
-  --line: #3a3429;
-  --text: #f4efe6;
-  --muted: #c9c0b0;
-  --copper: #e07a3d;
-  --copper-2: #f0a36a;
-  --moss: #8f9a6b;
+  --bg: #14110d;
+  --bg-2: #1d1914;
+  --surface: #251f18;
+  --surface-2: #30281f;
+  --line: #42382c;
+  --text: #f6f0e6;
+  --muted: #c9bda8;
+  --copper: #e38a4a;
+  --copper-2: #f3b17c;
+  --moss: #9aa572;
   --danger: #d46a6a;
   --font-display: var(--font-display);
   --font-sans: var(--font-sans);
-  --on-copper: #12110e;
+  --on-copper: #1a140e;
 }
 
 html.light {
-  --bg: #f6f1e8;
-  --bg-2: #efe8dc;
-  --surface: #fffdf8;
-  --surface-2: #f3ece1;
-  --line: #d7cbb8;
-  --text: #1c1914;
-  --muted: #5a5348;
-  --copper: #c45a1c;
-  --copper-2: #a34712;
-  --moss: #5d6a3e;
+  --bg: #f7f1e6;
+  --bg-2: #efe6d6;
+  --surface: #fffaf2;
+  --surface-2: #f4eadc;
+  --line: #d8cbb6;
+  --text: #1c1812;
+  --muted: #5c5346;
+  --copper: #c24e14;
+  --copper-2: #9a3d10;
+  --moss: #4f5d32;
   --danger: #b42318;
-  --on-copper: #fffdf8;
+  --on-copper: #fffaf2;
 }
 
 @theme inline {
@@ -86,15 +86,21 @@ textarea {
   font-size: 1.05rem;
 }
 
-input:focus,
-select:focus,
-textarea:focus {
-  outline: 2px solid rgba(224, 122, 61, 0.45);
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--copper) 55%, transparent);
   outline-offset: 1px;
 }
 
 button:not(:disabled) {
   cursor: pointer;
+}
+
+.btn-primary:focus-visible,
+.btn-quiet:focus-visible {
+  outline: 2px solid var(--copper);
+  outline-offset: 2px;
 }
 
 .btn-primary {
@@ -125,5 +131,5 @@ button:not(:disabled) {
 }
 
 ::selection {
-  background: rgba(224, 122, 61, 0.35);
+  background: color-mix(in srgb, var(--copper) 35%, transparent);
 }

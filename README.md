@@ -5,11 +5,10 @@ A private, two-user web app for evidence-based strength training and simple nutr
 ## What it does
 
 - Two isolated logins (`alex` / `household` and `jordan` / `household`)
-- Eight full programs: powerlifting, Westside-inspired conjugate, classic bodybuilding split, PPL, upper/lower, strength + endurance, pole & stage prep, and the Big Ass Program
-- Session length budgets that keep compounds and drop isolation
+- Fourteen programs: powerlifting, conjugate, bodybuilding split, PPL, upper/lower, strength + endurance, pole class prep, amateur night, yoga, stretch, barre, ballet, rucking, and the Big Ass Program
+- Every listed drill stays in the session — the clock never deletes work
 - Set RPE (Helms–Zourdos RIR scale) plus session RPE
-- Inspectable load suggestions and weekly volume vs MEV / MAV / MRV landmarks
-- Safety registry that never prescribes bench dips, behind-the-neck presses/pulldowns, chin-height upright rows, or kipping pull-ups
+- Safety registry that never prescribes bench/chair/parallel-bar dips, behind-the-neck presses/pulldowns, chin-height upright rows, or kipping pull-ups
 - Scientist or **Garanimal** coach voice (Goggins-grade accountability with injury rails)
 - Day-at-a-glance nutrition, protein targets, optional adaptive calories from weigh-ins
 - Progress charts and CSV export

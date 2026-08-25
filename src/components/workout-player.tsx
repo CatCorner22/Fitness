@@ -1,10 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { completeWorkoutAction, swapExerciseAction } from "@/app/actions/workout";
 import { PlateCalc } from "@/components/plate-calc";
 import { SpiritAdvisor, type SpiritAdvicePanel } from "@/components/spirit-advisor";
 import { hardnessToRpe, parseRepTarget } from "@/lib/copy";
+import { skillByExerciseId } from "@/lib/course/skills";
 import type { Exercise } from "@/lib/types";
 import { kgToDisplay } from "@/lib/utils";
 
@@ -303,12 +305,19 @@ export function WorkoutPlayer({
         const isCurrent = current?.[0] === exerciseId;
         const doneHere = rows.filter((s) => s.completed).length;
         if (!isCurrent) {
+          const lesson = skillByExerciseId(exerciseId)[0];
           return (
             <section key={exerciseId} className="rounded-3xl border border-line bg-surface px-4 py-3">
               <p className="font-semibold">{ex?.name ?? exerciseId}</p>
               <p className="text-sm text-muted">
-                {doneHere}/{rows.length} sets
+                {doneHere}/{rows.length} sets · {rows[0]?.targetReps ?? "8"} @ RPE {rows[0]?.targetRpe ?? "—"}
               </p>
+              {ex?.safetyNote ? <p className="mt-1 text-xs text-muted">{ex.safetyNote}</p> : null}
+              {lesson ? (
+                <Link href={`/course/${lesson.courseId}/${lesson.id}`} className="mt-1 inline-block text-xs text-copper-2">
+                  How: {lesson.cue}
+                </Link>
+              ) : null}
             </section>
           );
         }
@@ -328,7 +337,15 @@ export function WorkoutPlayer({
                     Last time: {kgToDisplay(ghost.weightKg, units)} {units} × {ghost.reps}
                   </p>
                 ) : null}
-                {ex?.safety === "caution" ? <p className="mt-1 text-sm text-muted">{ex.safetyNote}</p> : null}
+                {ex?.safety === "caution" || ex?.safetyNote ? <p className="mt-1 text-sm text-muted">{ex.safetyNote}</p> : null}
+                {skillByExerciseId(exerciseId)[0] ? (
+                  <Link
+                    href={`/course/${skillByExerciseId(exerciseId)[0].courseId}/${skillByExerciseId(exerciseId)[0].id}`}
+                    className="mt-1 inline-block text-sm text-copper-2"
+                  >
+                    Nyx lesson — {skillByExerciseId(exerciseId)[0].cue}
+                  </Link>
+                ) : null}
               </div>
               {swaps[exerciseId]?.length ? (
                 <details className="text-sm">

@@ -60,11 +60,7 @@ function scientistVoice(input: ReturnType<typeof coachContext>, profile: Profile
     );
   }
   if (input.checkin?.fatigue && input.checkin.fatigue >= 4) {
-    lines.push("Today's fatigue is high. Keep main lifts, drop optional isolation, and do not chase RPE 9.");
-  }
-  if (question?.toLowerCase().includes("dip")) {
-    const banned = bannedExercises().find((e) => e.id === "bench-dip");
-    lines.push(banned?.safetyNote ?? "Bench dips are banned in this app.");
+    lines.push("Today's fatigue is high. Keep every listed drill. Cut RPE, not the list. Do not chase RPE 9.");
   }
   if (question) {
     lines.push(answerQuestion(question, input, profile, "scientist"));
@@ -92,7 +88,7 @@ function garanimalVoice(input: ReturnType<typeof coachContext>, profile: Profile
   }
   if (input.checkin?.fatigue && input.checkin.fatigue >= 4) {
     lines.push(
-      "You marked fatigue high. We do not play hero with joints. Hit the compounds, skip the extras, go home. Calluses over excuses — not bone spurs over ego.",
+      "You marked fatigue high. We do not play hero with joints. Every listed drill still happens — lighter, slower, honest RPE. Calluses over excuses — not bone spurs over ego.",
     );
   }
   if (question) {
@@ -110,10 +106,23 @@ function answerQuestion(
   persona: "scientist" | "garanimal",
 ) {
   const q = question.toLowerCase();
-  const bannedHit = bannedExercises().find((e) => q.includes(e.name.split(" ")[0].toLowerCase()) || q.includes(e.id));
-  if (q.includes("bench dip") || q.includes("chair dip") || bannedHit?.id === "bench-dip") {
+  const bannedHit = bannedExercises().find((e) => {
+    const name = e.name.toLowerCase();
+    const idWords = e.id.replaceAll("-", " ");
+    return q.includes(e.id) || q.includes(idWords) || q.includes(name);
+  });
+  if (
+    /\bdips?\b/.test(q) ||
+    q.includes("bench dip") ||
+    q.includes("chair dip") ||
+    q.includes("bar dip") ||
+    q.includes("tricep dip") ||
+    q.includes("triceps dip") ||
+    bannedHit?.id === "bench-dip" ||
+    bannedHit?.id === "parallel-bar-dip"
+  ) {
     return persona === "garanimal"
-      ? "Bench dips? That is how you buy a cranky shoulder. Cable pushdowns. Close-grip bench. Narrow push-ups. Stay dangerous, stay intact."
+      ? "Dips off a bench, chair, or parallel bars? That is how you buy a cranky shoulder. Cable pushdowns. Close-grip bench. Narrow push-ups. Stay dangerous, stay intact."
       : getExercise("bench-dip")?.safetyNote ?? "";
   }
   if (q.includes("behind") && q.includes("neck")) {
@@ -137,14 +146,14 @@ function answerQuestion(
   if (q.includes("protein") || q.includes("eat") || q.includes("calorie")) {
     return `Protein target is about 1.6–2.2 g/kg. Yours is based on ${profile.weightKg ?? "your"} kg bodyweight. Eat enough to train. This app will not praise a crash diet.`;
   }
-  if (q.includes("time") || q.includes("busy") || q.includes("minutes")) {
-    return `Your cap is ${profile.sessionMinutes} minutes. The planner keeps compounds and drops isolation. That is how you train when life is loud.`;
+  if (q.includes("time") || q.includes("busy") || q.includes("minutes") || q.includes("skip extra") || q.includes("drop isolation") || q.includes("cut the list")) {
+    return `Your clock cap is ${profile.sessionMinutes} minutes. The planner still keeps every programmed drill and tells you if the day runs long. We do not hide or drop lifts to fake a short session.`;
   }
   if (q.includes("glute") || q.includes("butt") || q.includes("ass")) {
     return "Hip thrust, squat or split squat, RDL, abduction, 45° extension. Variety. Plotkin 2023: thrust ≈ squat for glute size. Kassiano 2024: adding thrusts on top of hinges and presses grew more glute. Do the work.";
   }
-  if (q.includes("pole") || q.includes("strip") || q.includes("invert") || q.includes("amateur")) {
-    return "Two plans: Pole class prep (walk, fireman, sit, climb, invert prep, both sides) and Couch to amateur night (walk, floor, spins, a short set — no new inverts in the show). Off-pole: hangs, strict pulls, hollow, push balance. Shoulders and wrists take most pole injuries. Crash mat. Studio for inverts. No kipping.";
+  if (q.includes("pole") || q.includes("strip") || q.includes("invert") || q.includes("amateur") || q.includes("exotic") || q.includes("nyx") || q.includes("lap") || q.includes("heel")) {
+    return "Nyx’s amateur-night course is actual exotic skill in training-course format: walk, heels, hands, stage map, commercial hips, floor crawls, chair phrases on furniture (approach, body, close — not on a person), costume peels, rail visits, two-song map, and a close. Pair it with Couch to amateur night (5 days). Intermediate pole class is the other course — hangs, both-side spins, sit, climb, invert prep. Crash mat. Studio for inverts. No kipping. Open Course from You.";
   }
   if (q.includes("ruck") || q.includes("rucking") || q.includes("pack")) {
     return "Start around 10–15% bodyweight, talking pace. Add distance or load, not both, in the same week. Stay under ~30% bodyweight unless you have a real event and a base.";

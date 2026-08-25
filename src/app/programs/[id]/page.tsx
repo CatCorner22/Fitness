@@ -1,5 +1,8 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
+import { courseForProgram } from "@/lib/course/catalog";
+import { skillByExerciseId } from "@/lib/course/skills";
 import { getExercise } from "@/lib/exercises/registry";
 import { getProgram } from "@/lib/programs/catalog";
 import { requireAuthed } from "@/lib/session-page";
@@ -15,6 +18,11 @@ export default async function ProgramDetailPage({ params }: { params: Promise<{ 
       <p className="text-xs uppercase tracking-[0.16em] text-copper">{program.category}</p>
       <h1 className="display text-4xl">{program.name}</h1>
       <p className="mt-2 max-w-2xl text-muted">{program.description}</p>
+      {courseForProgram(program.id) ? (
+        <Link href={`/course/${courseForProgram(program.id)!.id}`} className="mt-3 inline-block text-sm text-copper-2">
+          Open Nyx course (cue, steps, diagram, photo, voice, video) →
+        </Link>
+      ) : null}
       <div className="mt-6 space-y-3">
         {program.phases.map((phase) => (
           <p key={phase.name} className="text-sm">
@@ -31,11 +39,16 @@ export default async function ProgramDetailPage({ params }: { params: Promise<{ 
             <ul className="mt-4 space-y-2 text-sm">
               {day.exercises.map((item, idx) => {
                 const ex = getExercise(item.exerciseId);
+                const lesson = skillByExerciseId(item.exerciseId)[0];
                 return (
                   <li key={`${item.exerciseId}-${idx}`} className="flex justify-between gap-4 border-b border-line/50 py-2">
                     <span>
                       {ex?.name ?? item.exerciseId}
-                      {item.optional ? " (optional)" : ""}
+                      {lesson ? (
+                        <Link href={`/course/${lesson.courseId}/${lesson.id}`} className="ml-2 text-xs text-copper-2">
+                          How
+                        </Link>
+                      ) : null}
                       <span className="block text-xs text-muted">{item.notes}</span>
                     </span>
                     <span className="text-muted">

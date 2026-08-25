@@ -9,6 +9,7 @@ import { runningFast } from "@/lib/fasting/queries";
 import { requireAuthed } from "@/lib/session-page";
 import { todayNutrition, todaysPlan } from "@/lib/today";
 import { calorieTarget, macroTargets, nutritionSpec, proteinTargetG } from "@/lib/nutrition/targets";
+import { courseForProgram } from "@/lib/course/catalog";
 
 export default async function TodayPage() {
   const { user, profile } = await requireAuthed();
@@ -47,18 +48,33 @@ export default async function TodayPage() {
           <h1 className="display text-[2.6rem] leading-none">{open ? "Workout open" : planned?.day.name}</h1>
           <p className="mt-3 text-muted">
             {planned ? `About ${planned.estimatedMinutes} minutes` : "No session yet."}
+            {planned?.overTimeBudget
+              ? ` — longer than your ${profile.sessionMinutes}-minute cap. We still keep every drill.`
+              : ""}
           </p>
           {planned && planned.fitnessNotes?.length ? (
             <p className="mt-3 text-sm text-muted">{planned.fitnessNotes[0]}</p>
           ) : null}
           {planned && planned.exercises.length > 0 ? (
-            <p className="mt-4 text-sm text-muted">
-              {planned.exercises
-                .slice(0, 4)
-                .map((ex) => ex.exercise.name)
-                .join(" · ")}
-              {planned.exercises.length > 4 ? " · …" : ""}
-            </p>
+            <ul className="mt-4 space-y-1 text-sm">
+              {planned.exercises.map((ex) => (
+                <li key={`${ex.exerciseId}-${ex.role ?? "x"}`}>
+                  {ex.exercise.name}
+                  <span className="text-muted">
+                    {" "}
+                    · {ex.sets} × {ex.reps}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          {courseForProgram(planned?.program.id ?? "") ? (
+            <Link
+              href={`/course/${courseForProgram(planned!.program.id)!.id}`}
+              className="mt-4 inline-block text-sm text-copper-2"
+            >
+              Nyx course for this plan
+            </Link>
           ) : null}
           <div className="mt-8 space-y-3">
             {open ? (
@@ -85,12 +101,19 @@ export default async function TodayPage() {
         </section>
       )}
 
-      <p className="mt-6 text-center text-sm text-muted">
-        <Link href="/nutrition" className="underline-offset-2 hover:underline">
-          Food {Math.round(food.calories)} / {targets.calories} · protein {Math.round(food.protein)} / {targets.protein}g
+      <section className="mt-6 rounded-3xl border border-line bg-surface p-5">
+        <Link href="/nutrition" className="block">
+          <p className="text-xs uppercase tracking-[0.16em] text-copper">Eat</p>
+          <p className="mt-1 text-lg font-semibold text-ink">
+            {Math.round(food.calories)} / {targets.calories} kcal
+          </p>
+          <p className="mt-1 text-sm text-muted">
+            Protein {Math.round(food.protein)} / {targets.protein}g
+            {spec.label ? ` · ${spec.label}` : ""}
+          </p>
         </Link>
-      </p>
-      {fast ? <FastingStrip running={fast} /> : null}
+      </section>
+      {fast ? <div className="mt-4"><FastingStrip running={fast} /></div> : null}
     </AppShell>
   );
 }

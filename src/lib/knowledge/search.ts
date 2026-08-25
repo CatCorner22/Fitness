@@ -48,5 +48,5 @@ Allowed swaps ONLY: ${swaps || "none listed"}`;
 
 export function registrySummary() {
   const rec = recommendedExercises();
-  return `${rec.length} approved exercises. Banned: bench-dip, behind-neck-press, behind-neck-pulldown, upright-row-chin, kipping-pullup.`;
+  return `${rec.length} approved exercises. Banned: bench-dip, parallel-bar-dip, behind-neck-press, behind-neck-pulldown, upright-row-chin, kipping-pullup.`;
 }

@@ -64,38 +64,31 @@ export function pickSubstitute(
   equipment: string[],
 ) {
   const original = getExercise(exerciseId);
-  if (!original) return undefined;
+  if (!original || original.safety === "banned") {
+    const safe = allowedSubstitutes(exerciseId, injuries).filter(
+      (ex) =>
+        ex.safety !== "banned" &&
+        (ex.equipment.some((eq) => equipment.includes(eq) || eq === "bodyweight") ||
+          ex.equipment.includes("bodyweight")),
+    );
+    return safe[0] ?? allowedSubstitutes(exerciseId, injuries).find((ex) => ex.safety !== "banned");
+  }
   if (isExerciseAllowed(original, injuries) && original.equipment.some((eq) => equipment.includes(eq) || eq === "bodyweight")) {
     return original;
   }
   const options = allowedSubstitutes(exerciseId, injuries).filter(
-    (ex) => ex.equipment.some((eq) => equipment.includes(eq) || eq === "bodyweight"),
+    (ex) =>
+      ex.safety !== "banned" &&
+      ex.equipment.some((eq) => equipment.includes(eq) || eq === "bodyweight"),
   );
-  return options[0] ?? allowedSubstitutes(exerciseId, injuries)[0];
+  return options[0] ?? allowedSubstitutes(exerciseId, injuries).find((ex) => ex.safety !== "banned");
 }
 
+/** Keep every programmed lift. Time budget never deletes work. */
 export function trimForDuration(items: TemplateExercise[], minutes: number) {
-  const dropped: string[] = [];
-  let current = [...items];
-  let estimate = estimateSessionMinutes(current);
-  const dropOrder = [...current].sort((a, b) => b.priority - a.priority);
-
-  for (const candidate of dropOrder) {
-    if (estimate <= minutes) break;
-    if (candidate.priority <= 2 && current.filter((c) => c.priority <= 2).length <= 2) break;
-    current = current.filter((c) => c !== candidate);
-    dropped.push(candidate.exerciseId);
-    estimate = estimateSessionMinutes(current);
-  }
-
-  // Short sessions: slightly shorter rest on isolation
-  if (minutes <= 45) {
-    current = current.map((c) =>
-      c.priority >= 4 ? { ...c, restSeconds: Math.min(c.restSeconds ?? 75, 60) } : c,
-    );
-  }
-
-  return { exercises: current, dropped, estimate };
+  const current = [...items];
+  const estimate = estimateSessionMinutes(current);
+  return { exercises: current, dropped: [] as string[], estimate, overTime: estimate > minutes };
 }
 
 export function buildPlannedSession(options: {
@@ -129,7 +122,17 @@ export function buildPlannedSession(options: {
 
   for (const item of phased) {
     const chosen = pickSubstitute(item.exerciseId, options.injuries, options.equipment);
-    if (!chosen) continue;
+    if (!chosen) {
+      const original = getExercise(item.exerciseId);
+      // Never keep a banned lift. Keep other programmed slots even if gear/injury blocked every substitute.
+      if (!original || original.safety === "banned") continue;
+      if (!usedIds.has(item.exerciseId)) {
+        usedIds.add(item.exerciseId);
+        resolved.push(item);
+      }
+      continue;
+    }
+    if (chosen.safety === "banned") continue;
     if (!usedIds.has(chosen.id)) {
       usedIds.add(chosen.id);
       resolved.push({ ...item, exerciseId: chosen.id });
@@ -198,8 +201,9 @@ export function buildPlannedSession(options: {
     day: { ...day, exercises: trimmed.exercises },
     exercises,
     estimatedMinutes: trimmed.estimate,
-    trimmed: trimmed.dropped.length > 0,
-    droppedExerciseIds: trimmed.dropped,
+    trimmed: false,
+    droppedExerciseIds: [],
+    overTimeBudget: trimmed.overTime,
     fitnessNotes: fitness?.notes?.length ? fitness.notes : undefined,
   };
 }

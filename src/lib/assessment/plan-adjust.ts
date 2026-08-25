@@ -30,7 +30,7 @@ export function planAdjustFromAssessment(result: AssessmentResult | null): Fitne
   const core = scoreOf(result, "core");
   const balance = scoreOf(result, "balance");
   const mobility = scoreOf(result, "mobility");
-  const notes: string[] = [...result.planNotes];
+  const notes: string[] = [];
 
   const adjust: FitnessPlanAdjust = {
     rpeAdjust: 0,

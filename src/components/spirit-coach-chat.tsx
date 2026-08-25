@@ -8,8 +8,8 @@ import { SpiritMascot } from "@/components/spirit-mascot";
 import { parseCoachMeta, textFromUIMessageParts } from "@/lib/spirit/client-utils";
 
 const PROMPTS = [
-  "What should I eat after lifting?",
-  "Should I rest this week?",
+  "Are bench dips good for triceps?",
+  "I'm short on time — what can I drop?",
   "Swap for a sore shoulder?",
 ];
 
@@ -116,7 +116,9 @@ export function SpiritCoachChat({
       </form>
 
       {!aiAvailable ? (
-        <p className="mt-2 text-xs text-muted">Offline mode — rules + knowledge base. Add AI_GATEWAY_API_KEY for streaming LLM.</p>
+        <p className="mt-2 text-xs text-muted">
+          Local rules + the guide always answer. A cloud model is optional under You.
+        </p>
       ) : null}
     </>
   );

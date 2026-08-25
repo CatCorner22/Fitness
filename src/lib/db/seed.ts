@@ -24,6 +24,8 @@ const DEFAULT_EQUIPMENT = JSON.stringify([
   "bands",
   "bodyweight",
   "cardio_machine",
+  "pole",
+  "backpack",
 ]);
 
 export function seedIfNeeded(db: Db) {

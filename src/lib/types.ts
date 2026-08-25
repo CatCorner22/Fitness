@@ -60,13 +60,14 @@ export type Equipment =
   | "pole"
   | "backpack";
 
-export type Injury = "shoulder" | "knee" | "low_back" | "wrist" | "elbow" | "hip";
+export type Injury = "shoulder" | "knee" | "low_back" | "wrist" | "elbow" | "hip" | "ankle";
 
 export type Goal =
   | "powerlifting"
   | "bodybuilding"
   | "strength_endurance"
   | "pole_stage"
+  | "exotic_stage"
   | "glute_specialization"
   | "general";
 
@@ -170,5 +171,6 @@ export interface PlannedSession {
   estimatedMinutes: number;
   trimmed: boolean;
   droppedExerciseIds: string[];
+  overTimeBudget: boolean;
   fitnessNotes?: string[];
 }

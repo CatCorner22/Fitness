@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "assert:programs": "python3 scripts/assert-untruncated.py",
     "perf:stability": "node scripts/perf-stability.mjs"
   },
   "dependencies": {

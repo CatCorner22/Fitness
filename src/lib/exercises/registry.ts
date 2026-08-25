@@ -19,6 +19,21 @@ const CORE_EXERCISES: Exercise[] = [
     avoidIf: ["shoulder"],
   },
   {
+    id: "parallel-bar-dip",
+    name: "Parallel-bar dip",
+    pattern: "horizontal_push",
+    primaryMuscles: ["triceps", "chest"],
+    secondaryMuscles: ["front_delts"],
+    equipment: ["bodyweight"],
+    safety: "banned",
+    safetyNote:
+      "Even on bars, a deep dip loads the shoulder in extension. This household app does not prescribe bar dips. Use cable pushdowns, close-grip bench, or narrow push-ups instead.",
+    substitutes: ["cable-pushdown", "close-grip-bench", "narrow-pushup", "overhead-cable-extension"],
+    restSeconds: 90,
+    priority: 5,
+    avoidIf: ["shoulder"],
+  },
+  {
     id: "behind-neck-press",
     name: "Behind-the-neck press",
     pattern: "vertical_push",

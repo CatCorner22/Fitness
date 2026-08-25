@@ -20,11 +20,14 @@ export const metadata: Metadata = {
   description: "Simple household training and food logging.",
 };
 
-export const viewport: Viewport = {
-  themeColor: "#12110e",
-  width: "device-width",
-  initialScale: 1,
-};
+export async function generateViewport(): Promise<Viewport> {
+  const theme = await getTheme();
+  return {
+    themeColor: theme === "light" ? "#f7f1e6" : "#14110d",
+    width: "device-width",
+    initialScale: 1,
+  };
+}
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const theme = await getTheme();

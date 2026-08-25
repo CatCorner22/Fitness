@@ -110,7 +110,7 @@ export const MEAL_PLAN_TEMPLATES: MealPlanTemplate[] = [
     id: "stage-fuel",
     name: "Stage fuel",
     description: "Lighter fats, steady carbs, extra protein for pulling and grip. Works on pole or mixed days.",
-    goals: ["pole_stage", "strength_endurance", "general"],
+    goals: ["pole_stage", "exotic_stage", "strength_endurance", "general"],
     items: [
       line("food-oats", 1, "breakfast"),
       line("food-greek-yogurt", 1.5, "breakfast"),
@@ -192,7 +192,7 @@ export const MEAL_PLAN_TEMPLATES: MealPlanTemplate[] = [
     id: "plant-forward",
     name: "Plant-forward",
     description: "Tofu, beans, oats, yogurt. Same calorie math — just less meat if that is the household default.",
-    goals: ["general", "pole_stage", "glute_specialization", "bodybuilding", "powerlifting", "strength_endurance"],
+    goals: ["general", "pole_stage", "exotic_stage", "glute_specialization", "bodybuilding", "powerlifting", "strength_endurance"],
     items: [
       line("food-oats", 1.5, "breakfast"),
       line("food-greek-yogurt", 2, "breakfast"),

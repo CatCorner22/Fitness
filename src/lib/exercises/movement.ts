@@ -1,4 +1,5 @@
 import type { Exercise } from "@/lib/types";
+import { EXOTIC_EXERCISES } from "./exotic";
 
 /** Pole, yoga, stretch, barre, ballet, and rucking movements. */
 export const MOVEMENT_EXERCISES: Exercise[] = [
@@ -563,4 +564,5 @@ export const MOVEMENT_EXERCISES: Exercise[] = [
     priority: 2,
     avoidIf: ["knee"],
   },
+  ...EXOTIC_EXERCISES,
 ];
