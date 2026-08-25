@@ -170,6 +170,10 @@ function snap(n: number) {
   return Math.max(0.5, Math.round(n * 2) / 2);
 }
 
+function snapDown(n: number) {
+  return Math.max(0.5, Math.floor(n * 2) / 2);
+}
+
 function isProteinFood(food: FoodRef) {
   return food.protein >= 10;
 }
@@ -194,6 +198,15 @@ export function scalePlanToTargets(template: MealPlanTemplate, calories: number,
   }
 
   let current = macrosForLines(items);
+  if (current.protein > protein + 6) {
+    const trim = protein / current.protein;
+    for (const item of items) {
+      const food = foodById(item.foodId);
+      if (food && isProteinFood(food)) item.servings = snapDown(item.servings * trim);
+    }
+    current = macrosForLines(items);
+  }
+
   if (current.calories > 0) {
     const cScale = calories / current.calories;
     for (const item of items) {
@@ -214,8 +227,25 @@ export function scalePlanToTargets(template: MealPlanTemplate, calories: number,
     oil.servings = snap(oil.servings + calorieGap / 119);
   }
   current = macrosForLines(items);
-  if (whey && current.protein < protein - 12) {
+  if (whey && current.protein < protein - 8) {
     whey.servings = snap(whey.servings + (protein - current.protein) / 24);
+  }
+
+  current = macrosForLines(items);
+  if (current.protein > protein + 3) {
+    const trim = protein / current.protein;
+    for (const item of items) {
+      const food = foodById(item.foodId);
+      if (food && isProteinFood(food)) item.servings = snapDown(Math.max(0.5, item.servings * trim));
+    }
+    current = macrosForLines(items);
+  }
+
+  const finalGap = calories - current.calories;
+  if (rice && Math.abs(finalGap) > 60) {
+    rice.servings = snap(rice.servings + finalGap / 130);
+  } else if (oil && finalGap > 60) {
+    oil.servings = snap(oil.servings + finalGap / 119);
   }
 
   return items

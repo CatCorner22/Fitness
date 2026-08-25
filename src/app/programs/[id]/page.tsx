@@ -29,10 +29,10 @@ export default async function ProgramDetailPage({ params }: { params: Promise<{ 
             <h2 className="display text-2xl">{day.name}</h2>
             <p className="text-sm text-muted">{day.focus}</p>
             <ul className="mt-4 space-y-2 text-sm">
-              {day.exercises.map((item) => {
+              {day.exercises.map((item, idx) => {
                 const ex = getExercise(item.exerciseId);
                 return (
-                  <li key={item.exerciseId + item.reps} className="flex justify-between gap-4 border-b border-line/50 py-2">
+                  <li key={`${item.exerciseId}-${idx}`} className="flex justify-between gap-4 border-b border-line/50 py-2">
                     <span>
                       {ex?.name ?? item.exerciseId}
                       {item.optional ? " (optional)" : ""}

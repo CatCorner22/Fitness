@@ -39,16 +39,21 @@ export function calorieTarget(profile: ProfileRow) {
 
 export function macroTargets(calories: number, proteinG: number, goal: ProfileRow["goal"]) {
   const spec = goalNutrition(goal);
+  const safeCalories = Math.max(calories, proteinG * 4 + 200);
   const proteinCals = proteinG * 4;
-  const remaining = Math.max(0, calories - proteinCals);
+  const remaining = Math.max(0, safeCalories - proteinCals);
   const ratio = spec.carbRatio + spec.fatRatio;
   const carbShare = ratio > 0 ? spec.carbRatio / ratio : 0.6;
   return {
-    calories: Math.round(calories),
+    calories: Math.round(safeCalories),
     protein: Math.round(proteinG),
     carbs: Math.round((remaining * carbShare) / 4),
     fat: Math.round((remaining * (1 - carbShare)) / 9),
   };
+}
+
+function clampCalories(n: number) {
+  return Math.min(6000, Math.max(1200, Math.round(n)));
 }
 
 export function adaptiveCalories(userId: string, profile: ProfileRow) {
@@ -64,7 +69,7 @@ export function adaptiveCalories(userId: string, profile: ProfileRow) {
     .slice(0, 14);
 
   if (!staticTdee || weights.length < 8) {
-    const calories = calorieTarget(profile);
+    const calories = clampCalories(calorieTarget(profile));
     const macros = macroTargets(calories, protein, profile.goal);
     return {
       ...macros,
@@ -114,8 +119,8 @@ export function adaptiveCalories(userId: string, profile: ProfileRow) {
 
   const avgIntake = intakeDays ? intake / intakeDays : staticTdee;
   const impliedTdee = avgIntake - (weeklyChange * 7700) / 7;
-  const adapted = Math.round(impliedTdee);
-  const calories = Math.round(adapted + spec.delta);
+  const adapted = clampCalories(Math.round(impliedTdee));
+  const calories = clampCalories(Math.round(adapted + spec.delta));
   const macros = macroTargets(calories, protein, profile.goal);
 
   return {

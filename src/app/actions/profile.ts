@@ -110,6 +110,7 @@ export async function saveSettingsAction(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/settings");
+  revalidatePath("/nutrition");
   redirect("/settings?toast=settings");
 }
 

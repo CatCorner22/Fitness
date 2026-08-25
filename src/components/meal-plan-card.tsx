@@ -43,8 +43,8 @@ export function MealPlanCard({
                 {meal} · {Math.round(mealCals)} kcal
               </p>
               <ul className="mt-1 space-y-0.5 text-sm">
-                {rows.map((row) => (
-                  <li key={`${row.meal}-${row.foodId}`}>
+                {rows.map((row, idx) => (
+                  <li key={`${row.meal}-${row.foodId}-${idx}`}>
                     {row.servings}× {row.foodName}
                     <span className="text-muted"> ({row.serving})</span>
                   </li>
@@ -56,8 +56,6 @@ export function MealPlanCard({
       </div>
       <form action={applyMealPlanAction} className="mt-5 flex flex-wrap gap-2">
         <input type="hidden" name="planId" value={planId} />
-        <input type="hidden" name="calories" value={calories} />
-        <input type="hidden" name="protein" value={protein} />
         <button className="rounded-2xl bg-copper px-4 py-2 text-sm font-semibold text-bg" type="submit">
           {hasLogs ? "Fill empty meals" : "Log this day"}
         </button>

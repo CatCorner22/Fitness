@@ -78,8 +78,8 @@ export function SpiritCoachChat({
               </p>
               {parsed.citeIds.length ? (
                 <div className="mt-2 flex flex-wrap gap-1">
-                  {parsed.citeIds.map((id) => (
-                    <Link key={id} href={`/knowledge#${id}`} className="text-[10px] text-copper-2">
+                  {parsed.citeIds.map((id, i) => (
+                    <Link key={`${id}-${i}`} href={`/knowledge#${id}`} className="text-[10px] text-copper-2">
                       {id}
                     </Link>
                   ))}
