@@ -12,8 +12,8 @@
   --copper-2: #f3b17c;
   --moss: #9aa572;
   --danger: #d46a6a;
-  --font-display: var(--font-display);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-outfit);
+  --font-display: var(--font-fraunces);
   --on-copper: #1a140e;
 }
 
@@ -160,4 +160,408 @@ button:not(:disabled) {
 .calendar-day-gray {
   background: var(--bg-2);
   color: var(--muted);
+}
+
+html[data-size="sm"] {
+  font-size: 14px;
+}
+html[data-size="md"] {
+  font-size: 16px;
+}
+html[data-size="lg"] {
+  font-size: 18px;
+}
+html[data-size="xl"] {
+  font-size: 20px;
+}
+
+html[data-font="outfit"] {
+  --font-sans: var(--font-outfit);
+  --font-display: var(--font-fraunces);
+}
+html[data-font="nunito"] {
+  --font-sans: var(--font-nunito);
+  --font-display: var(--font-nunito);
+}
+html[data-font="fredoka"] {
+  --font-sans: var(--font-fredoka);
+  --font-display: var(--font-fredoka);
+}
+html[data-font="comfortaa"] {
+  --font-sans: var(--font-comfortaa);
+  --font-display: var(--font-comfortaa);
+}
+html[data-font="quicksand"] {
+  --font-sans: var(--font-quicksand);
+  --font-display: var(--font-quicksand);
+}
+html[data-font="fraunces"] {
+  --font-sans: var(--font-fraunces);
+  --font-display: var(--font-fraunces);
+}
+html[data-font="mono"] {
+  --font-sans: var(--font-mono);
+  --font-display: var(--font-mono);
+}
+
+html[data-palette="sakura"] {
+  --bg: #2a1520;
+  --bg-2: #3a1d2c;
+  --surface: #4a2538;
+  --surface-2: #5c2e44;
+  --line: #7a3d59;
+  --text: #fff1f5;
+  --muted: #f5c0d1;
+  --copper: #ff7aa2;
+  --copper-2: #ffb3c9;
+  --moss: #8fd3c1;
+  --danger: #ff6b8a;
+  --on-copper: #2a1520;
+}
+html.light[data-palette="sakura"] {
+  --bg: #fff1f5;
+  --bg-2: #ffe4ec;
+  --surface: #ffffff;
+  --surface-2: #ffd6e3;
+  --line: #f5b6c8;
+  --text: #4a1530;
+  --muted: #8a4a62;
+  --copper: #e84b80;
+  --copper-2: #c73668;
+  --moss: #3d8f78;
+  --danger: #c4234c;
+  --on-copper: #fff1f5;
+}
+
+html[data-palette="matcha"] {
+  --bg: #142018;
+  --bg-2: #1c2b22;
+  --surface: #24362b;
+  --surface-2: #2e4536;
+  --line: #3d5c48;
+  --text: #eef6e8;
+  --muted: #b5c9ae;
+  --copper: #8bc34a;
+  --copper-2: #c5e1a5;
+  --moss: #aed581;
+  --danger: #ef9a9a;
+  --on-copper: #142018;
+}
+html.light[data-palette="matcha"] {
+  --bg: #f3f7ea;
+  --bg-2: #e5efd4;
+  --surface: #fcfff6;
+  --surface-2: #dcecc4;
+  --line: #c3d6a8;
+  --text: #1c2e18;
+  --muted: #4f6848;
+  --copper: #558b2f;
+  --copper-2: #33691e;
+  --moss: #7cb342;
+  --danger: #c62828;
+  --on-copper: #f3f7ea;
+}
+
+html[data-palette="grape"] {
+  --bg: #1a1428;
+  --bg-2: #241c36;
+  --surface: #2e2446;
+  --surface-2: #3a2d58;
+  --line: #56447a;
+  --text: #f5f0ff;
+  --muted: #c4b5fd;
+  --copper: #c084fc;
+  --copper-2: #e9d5ff;
+  --moss: #67e8f9;
+  --danger: #f472b6;
+  --on-copper: #1a1428;
+}
+html.light[data-palette="grape"] {
+  --bg: #f5f0ff;
+  --bg-2: #ebe4ff;
+  --surface: #ffffff;
+  --surface-2: #ddd4ff;
+  --line: #c4b5fd;
+  --text: #2e1065;
+  --muted: #6b21a8;
+  --copper: #7c3aed;
+  --copper-2: #5b21b6;
+  --moss: #0e7490;
+  --danger: #be185d;
+  --on-copper: #f5f0ff;
+}
+
+html[data-palette="ocean"] {
+  --bg: #0f1c24;
+  --bg-2: #16303c;
+  --surface: #1b3a48;
+  --surface-2: #234859;
+  --line: #2f6578;
+  --text: #e8f7fb;
+  --muted: #9fd4e4;
+  --copper: #38bdf8;
+  --copper-2: #7dd3fc;
+  --moss: #5eead4;
+  --danger: #fb7185;
+  --on-copper: #0f1c24;
+}
+html.light[data-palette="ocean"] {
+  --bg: #eef8fb;
+  --bg-2: #d7eef5;
+  --surface: #ffffff;
+  --surface-2: #c8e7f2;
+  --line: #9ad0e2;
+  --text: #0c4a6e;
+  --muted: #155e75;
+  --copper: #0284c7;
+  --copper-2: #0369a1;
+  --moss: #0f766e;
+  --danger: #be123c;
+  --on-copper: #eef8fb;
+}
+
+html[data-palette="peach"] {
+  --bg: #241814;
+  --bg-2: #33221c;
+  --surface: #3f2a22;
+  --surface-2: #4c342a;
+  --line: #6b4a3c;
+  --text: #fff4ec;
+  --muted: #e8c3ae;
+  --copper: #ff9f7a;
+  --copper-2: #ffc4a8;
+  --moss: #c4d47a;
+  --danger: #f87171;
+  --on-copper: #241814;
+}
+html.light[data-palette="peach"] {
+  --bg: #fff4ec;
+  --bg-2: #ffe6d6;
+  --surface: #fffaf6;
+  --surface-2: #ffd8c2;
+  --line: #f0b898;
+  --text: #4a2418;
+  --muted: #8a4e38;
+  --copper: #ea580c;
+  --copper-2: #c2410c;
+  --moss: #4d7c0f;
+  --danger: #b91c1c;
+  --on-copper: #fff4ec;
+}
+
+html[data-palette="candy"] {
+  --bg: #1f1530;
+  --bg-2: #2c1d44;
+  --surface: #3a2658;
+  --surface-2: #49306c;
+  --line: #6d4496;
+  --text: #fff0fb;
+  --muted: #f5b6e6;
+  --copper: #f472d0;
+  --copper-2: #f9a8e8;
+  --moss: #86efac;
+  --danger: #fb7185;
+  --on-copper: #1f1530;
+}
+html.light[data-palette="candy"] {
+  --bg: #fff0fb;
+  --bg-2: #ffd6f3;
+  --surface: #ffffff;
+  --surface-2: #ffc2ec;
+  --line: #f9a8d4;
+  --text: #701a75;
+  --muted: #9d174d;
+  --copper: #db2777;
+  --copper-2: #be185d;
+  --moss: #15803d;
+  --danger: #e11d48;
+  --on-copper: #fff0fb;
+}
+
+html[data-palette="honey"] {
+  --bg: #1c160c;
+  --bg-2: #2a2112;
+  --surface: #382c18;
+  --surface-2: #463720;
+  --line: #6b542c;
+  --text: #fff8e8;
+  --muted: #e6d09a;
+  --copper: #f5c542;
+  --copper-2: #fde68a;
+  --moss: #bef264;
+  --danger: #fb923c;
+  --on-copper: #1c160c;
+}
+html.light[data-palette="honey"] {
+  --bg: #fff8e8;
+  --bg-2: #ffefc2;
+  --surface: #fffdf6;
+  --surface-2: #ffe9a3;
+  --line: #f0d070;
+  --text: #422006;
+  --muted: #854d0e;
+  --copper: #ca8a04;
+  --copper-2: #a16207;
+  --moss: #4d7c0f;
+  --danger: #c2410c;
+  --on-copper: #fff8e8;
+}
+
+html[data-palette="lavender"] {
+  --bg: #1c1730;
+  --bg-2: #272044;
+  --surface: #322a56;
+  --surface-2: #3d3468;
+  --line: #5b4f8a;
+  --text: #f6f3ff;
+  --muted: #c4b5fd;
+  --copper: #a78bfa;
+  --copper-2: #ddd6fe;
+  --moss: #67e8f9;
+  --danger: #f472b6;
+  --on-copper: #1c1730;
+}
+html.light[data-palette="lavender"] {
+  --bg: #f6f3ff;
+  --bg-2: #ece4ff;
+  --surface: #ffffff;
+  --surface-2: #e4d9ff;
+  --line: #c4b5fd;
+  --text: #2e1065;
+  --muted: #6d28d9;
+  --copper: #7c3aed;
+  --copper-2: #5b21b6;
+  --moss: #0f766e;
+  --danger: #be185d;
+  --on-copper: #f6f3ff;
+}
+
+html[data-palette="mint"] {
+  --bg: #10241f;
+  --bg-2: #16352d;
+  --surface: #1c443a;
+  --surface-2: #245547;
+  --line: #2f7361;
+  --text: #ecfdf5;
+  --muted: #a7f3d0;
+  --copper: #34d399;
+  --copper-2: #6ee7b7;
+  --moss: #86efac;
+  --danger: #fb7185;
+  --on-copper: #10241f;
+}
+html.light[data-palette="mint"] {
+  --bg: #ecfdf5;
+  --bg-2: #d1fae5;
+  --surface: #f7fffb;
+  --surface-2: #bbf7d0;
+  --line: #6ee7b7;
+  --text: #064e3b;
+  --muted: #047857;
+  --copper: #059669;
+  --copper-2: #047857;
+  --moss: #65a30d;
+  --danger: #be123c;
+  --on-copper: #ecfdf5;
+}
+
+.swatch-copper {
+  background: linear-gradient(135deg, #14110d, #e38a4a);
+}
+.swatch-sakura {
+  background: linear-gradient(135deg, #2a1520, #ff7aa2);
+}
+.swatch-matcha {
+  background: linear-gradient(135deg, #142018, #8bc34a);
+}
+.swatch-grape {
+  background: linear-gradient(135deg, #1a1428, #c084fc);
+}
+.swatch-ocean {
+  background: linear-gradient(135deg, #0f1c24, #38bdf8);
+}
+.swatch-peach {
+  background: linear-gradient(135deg, #241814, #ff9f7a);
+}
+.swatch-candy {
+  background: linear-gradient(135deg, #1f1530, #f472d0);
+}
+.swatch-honey {
+  background: linear-gradient(135deg, #1c160c, #f5c542);
+}
+.swatch-lavender {
+  background: linear-gradient(135deg, #1c1730, #a78bfa);
+}
+.swatch-mint {
+  background: linear-gradient(135deg, #10241f, #34d399);
+}
+
+.font-preview-outfit {
+  font-family: var(--font-outfit), sans-serif;
+}
+.font-preview-nunito {
+  font-family: var(--font-nunito), sans-serif;
+}
+.font-preview-fredoka {
+  font-family: var(--font-fredoka), sans-serif;
+}
+.font-preview-comfortaa {
+  font-family: var(--font-comfortaa), sans-serif;
+}
+.font-preview-quicksand {
+  font-family: var(--font-quicksand), sans-serif;
+}
+.font-preview-fraunces {
+  font-family: var(--font-fraunces), serif;
+}
+.font-preview-mono {
+  font-family: var(--font-mono), monospace;
+}
+
+html[data-accent="sparkles"] body::before,
+html[data-accent="hearts"] body::before,
+html[data-accent="stars"] body::before,
+html[data-accent="dots"] body::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.12;
+}
+html[data-accent="sparkles"] body::before {
+  background-image: radial-gradient(var(--copper) 1.2px, transparent 1.4px),
+    radial-gradient(var(--copper-2) 1px, transparent 1.2px);
+  background-size: 48px 48px, 28px 28px;
+  background-position: 0 0, 16px 12px;
+}
+html[data-accent="hearts"] body::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><text y='28' font-size='16' fill='%23ff8fab'>♥</text></svg>");
+  background-size: 48px 48px;
+}
+html[data-accent="stars"] body::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><text y='24' font-size='14' fill='%23f5c542'>★</text></svg>");
+  background-size: 40px 40px;
+}
+html[data-accent="dots"] body::before {
+  background-image: radial-gradient(var(--copper) 1.5px, transparent 1.8px);
+  background-size: 22px 22px;
+}
+html[data-accent="glow"] .rounded-3xl {
+  box-shadow: 0 0 28px color-mix(in srgb, var(--copper) 22%, transparent);
+}
+html[data-accent="glow"] .btn-primary {
+  box-shadow: 0 0 22px color-mix(in srgb, var(--copper) 45%, transparent);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

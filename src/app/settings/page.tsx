@@ -2,9 +2,10 @@ import Link from "next/link";
 import { logoutAction } from "@/app/actions/auth";
 import { saveSettingsAction } from "@/app/actions/profile";
 import { AppShell } from "@/components/app-shell";
+import { LookStudio } from "@/components/look-studio";
 import { PROGRAMS } from "@/lib/programs/catalog";
 import { DIET_PROGRAMS } from "@/lib/nutrition/diets";
-import { getAiOptIn, getTheme } from "@/lib/prefs";
+import { getAiOptIn, getLook, getTheme } from "@/lib/prefs";
 import { requireAuthed } from "@/lib/session-page";
 import { kgToDisplay } from "@/lib/utils";
 import type { Equipment } from "@/lib/types";
@@ -41,6 +42,10 @@ export default async function SettingsPage() {
     <AppShell user={user} profile={profile}>
       <h1 className="display text-4xl">You</h1>
       <p className="mt-2 text-muted">This is {user.displayName}&apos;s log. Other people in the house stay separate.</p>
+
+      <div className="mt-6">
+        <LookStudio initial={{ ...(await getLook()), theme }} />
+      </div>
 
       <nav className="mt-6 grid grid-cols-2 gap-2">
         {[
@@ -129,10 +134,6 @@ export default async function SettingsPage() {
         <label className="text-sm text-muted block">
           Weight
           <input name="weight" type="number" step="0.1" defaultValue={weightDisplay} className="mt-1" />
-        </label>
-        <label className="flex items-center gap-3 text-sm">
-          <input type="checkbox" name="theme" value="light" defaultChecked={theme === "light"} className="w-auto" />
-          Light screen
         </label>
         <label className="flex items-start gap-3 text-sm">
           <input type="checkbox" name="aiOptIn" value="1" defaultChecked={aiOptIn} className="mt-1 w-auto" />

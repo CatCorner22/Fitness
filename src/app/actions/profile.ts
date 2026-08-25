@@ -10,7 +10,7 @@ import { todayISO } from "@/lib/utils";
 import { programForGoal } from "@/lib/copy";
 import { getProgram } from "@/lib/programs/catalog";
 import { getDiet } from "@/lib/nutrition/diets";
-import { setPrefCookies } from "@/lib/prefs";
+import { getTheme, setPrefCookies } from "@/lib/prefs";
 
 async function requireUser() {
   const user = await getSession();
@@ -119,10 +119,7 @@ export async function saveSettingsAction(formData: FormData) {
     .where(eq(users.id, user.id))
     .run();
 
-  await setPrefCookies(
-    String(formData.get("aiOptIn") || "") === "1",
-    String(formData.get("theme") || "") === "light" ? "light" : "dark",
-  );
+  await setPrefCookies(String(formData.get("aiOptIn") || "") === "1", await getTheme());
 
   revalidatePath("/");
   revalidatePath("/settings");

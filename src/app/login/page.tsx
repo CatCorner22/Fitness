@@ -1,4 +1,6 @@
 import { loginAction } from "@/app/actions/auth";
+import { KawaiiAvatar } from "@/components/kawaii-avatar";
+import { getLook } from "@/lib/prefs";
 
 export default async function LoginPage({
   searchParams,
@@ -6,9 +8,13 @@ export default async function LoginPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const params = await searchParams;
+  const look = await getLook();
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-5 py-12">
-      <h1 className="display text-5xl text-ink">Garanimal</h1>
+      <div className="flex items-center gap-3">
+        <KawaiiAvatar id={look.avatar} size={56} />
+        <h1 className="display text-5xl text-ink">Garanimal</h1>
+      </div>
       <p className="mt-3 text-muted">Log the workout. Log the food. That is the app.</p>
       <form action={loginAction} className="mt-10 space-y-4 rounded-3xl border border-line bg-surface p-6">
         <label className="block text-sm text-muted">
