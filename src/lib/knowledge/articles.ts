@@ -98,6 +98,37 @@ Rotate ME lifts to avoid accommodation. This household template skips specialty-
 Glute/pole/strength goals still need fuel. The app will not praise crash dieting.`,
   },
   {
+    id: "fitness-assessment",
+    title: "Baseline fitness check — six field tests",
+    tags: ["assessment", "onboarding", "baseline", "6mwt", "push-up", "plank", "balance", "chair stand"],
+    summary:
+      "A short, no-lab battery: 6-minute walk or 2-minute step, CSEP push-ups, 30-second chair stand, front plank, single-leg stance, and two mobility screens. Scores scale RPE, rest, and exercise swaps.",
+    body: `Health-related fitness has several domains (ACSM): aerobic, muscular strength/endurance, flexibility/mobility, plus balance for function. This app does not test a 1RM on day one and does not use sit-ups as a core test.
+
+Aerobic: 6-minute walk (ATS 2002). If you log age, height, and weight (40–80), distance is compared with Enright & Sherrill 1998 predicted 6MWD. Younger adults without a prediction equation are scored on raw meters. Alternative: 2-minute in-place step (Rikli & Jones Senior Fitness Test).
+
+Upper endurance: push-ups to form failure. Cut-points are CSEP-PATH (Payne 2000), republished by ACSM/ACE. The published women's table uses kneeling push-ups; men use toes. Record which you did.
+
+Lower body: 30-second chair stand (Rikli & Jones 1999). Arms crossed. Validated in 60–94; younger adults are scored against mixed-age means around ~23 stands.
+
+Core: front plank hold (Strand et al. 2014 norms; McGill trunk-endurance work). Sit-ups load the spine in flexion-repeat; they are not the screen.
+
+Balance: unipedal stance, eyes open, 45 s cap (Springer 2007). Performance is age-specific, not sex-specific.
+
+Mobility: a qualitative overhead squat plus the Senior Fitness Test back-scratch. This is not a certified FMS score.
+
+The overall band (foundation → strong) changes RPE, accessory volume, rest, squat/press selection, and whether we add a plank or easy walk. It does not skip you to a peak week.`,
+    citations: [
+      "ATS 2002 6MWT",
+      "Enright & Sherrill 1998",
+      "Payne et al. 2000 CSEP-PATH",
+      "Rikli & Jones 1999",
+      "Strand et al. 2014",
+      "McGill et al. 1999",
+      "Springer et al. 2007",
+    ],
+  },
+  {
     id: "deload-signals",
     title: "When to deload",
     tags: ["deload", "fatigue", "recovery", "session rpe", "overtraining"],

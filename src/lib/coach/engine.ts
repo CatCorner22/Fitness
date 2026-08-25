@@ -122,6 +122,9 @@ function answerQuestion(
   if (q.includes("swap") || q.includes("substitute") || q.includes("instead")) {
     return "I can only swap from the safety registry. Open the workout and tap Swap — you will only see recommended alternatives that respect your injuries.";
   }
+  if (q.includes("assess") || q.includes("fitness check") || q.includes("baseline") || q.includes("push-up") || q.includes("plank") || q.includes("6-minute")) {
+    return "You → Fitness check. Six field tests (6-minute walk or 2-minute step, CSEP push-ups, 30s chair stand, plank, single-leg stance, overhead squat + back-scratch). We scale RPE and swaps from that. No 1RM on day one. Sit-ups are not the core test.";
+  }
   if (q.includes("protein") || q.includes("eat") || q.includes("calorie")) {
     return `Protein target is about 1.6–2.2 g/kg. Yours is based on ${profile.weightKg ?? "your"} kg bodyweight. Eat enough to train. This app will not praise a crash diet.`;
   }

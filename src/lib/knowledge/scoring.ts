@@ -73,5 +73,14 @@ export function scoreArticle(article: KnowledgeArticle, ctx: SearchContext) {
   }
   if (ctx.query?.toLowerCase().includes("rest") && article.id === "rest-periods") score += 6;
   if (ctx.query?.toLowerCase().includes("rpe") && article.id === "rpe-rir") score += 6;
+  if (
+    (ctx.query?.toLowerCase().includes("assess") ||
+      ctx.query?.toLowerCase().includes("baseline") ||
+      ctx.query?.toLowerCase().includes("push-up") ||
+      ctx.query?.toLowerCase().includes("6-minute")) &&
+    article.id === "fitness-assessment"
+  ) {
+    score += 8;
+  }
   return score;
 }

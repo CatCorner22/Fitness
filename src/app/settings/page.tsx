@@ -43,6 +43,9 @@ export default async function SettingsPage() {
         <Link className="rounded-2xl border border-line bg-surface px-4 py-3" href="/programs">
           Plans
         </Link>
+        <Link className="rounded-2xl border border-line bg-surface px-4 py-3" href="/assess">
+          Fitness check
+        </Link>
         <Link className="rounded-2xl border border-line bg-surface px-4 py-3" href="/coach">
           Coach
         </Link>

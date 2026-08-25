@@ -44,6 +44,9 @@ export default async function TodayPage() {
           <p className="mt-3 text-muted">
             {planned ? `About ${planned.estimatedMinutes} minutes` : "No session yet."}
           </p>
+          {planned && planned.fitnessNotes?.length ? (
+            <p className="mt-3 text-sm text-muted">{planned.fitnessNotes[0]}</p>
+          ) : null}
           {planned && planned.exercises.length > 0 ? (
             <p className="mt-4 text-sm text-muted">
               {planned.exercises

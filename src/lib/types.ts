@@ -153,4 +153,5 @@ export interface PlannedSession {
   estimatedMinutes: number;
   trimmed: boolean;
   droppedExerciseIds: string[];
+  fitnessNotes?: string[];
 }

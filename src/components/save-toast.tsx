@@ -13,6 +13,7 @@ const MESSAGES: Record<string, string> = {
   skipped: "Rest is fine.",
   "plan-full": "Today already has food — tap Replace if you want a new menu.",
   "plan-missing": "That meal plan is no longer available.",
+  assess: "Fitness check saved. Sessions will follow it.",
 };
 
 export function SaveToast() {

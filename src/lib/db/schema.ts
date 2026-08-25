@@ -28,6 +28,9 @@ export const profiles = sqliteTable("profiles", {
   activeProgramId: text("active_program_id"),
   programStartDate: text("program_start_date"),
   currentWeek: integer("current_week").notNull().default(1),
+  assessmentJson: text("assessment_json"),
+  fitnessTier: text("fitness_tier"),
+  assessedAt: text("assessed_at"),
 });
 
 export const workouts = sqliteTable("workouts", {
@@ -123,4 +126,14 @@ export const coachMessages = sqliteTable("coach_messages", {
   role: text("role").notNull(),
   content: text("content").notNull(),
   createdAt: text("created_at").notNull(),
+});
+
+export const fitnessAssessments = sqliteTable("fitness_assessments", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id),
+  takenAt: text("taken_at").notNull(),
+  fitnessTier: text("fitness_tier"),
+  payload: text("payload").notNull(),
 });

@@ -41,7 +41,7 @@ export async function saveOnboardingAction(formData: FormData) {
       age: Number(formData.get("age")) || null,
       heightCm,
       weightKg,
-      onboarded: 1,
+      onboarded: 0,
       activeProgramId: program?.id ?? "upper_lower",
       programStartDate: todayISO(),
       currentWeek: 1,
@@ -66,7 +66,7 @@ export async function saveOnboardingAction(formData: FormData) {
   }
 
   revalidatePath("/");
-  redirect("/");
+  redirect("/onboarding/assess");
 }
 
 export async function saveSettingsAction(formData: FormData) {

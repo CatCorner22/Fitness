@@ -40,8 +40,19 @@ function createConnection() {
       onboarded INTEGER NOT NULL DEFAULT 0,
       active_program_id TEXT,
       program_start_date TEXT,
-      current_week INTEGER NOT NULL DEFAULT 1
+      current_week INTEGER NOT NULL DEFAULT 1,
+      assessment_json TEXT,
+      fitness_tier TEXT,
+      assessed_at TEXT
     );
+    CREATE TABLE IF NOT EXISTS fitness_assessments (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id),
+      taken_at TEXT NOT NULL,
+      fitness_tier TEXT,
+      payload TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_assess_user_taken ON fitness_assessments(user_id, taken_at);
     CREATE TABLE IF NOT EXISTS workouts (
       id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL REFERENCES users(id),
@@ -128,7 +139,26 @@ function createConnection() {
     CREATE INDEX IF NOT EXISTS idx_checkins_user_date ON daily_checkins(user_id, date);
     CREATE INDEX IF NOT EXISTS idx_coach_user_created ON coach_messages(user_id, created_at);
   `);
+  migrate(sqlite);
   return drizzle(sqlite, { schema });
+}
+
+function migrate(sqlite: import("better-sqlite3").Database) {
+  const cols = sqlite.prepare("PRAGMA table_info(profiles)").all() as { name: string }[];
+  const names = new Set(cols.map((c) => c.name));
+  if (!names.has("assessment_json")) sqlite.exec("ALTER TABLE profiles ADD COLUMN assessment_json TEXT");
+  if (!names.has("fitness_tier")) sqlite.exec("ALTER TABLE profiles ADD COLUMN fitness_tier TEXT");
+  if (!names.has("assessed_at")) sqlite.exec("ALTER TABLE profiles ADD COLUMN assessed_at TEXT");
+  sqlite.exec(`
+    CREATE TABLE IF NOT EXISTS fitness_assessments (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id),
+      taken_at TEXT NOT NULL,
+      fitness_tier TEXT,
+      payload TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_assess_user_taken ON fitness_assessments(user_id, taken_at);
+  `);
 }
 
 const globalForDb = globalThis as unknown as {
