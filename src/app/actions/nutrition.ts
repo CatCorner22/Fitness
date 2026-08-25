@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull, or } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getProfile, getSession } from "@/lib/auth";
@@ -9,7 +9,9 @@ import { foods, nutritionLogs } from "@/lib/db/schema";
 import { getMealPlanTemplate, scalePlanToTargets } from "@/lib/nutrition/meal-plans";
 import { adaptiveCalories } from "@/lib/nutrition/targets";
 import { todayNutrition } from "@/lib/today";
-import { todayISO } from "@/lib/utils";
+import { clamp, todayISO } from "@/lib/utils";
+
+const MEALS = new Set(["breakfast", "lunch", "dinner", "snack"]);
 
 async function requireUser() {
   const user = await getSession();
@@ -21,9 +23,16 @@ export async function addFoodLogAction(formData: FormData) {
   const user = await requireUser();
   const foodId = String(formData.get("foodId") || "");
   const meal = String(formData.get("meal") || "lunch");
-  const servings = Number(formData.get("servings") || 1);
-  const food = db.select().from(foods).where(eq(foods.id, foodId)).get();
-  if (!food || !Number.isFinite(servings) || servings <= 0) return;
+  if (!MEALS.has(meal)) return;
+  const servingsRaw = Number(formData.get("servings") || 1);
+  if (!Number.isFinite(servingsRaw) || servingsRaw <= 0) return;
+  const servings = Math.round(clamp(servingsRaw, 0.25, 20) * 100) / 100;
+  const food = db
+    .select()
+    .from(foods)
+    .where(and(eq(foods.id, foodId), or(isNull(foods.userId), eq(foods.userId, user.id))))
+    .get();
+  if (!food) return;
 
   db.insert(nutritionLogs)
     .values({
@@ -45,14 +54,17 @@ export async function addFoodLogAction(formData: FormData) {
   redirect("/nutrition?toast=food");
 }
 
+function macroGrams(raw: unknown) {
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < 0) return 0;
+  return clamp(n, 0, 500);
+}
+
 export async function addCustomFoodAction(formData: FormData) {
   const user = await requireUser();
-  const name = String(formData.get("name") || "").trim();
+  const name = String(formData.get("name") || "").trim().slice(0, 80);
   const calories = Number(formData.get("calories"));
-  const protein = Number(formData.get("protein"));
-  const carbs = Number(formData.get("carbs"));
-  const fat = Number(formData.get("fat"));
-  if (!name || !Number.isFinite(calories)) return;
+  if (!name || !Number.isFinite(calories) || calories < 0 || calories > 5000) return;
   const id = crypto.randomUUID();
   db.insert(foods)
     .values({
@@ -60,10 +72,10 @@ export async function addCustomFoodAction(formData: FormData) {
       userId: user.id,
       name,
       calories,
-      protein: protein || 0,
-      carbs: carbs || 0,
-      fat: fat || 0,
-      serving: String(formData.get("serving") || "1 serving"),
+      protein: macroGrams(formData.get("protein")),
+      carbs: macroGrams(formData.get("carbs")),
+      fat: macroGrams(formData.get("fat")),
+      serving: String(formData.get("serving") || "1 serving").trim().slice(0, 40) || "1 serving",
       favorite: 1,
     })
     .run();

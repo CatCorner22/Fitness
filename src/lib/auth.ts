@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
+import { authSecretBytes } from "@/lib/auth-secret";
 import { db, ensureMigrated } from "@/lib/db";
 import { profiles, users } from "@/lib/db/schema";
 import type { AssessmentResult, FitnessTier } from "@/lib/assessment/types";
@@ -11,9 +12,7 @@ import type { Experience, Goal, Injury, Persona, Units } from "@/lib/types";
 const COOKIE = "garanimal_session";
 
 function secret() {
-  return new TextEncoder().encode(
-    process.env.AUTH_SECRET || "garanimal-dev-secret-change-me-please-32b",
-  );
+  return authSecretBytes();
 }
 
 export type SessionUser = {
@@ -23,7 +22,7 @@ export type SessionUser = {
 };
 
 export async function createSession(user: SessionUser) {
-  const token = await new SignJWT(user)
+  const token = await new SignJWT({ id: user.id, username: user.username, displayName: user.displayName })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("30d")
@@ -45,12 +44,12 @@ export async function getSession(): Promise<SessionUser | null> {
   const token = (await cookies()).get(COOKIE)?.value;
   if (!token) return null;
   try {
-    const { payload } = await jwtVerify(token, secret());
-    return {
-      id: String(payload.id),
-      username: String(payload.username),
-      displayName: String(payload.displayName),
-    };
+    const { payload } = await jwtVerify(token, secret(), { algorithms: ["HS256"] });
+    const id = typeof payload.id === "string" ? payload.id : "";
+    if (!id) return null;
+    const row = db.select().from(users).where(eq(users.id, id)).get();
+    if (!row) return null;
+    return { id: row.id, username: row.username, displayName: row.displayName };
   } catch {
     return null;
   }

@@ -16,6 +16,7 @@ export default async function SkillPage({
   const course = courseById(courseId);
   const skill = skillById(skillId);
   if (!course || !skill) notFound();
+  if (!course.modules.some((m) => m.skillIds.includes(skill.id))) notFound();
   const courseModule = course.modules.find((m) => m.skillIds.includes(skill.id));
   const index = courseModule ? courseModule.skillIds.indexOf(skill.id) : -1;
   const prevId = courseModule && index > 0 ? courseModule.skillIds[index - 1] : undefined;

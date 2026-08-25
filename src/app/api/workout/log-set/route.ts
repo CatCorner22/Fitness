@@ -5,7 +5,7 @@ import { generateLiveAdvice } from "@/lib/ai/live-advice";
 import { allowedSubstitutes } from "@/lib/exercises/registry";
 import { db } from "@/lib/db";
 import { dailyCheckins, setLogs, workouts } from "@/lib/db/schema";
-import { displayToKg, todayISO } from "@/lib/utils";
+import { displayToKg, todayISO, clamp } from "@/lib/utils";
 import { getExercise } from "@/lib/exercises/registry";
 import { getAiOptIn } from "@/lib/prefs";
 
@@ -45,17 +45,17 @@ export async function POST(request: Request) {
     .get();
   if (!row) return NextResponse.json({ error: "Set not found" }, { status: 404 });
 
-  const weightKg = Number.isFinite(weight) ? displayToKg(weight, profile.units) : null;
+  const weightKg = Number.isFinite(weight) ? displayToKg(clamp(weight, 0, 1000), profile.units) : null;
 
   try {
     db.update(setLogs)
       .set({
         weightKg,
-        reps: Number.isFinite(reps) ? reps : null,
-        rpe: Number.isFinite(rpe) ? rpe : null,
+        reps: Number.isFinite(reps) ? Math.round(clamp(reps, 0, 100)) : null,
+        rpe: Number.isFinite(rpe) ? clamp(rpe, 1, 10) : null,
         completed: 1,
       })
-      .where(eq(setLogs.id, setId))
+      .where(and(eq(setLogs.id, setId), eq(setLogs.userId, user.id)))
       .run();
   } catch {
     return NextResponse.json({ error: "Could not save set" }, { status: 500 });

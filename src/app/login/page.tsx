@@ -1,5 +1,7 @@
+import { redirect } from "next/navigation";
 import { loginAction } from "@/app/actions/auth";
 import { KawaiiAvatar } from "@/components/kawaii-avatar";
+import { getProfile, getSession } from "@/lib/auth";
 import { getLook } from "@/lib/prefs";
 
 export default async function LoginPage({
@@ -7,6 +9,11 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
+  const session = await getSession();
+  if (session) {
+    const profile = getProfile(session.id);
+    redirect(profile?.onboarded ? "/" : "/onboarding");
+  }
   const params = await searchParams;
   const look = await getLook();
   return (

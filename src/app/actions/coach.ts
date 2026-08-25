@@ -23,7 +23,7 @@ export async function askCoachAction(formData: FormData) {
   const profile = getProfile(user.id);
   if (!profile) redirect("/onboarding");
 
-  const question = String(formData.get("question") || "").trim();
+  const question = String(formData.get("question") || "").trim().slice(0, 4000);
   const now = new Date().toISOString();
   if (question) {
     db.insert(coachMessages)

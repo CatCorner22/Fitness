@@ -1,15 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { jwtVerify } from "jose";
+import { authSecretBytes } from "@/lib/auth-secret";
 
-const PUBLIC = ["/login", "/api/export"];
+const PUBLIC = ["/login"];
 
-function secret() {
-  return new TextEncoder().encode(
-    process.env.AUTH_SECRET || "garanimal-dev-secret-change-me-please-32b",
-  );
-}
-
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   if (
     pathname.startsWith("/_next") ||
@@ -27,7 +22,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
   try {
-    await jwtVerify(token, secret());
+    await jwtVerify(token, authSecretBytes(), { algorithms: ["HS256"] });
     return NextResponse.next();
   } catch {
     if (pathname.startsWith("/api/")) {
@@ -38,5 +33,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|.*\\.png$).*)"],
+  // Instructor stills/audio/video stay authenticated. Only skip Next internals and static chrome.
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|svg|ico|woff2?)$).*)"],
 };

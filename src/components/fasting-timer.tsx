@@ -32,13 +32,30 @@ type AdjRow = {
   summary: string;
 };
 
+let nowMsValue = 0;
+const nowListeners = new Set<() => void>();
+let nowInterval: number | undefined;
+
 function subscribeNow(onStoreChange: () => void) {
-  const id = window.setInterval(onStoreChange, 1000);
-  return () => window.clearInterval(id);
+  nowListeners.add(onStoreChange);
+  if (typeof window !== "undefined" && nowInterval == null) {
+    nowMsValue = Date.now();
+    nowInterval = window.setInterval(() => {
+      nowMsValue = Date.now();
+      nowListeners.forEach((listener) => listener());
+    }, 1000);
+  }
+  return () => {
+    nowListeners.delete(onStoreChange);
+  };
 }
 
 function nowMs() {
-  return Date.now();
+  return nowMsValue;
+}
+
+function serverNow() {
+  return 0;
 }
 
 function formatClock(iso: string) {
@@ -62,7 +79,6 @@ export function FastingTimer({
   adjustments: AdjRow[];
   defaultStart: string;
 }) {
-  const now = useSyncExternalStore(subscribeNow, nowMs, nowMs);
   const past = recent.filter((f) => f.id !== running?.id);
 
   return (
@@ -72,7 +88,7 @@ export function FastingTimer({
         Your clock. Change the start, the target, or the end while it runs — or after.
       </p>
       {running ? (
-        <RunningFast now={now} fast={running} adjustments={adjustments} />
+        <RunningFast fast={running} adjustments={adjustments} />
       ) : (
         <StartFast defaultStart={defaultStart} />
       )}
@@ -138,14 +154,13 @@ function StartFast({ defaultStart }: { defaultStart: string }) {
 }
 
 function RunningFast({
-  now,
   fast,
   adjustments,
 }: {
-  now: number;
   fast: FastRow;
   adjustments: AdjRow[];
 }) {
+  const now = useSyncExternalStore(subscribeNow, nowMs, serverNow);
   const end = Date.parse(fast.plannedEndAt);
   const start = Date.parse(fast.startedAt);
   const remaining = end - now;
@@ -353,7 +368,7 @@ function CompletedFast({ fast }: { fast: FastRow }) {
 }
 
 export function FastingStrip({ running }: { running: FastRow }) {
-  const now = useSyncExternalStore(subscribeNow, nowMs, () => Date.parse(running.startedAt));
+  const now = useSyncExternalStore(subscribeNow, nowMs, serverNow);
   const remaining = Date.parse(running.plannedEndAt) - now;
   const overtime = remaining <= 0;
   return (

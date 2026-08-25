@@ -37,7 +37,7 @@ export default async function NutritionPage() {
   const extras = plans.slice(1);
   const openFast = runningFast(user.id);
   const fasts = recentFasts(user.id);
-  const adjustments = openFast ? adjustmentsForFast(openFast.id) : [];
+  const adjustments = openFast ? adjustmentsForFast(openFast.id, user.id) : [];
   const diet = targets.diet;
 
   return (
