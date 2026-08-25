@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, gte } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { bodyweightLogs, nutritionLogs } from "@/lib/db/schema";
 import type { ProfileRow } from "@/lib/auth";
@@ -65,8 +65,8 @@ export function adaptiveCalories(userId: string, profile: ProfileRow) {
     .from(bodyweightLogs)
     .where(eq(bodyweightLogs.userId, userId))
     .orderBy(desc(bodyweightLogs.date))
-    .all()
-    .slice(0, 14);
+    .limit(14)
+    .all();
 
   if (!staticTdee || weights.length < 8) {
     const calories = clampCalories(calorieTarget(profile));
@@ -93,24 +93,22 @@ export function adaptiveCalories(userId: string, profile: ProfileRow) {
   );
   const weeklyChange = ((newest - oldest) / days) * 7;
 
-  const recentDays = new Set(
-    db
-      .select()
-      .from(nutritionLogs)
-      .where(eq(nutritionLogs.userId, userId))
-      .all()
-      .map((l) => l.date),
-  );
-  const logged = [...recentDays].sort().slice(-7);
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 14);
+  const recentLogs = db
+    .select({ date: nutritionLogs.date, calories: nutritionLogs.calories })
+    .from(nutritionLogs)
+    .where(and(eq(nutritionLogs.userId, userId), gte(nutritionLogs.date, cutoff.toISOString().slice(0, 10))))
+    .all();
+  const byDate = new Map<string, number>();
+  for (const row of recentLogs) {
+    byDate.set(row.date, (byDate.get(row.date) ?? 0) + row.calories);
+  }
+  const logged = [...byDate.keys()].sort().slice(-7);
   let intake = 0;
   let intakeDays = 0;
   for (const date of logged) {
-    const dayLogs = db
-      .select()
-      .from(nutritionLogs)
-      .where(and(eq(nutritionLogs.userId, userId), eq(nutritionLogs.date, date)))
-      .all();
-    const dayCals = dayLogs.reduce((s, l) => s + l.calories, 0);
+    const dayCals = byDate.get(date) ?? 0;
     if (dayCals > 400) {
       intake += dayCals;
       intakeDays++;
