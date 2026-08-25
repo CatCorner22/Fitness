@@ -31,16 +31,18 @@ const DEFAULT_EQUIPMENT = JSON.stringify([
 export function seedIfNeeded(db: Db) {
   const now = new Date().toISOString();
   for (const person of HOUSEHOLD) {
-    db.insert(users)
-      .values({
-        id: person.id,
-        username: person.username,
-        passwordHash: bcrypt.hashSync(person.password, 10),
-        displayName: person.displayName,
-        createdAt: now,
-      })
-      .onConflictDoNothing()
-      .run();
+    const exists = db.select({ id: users.id }).from(users).where(eq(users.username, person.username)).get();
+    if (!exists) {
+      db.insert(users)
+        .values({
+          id: person.id,
+          username: person.username,
+          passwordHash: bcrypt.hashSync(person.password, 10),
+          displayName: person.displayName,
+          createdAt: now,
+        })
+        .run();
+    }
     db.insert(profiles)
       .values({
         userId: person.id,

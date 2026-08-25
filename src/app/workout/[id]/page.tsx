@@ -8,7 +8,7 @@ import { setLogs, workouts } from "@/lib/db/schema";
 import { getProgram } from "@/lib/programs/catalog";
 import { estimateSessionMinutes } from "@/lib/programs/plan";
 import { requireAuthed } from "@/lib/session-page";
-import { suggestionsForExercises, lastWorkingSets } from "@/lib/autoregulation";
+import { lastWorkingSets } from "@/lib/autoregulation";
 import { getAiOptIn } from "@/lib/prefs";
 
 export default async function WorkoutPage({ params }: { params: Promise<{ id: string }> }) {
@@ -29,15 +29,7 @@ export default async function WorkoutPage({ params }: { params: Promise<{ id: st
 
   const program = getProgram(workout.programId);
   const phase = program?.phases.find((p) => p.weeks.includes(workout.week));
-  const { decisions } = suggestionsForExercises(
-    user.id,
-    exerciseIds.map((eid) => ({
-      exerciseId: eid,
-      targetRpe: sets.find((s) => s.exerciseId === eid)?.targetRpe ?? 8,
-      reps: sets.find((s) => s.exerciseId === eid)?.targetReps ?? "8",
-    })),
-  );
-  const ghostSets = lastWorkingSets(user.id);
+  const ghostSets = lastWorkingSets(user.id, exerciseIds);
 
   return (
     <AppShell user={user} profile={profile}>
@@ -59,7 +51,7 @@ export default async function WorkoutPage({ params }: { params: Promise<{ id: st
             priority: 2,
           })),
         )}
-        decisions={decisions}
+        decisions={[]}
         aiAvailable={false}
         aiOptIn={await getAiOptIn()}
         ghostSets={ghostSets}

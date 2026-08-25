@@ -6,14 +6,14 @@ import { skipWorkoutAction, startWorkoutAction } from "@/app/actions/workout";
 import { shouldDeload } from "@/lib/autoregulation";
 import { requireAuthed } from "@/lib/session-page";
 import { todayNutrition, todaysPlan } from "@/lib/today";
-import { adaptiveCalories } from "@/lib/nutrition/targets";
+import { calorieTarget, macroTargets, proteinTargetG } from "@/lib/nutrition/targets";
 import { courseForProgram } from "@/lib/course/catalog";
 
 export default async function TodayPage() {
   const { user, profile } = await requireAuthed();
   const plan = todaysPlan(user.id, profile);
   const food = todayNutrition(user.id);
-  const targets = adaptiveCalories(user.id, profile);
+  const targets = macroTargets(calorieTarget(profile), proteinTargetG(profile), profile.goal);
   const planned = plan?.planned;
   const deload = shouldDeload(user.id);
   const open = plan?.open;
