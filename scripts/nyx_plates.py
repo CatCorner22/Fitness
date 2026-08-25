@@ -58,13 +58,13 @@ def plate(src_name: str, dest_name: str, title: str) -> None:
     shade(src, 0, int(h * 0.22), 170, 0)
     shade(src, int(h * 0.86), h, 0, 200)
     draw = ImageDraw.Draw(src)
-    draw.text((36, 36), "NYX  ·  STAGE LAB", fill=COPPER, font=font(18))
-    draw.text((36, 68), title, fill=CREAM, font=font(34))
+    draw.text((36, 32), "NYX  ·  STAGE LAB", fill=COPPER, font=font(22))
+    draw.text((36, 64), title, fill=CREAM, font=font(42))
     draw.text(
-        (36, h - 44),
+        (36, h - 48),
         "Fictional adult instructor  ·  photoreal plate",
         fill=MUTED,
-        font=font(14),
+        font=font(16),
     )
     out = src.convert("RGB")
     dest = OUT / dest_name
