@@ -1,0 +1,32 @@
+export const NYX = {
+  id: "nyx",
+  name: "Nyx",
+  fullName: "Nyx Vale",
+  ageLabel: "adult, late 20s",
+  role: "Stage and class instructor",
+  look: "Pale, long black hair, blunt fringe, dark liner, black lipstick, septum ring. Black yoga pants. Illustrated plates are topless; studio photos show the same character in a sports bra because the photo pipeline blocks nudity.",
+  voice: {
+    nameHints: ["Aria", "Jenny", "Ava", "Samantha", "Zira", "Female", "Woman"],
+    rate: 0.82,
+    pitch: 0.86,
+    edgeVoice: "en-US-AriaNeural",
+    edgeRate: "-12%",
+    edgePitch: "-6Hz",
+  },
+  portrait: "/instructor/nyx-portrait.webp",
+  plates: {
+    portrait: "/instructor/plates/nyx-plate-portrait.png",
+    walk: "/instructor/plates/nyx-plate-walk.png",
+    wave: "/instructor/plates/nyx-plate-wave.png",
+    floor: "/instructor/plates/nyx-plate-floor.png",
+    chair: "/instructor/plates/nyx-plate-chair.png",
+    sit: "/instructor/plates/nyx-plate-sit.png",
+  },
+  photos: {
+    portrait: "/instructor/nyx-portrait.webp",
+    walk: "/instructor/nyx-walk.webp",
+    wave: "/instructor/nyx-wave.webp",
+    chair: "/instructor/nyx-chair.webp",
+    sit: "/instructor/nyx-sit.webp",
+  },
+} as const;

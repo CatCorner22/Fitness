@@ -72,8 +72,29 @@ Off-pole: dead hangs, assisted→strict pull-ups, inverted rows, hollow body, ha
 
 Invert readiness: hanging tuck → controlled on-pole tuck with a spot → studio invert. Never kip. Crash mat. Do not learn inverts from a phone on carpet.
 
-Amateur night: walk, body wave, floorwork, one or two spins, sit or climb, 2–3 minute run-through. Heels are optional and later. No new tricks in the show set.`,
+Amateur night: walk, eye-line, arms, body wave, figure-8, hip pulse, floor descent, tabletop, knee circle, floor roll, chair approach/straddle/roll, layer change, 8-counts, song-length run-through. Pole as prop: walk, back-to-pole, fireman, sit, climb, controlled descent. Heels later. No new tricks in the show set.
+
+Nyx course: every skill is taught five-plus ways (short cue, numbered steps, diagram, photo, illustrated plate, sultry spoken pass, video). Pick a channel. Replay freely. We never drop a listed drill to fake a shorter clock.`,
     citations: ["Lee et al. 2022 MPPA", "Nawrocka et al. amateur pole injury surveys", "Szopa et al. 2021 Sci Rep"],
+  },
+  {
+    id: "nyx-udl",
+    title: "How Nyx teaches (multi-channel, neurodivergent-friendly)",
+    tags: ["nyx", "course", "udl", "neurodivergent", "voice", "pole", "exotic", "instruction"],
+    summary:
+      "Each skill ships as a short cue, numbered steps, a diagram, a photo, an illustrated plate, a spoken pass, and a clip. Pick any channel. Nothing is hidden. We do not infer a diagnosis from how you move.",
+    body: `This copies the Universal Design for Learning idea of multiple means of representation (CAST; InPACT-at-Home / InPACT for Everyone, Hasson et al. 2024): detailed instructions, short cues, and visuals — plus audio and video.
+
+Three C’s: consistency, conciseness, clarity. Simple words. One step at a time. Count out loud if it helps.
+
+From the user’s P2C review doctrine we also keep: autonomy (pause, replay, skip a channel, take a break); no speed-demand “cognitive load” tricks; we do not infer disability, anxiety, or skill from style. Pain is a stop.
+
+Nyx is a fictional adult instructor. Illustrated plates are topless in yoga pants. Studio photos of the same character use a sports bra because the photo pipeline blocks nudity. Voice is a slow, low female pass you can replay.`,
+    citations: [
+      "CAST Universal Design for Learning",
+      "Hasson et al. 2024 InPACT for Everyone / Frontiers in Physiology",
+      "P2C research basis: cognitive-load, autonomy-support, explicit-context-only",
+    ],
   },
   {
     id: "stretching-ergonomics",

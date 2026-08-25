@@ -16,5 +16,6 @@ export function programForGoal(goal: string) {
   if (goal === "bodybuilding" || goal === "glute_specialization") return "ppl";
   if (goal === "strength_endurance") return "strength_endurance";
   if (goal === "pole_stage") return "pole_stage";
+  if (goal === "exotic_stage") return "pole_amateur_night";
   return "upper_lower";
 }

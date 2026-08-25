@@ -67,6 +67,7 @@ export type Goal =
   | "bodybuilding"
   | "strength_endurance"
   | "pole_stage"
+  | "exotic_stage"
   | "glute_specialization"
   | "general";
 
@@ -161,4 +162,5 @@ export interface PlannedSession {
   estimatedMinutes: number;
   trimmed: boolean;
   droppedExerciseIds: string[];
+  overTimeBudget: boolean;
 }

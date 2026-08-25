@@ -66,28 +66,11 @@ export function pickSubstitute(
   return options[0] ?? allowedSubstitutes(exerciseId, injuries)[0];
 }
 
+/** Keep every programmed lift. Time budget never deletes work. */
 export function trimForDuration(items: TemplateExercise[], minutes: number) {
-  const dropped: string[] = [];
-  let current = [...items];
-  let estimate = estimateSessionMinutes(current);
-  const dropOrder = [...current].sort((a, b) => b.priority - a.priority);
-
-  for (const candidate of dropOrder) {
-    if (estimate <= minutes) break;
-    if (candidate.priority <= 2 && current.filter((c) => c.priority <= 2).length <= 2) break;
-    current = current.filter((c) => c !== candidate);
-    dropped.push(candidate.exerciseId);
-    estimate = estimateSessionMinutes(current);
-  }
-
-  // Short sessions: slightly shorter rest on isolation
-  if (minutes <= 45) {
-    current = current.map((c) =>
-      c.priority >= 4 ? { ...c, restSeconds: Math.min(c.restSeconds ?? 75, 60) } : c,
-    );
-  }
-
-  return { exercises: current, dropped, estimate };
+  const current = [...items];
+  const estimate = estimateSessionMinutes(current);
+  return { exercises: current, dropped: [] as string[], estimate, overTime: estimate > minutes };
 }
 
 export function buildPlannedSession(options: {
@@ -158,8 +141,9 @@ export function buildPlannedSession(options: {
     day: { ...day, exercises: trimmed.exercises },
     exercises,
     estimatedMinutes: trimmed.estimate,
-    trimmed: trimmed.dropped.length > 0,
-    droppedExerciseIds: trimmed.dropped,
+    trimmed: false,
+    droppedExerciseIds: [],
+    overTimeBudget: trimmed.overTime,
   };
 }
 

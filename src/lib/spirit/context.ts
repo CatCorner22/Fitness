@@ -22,7 +22,6 @@ export function buildTodayContextSummary(userId: string, profile: ProfileRow) {
   }
   const p = plan.planned;
   const exerciseLines = p.exercises
-    .slice(0, 8)
     .map(
       (ex) =>
         `- ${ex.exercise.name}: ${ex.sets}×${ex.reps} @ RPE ${ex.targetRpe}${ex.suggestedWeightKg ? ` (~${ex.suggestedWeightKg} kg)` : ""}`,
@@ -32,7 +31,7 @@ export function buildTodayContextSummary(userId: string, profile: ProfileRow) {
 
 Today's planned session: ${p.program.name} · ${p.day.name} · week ${p.week} · ${p.phase.name}
 Focus: ${p.day.focus}
-Estimated: ~${p.estimatedMinutes} min${p.trimmed ? " (trimmed to time budget)" : ""}
+Estimated: ~${p.estimatedMinutes} min${p.overTimeBudget ? " (full session is longer than the clock cap — no drills dropped)" : ""}
 Exercises:
 ${exerciseLines}
 ${plan.open ? "Status: workout in progress — resume when ready." : plan.allDone ? "Status: week complete." : "Status: ready to start."}`;

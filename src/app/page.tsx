@@ -7,6 +7,7 @@ import { shouldDeload } from "@/lib/autoregulation";
 import { requireAuthed } from "@/lib/session-page";
 import { todayNutrition, todaysPlan } from "@/lib/today";
 import { adaptiveCalories } from "@/lib/nutrition/targets";
+import { courseForProgram } from "@/lib/course/catalog";
 
 export default async function TodayPage() {
   const { user, profile } = await requireAuthed();
@@ -43,15 +44,30 @@ export default async function TodayPage() {
           <h1 className="display text-[2.6rem] leading-none">{open ? "Workout open" : planned?.day.name}</h1>
           <p className="mt-3 text-muted">
             {planned ? `About ${planned.estimatedMinutes} minutes` : "No session yet."}
+            {planned?.overTimeBudget
+              ? ` — longer than your ${profile.sessionMinutes}-minute cap. We still keep every drill.`
+              : ""}
           </p>
           {planned && planned.exercises.length > 0 ? (
-            <p className="mt-4 text-sm text-muted">
-              {planned.exercises
-                .slice(0, 4)
-                .map((ex) => ex.exercise.name)
-                .join(" · ")}
-              {planned.exercises.length > 4 ? " · …" : ""}
-            </p>
+            <ul className="mt-4 space-y-1 text-sm">
+              {planned.exercises.map((ex) => (
+                <li key={`${ex.exerciseId}-${ex.role ?? "x"}`}>
+                  {ex.exercise.name}
+                  <span className="text-muted">
+                    {" "}
+                    · {ex.sets} × {ex.reps}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          {courseForProgram(planned?.program.id ?? "") ? (
+            <Link
+              href={`/course/${courseForProgram(planned!.program.id)!.id}`}
+              className="mt-4 inline-block text-sm text-copper-2"
+            >
+              Nyx course for this plan
+            </Link>
           ) : null}
           <div className="mt-8 space-y-3">
             {open ? (

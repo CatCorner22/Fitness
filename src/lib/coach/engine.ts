@@ -127,13 +127,13 @@ function answerQuestion(
     return `Protein target is about 1.6–2.2 g/kg. Yours is based on ${profile.weightKg ?? "your"} kg bodyweight. Eat enough to train. This app will not praise a crash diet.`;
   }
   if (q.includes("time") || q.includes("busy") || q.includes("minutes")) {
-    return `Your cap is ${profile.sessionMinutes} minutes. The planner keeps compounds and drops isolation. That is how you train when life is loud.`;
+    return `Your clock cap is ${profile.sessionMinutes} minutes. The planner still keeps every programmed drill and tells you if the day runs long. We do not hide or drop lifts to fake a short session.`;
   }
   if (q.includes("glute") || q.includes("butt") || q.includes("ass")) {
     return "Hip thrust, squat or split squat, RDL, abduction, 45° extension. Variety. Plotkin 2023: thrust ≈ squat for glute size. Kassiano 2024: adding thrusts on top of hinges and presses grew more glute. Do the work.";
   }
-  if (q.includes("pole") || q.includes("strip") || q.includes("invert") || q.includes("amateur")) {
-    return "Two plans: Pole class prep (walk, fireman, sit, climb, invert prep, both sides) and Couch to amateur night (walk, floor, spins, a short set — no new inverts in the show). Off-pole: hangs, strict pulls, hollow, push balance. Shoulders and wrists take most pole injuries. Crash mat. Studio for inverts. No kipping.";
+  if (q.includes("pole") || q.includes("strip") || q.includes("invert") || q.includes("amateur") || q.includes("exotic") || q.includes("nyx")) {
+    return "Two courses: Intermediate pole class prep (hangs, both-side fireman and hook, sit, climb, invert prep, class-capacity circuit) and Amateur night (walk, body, floor, chair, pole as prop, 8-counts, a song you can finish). Nyx teaches each skill with a cue, steps, diagram, photo, illustrated plate, and spoken pass. Crash mat. Studio for inverts. No kipping. Both sides. Open Course from You.";
   }
   if (q.includes("ruck") || q.includes("rucking") || q.includes("pack")) {
     return "Start around 10–15% bodyweight, talking pace. Add distance or load, not both, in the same week. Stay under ~30% bodyweight unless you have a real event and a base.";

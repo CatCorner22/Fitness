@@ -48,6 +48,9 @@ export default async function SettingsPage() {
         <Link className="rounded-2xl border border-line bg-surface px-4 py-3" href="/coach">
           Coach
         </Link>
+        <Link className="rounded-2xl border border-line bg-surface px-4 py-3" href="/course">
+          Nyx course
+        </Link>
         <Link className="rounded-2xl border border-line bg-surface px-4 py-3" href="/knowledge">
           Guide
         </Link>
@@ -68,7 +71,8 @@ export default async function SettingsPage() {
             <option value="powerlifting">Get stronger</option>
             <option value="bodybuilding">Build muscle</option>
             <option value="strength_endurance">Lift and cardio</option>
-            <option value="pole_stage">Pole / stage</option>
+            <option value="pole_stage">Pole class</option>
+            <option value="exotic_stage">Amateur night / exotic</option>
             <option value="glute_specialization">Glute focus</option>
           </select>
         </label>

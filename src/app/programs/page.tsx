@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { enrollProgramAction } from "@/app/actions/profile";
 import { AppShell } from "@/components/app-shell";
+import { courseForProgram } from "@/lib/course/catalog";
+import { getExercise } from "@/lib/exercises/registry";
 import { PROGRAMS } from "@/lib/programs/catalog";
 import { requireAuthed } from "@/lib/session-page";
 
@@ -24,7 +26,9 @@ export default async function ProgramsPage() {
   return (
     <AppShell user={user} profile={profile}>
       <h1 className="display text-4xl">Plans</h1>
-      <p className="mt-2 max-w-2xl text-muted">Pick one. You can switch later under You.</p>
+      <p className="mt-2 max-w-2xl text-muted">
+        Pick one. You can switch later under You. Pole and amateur-night plans include a full Nyx course — every drill listed, none cut.
+      </p>
       <div className="mt-8 space-y-10">
         {grouped.map((group) => (
           <section key={group.category}>
@@ -58,19 +62,31 @@ export default async function ProgramsPage() {
                   <p className="mt-3 text-xs text-muted">
                     {program.daysPerWeek} days · {program.durationWeeks} weeks
                   </p>
-                  <ol className="mt-4 grid gap-2 sm:grid-cols-2">
+                  <ol className="mt-4 grid gap-2">
                     {program.days.map((day) => (
                       <li key={day.id} className="rounded-2xl bg-bg-2 p-3 text-sm">
                         <strong>{day.name}</strong>
                         <span className="block text-xs text-muted">
-                          {day.focus} · ~{day.estimatedMinutes} min
+                          {day.focus} · ~{day.estimatedMinutes} min · {day.exercises.length} drills
+                        </span>
+                        <span className="mt-1 block text-xs">
+                          {day.exercises
+                            .map((item) => getExercise(item.exerciseId)?.name ?? item.exerciseId)
+                            .join(" · ")}
                         </span>
                       </li>
                     ))}
                   </ol>
-                  <Link href={`/programs/${program.id}`} className="mt-4 inline-block text-sm text-copper-2">
-                    Full week view →
-                  </Link>
+                  <div className="mt-4 flex flex-wrap gap-4">
+                    <Link href={`/programs/${program.id}`} className="text-sm text-copper-2">
+                      Full week view →
+                    </Link>
+                    {courseForProgram(program.id) ? (
+                      <Link href={`/course/${courseForProgram(program.id)!.id}`} className="text-sm text-copper-2">
+                        Nyx course →
+                      </Link>
+                    ) : null}
+                  </div>
                 </article>
               ))}
             </div>
