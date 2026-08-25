@@ -1,13 +1,15 @@
 import type { ProfileRow } from "@/lib/auth";
 import { coachContext } from "@/lib/coach/engine";
+import { adaptiveCalories } from "@/lib/nutrition/targets";
 import { todaysPlan } from "@/lib/today";
 
 export function buildCoachContextSummary(userId: string, profile: ProfileRow) {
   const ctx = coachContext(userId, profile);
+  const food = adaptiveCalories(userId, profile);
   return `Program: ${ctx.program?.name ?? "none"}, week ${profile.currentWeek}, ${profile.sessionMinutes} min sessions.
 Last 14 days: ${ctx.completed.length} completed, ${ctx.missed.length} skipped.
 Deload: ${ctx.deload.deload ? "yes — " + ctx.deload.reason : ctx.deload.reason}
-Goal: ${profile.goal}. Injuries: ${profile.injuries.join(", ") || "none"}.
+Goal: ${profile.goal} (${food.goalTitle}: ${food.calories} kcal, ${food.protein} g protein, ${food.carbs} g carbs, ${food.fat} g fat; TDEE ${food.tdee ?? "unknown"} ${food.surplus >= 0 ? "+" : ""}${food.surplus} kcal). Injuries: ${profile.injuries.join(", ") || "none"}.
 Today's fatigue check-in: ${ctx.checkin?.fatigue ?? "not logged"}/5.
 Sleep logged today: ${ctx.checkin?.sleepHours ?? "not logged"} hours.`;
 }

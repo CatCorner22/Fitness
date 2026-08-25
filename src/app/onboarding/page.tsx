@@ -21,12 +21,12 @@ export default async function OnboardingPage() {
         <fieldset className="space-y-2">
           <legend className="text-sm text-muted">Primary goal</legend>
           {[
-            ["general", "General strength"],
-            ["powerlifting", "Powerlifting"],
-            ["bodybuilding", "Bodybuilding / physique"],
-            ["strength_endurance", "Strength + endurance"],
-            ["pole_stage", "Pole / stage prep"],
-            ["glute_specialization", "Big Ass Program"],
+            ["general", "General strength — maintain calories"],
+            ["powerlifting", "Powerlifting — slight surplus"],
+            ["bodybuilding", "Bodybuilding / physique — hypertrophy surplus"],
+            ["strength_endurance", "Strength + endurance — extra carbs"],
+            ["pole_stage", "Pole / stage prep — maintain, high protein"],
+            ["glute_specialization", "Big Ass Program — surplus + protein"],
           ].map(([value, label]) => (
             <label key={value} className="flex items-center gap-2 text-ink">
               <input type="radio" name="goal" value={value} defaultChecked={value === "general"} className="w-auto" />

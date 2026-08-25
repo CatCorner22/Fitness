@@ -141,16 +141,17 @@ export default async function TodayPage() {
 
       <div className="mt-6 grid gap-4 md:grid-cols-3">
         <section className="rounded-3xl border border-line bg-surface p-5">
-          <h2 className="text-lg">Protein</h2>
+          <p className="text-xs uppercase tracking-wide text-copper">{targets.goalTitle}</p>
+          <h2 className="mt-1 text-lg">Calories</h2>
           <p className="display text-3xl">
-            {Math.round(food.protein)}
-            <span className="text-base text-muted"> / {targets.protein} g</span>
+            {Math.round(food.calories)}
+            <span className="text-base text-muted"> / {targets.calories}</span>
           </p>
           <p className="mt-2 text-xs text-muted">
-            {Math.round(food.calories)} / {targets.calories ?? "—"} kcal
+            Protein {Math.round(food.protein)} / {targets.protein} g · {targets.carbs} g carbs · {targets.fat} g fat
           </p>
           <Link href="/nutrition" className="mt-3 inline-block text-sm text-copper-2">
-            Log food →
+            Meal plans →
           </Link>
         </section>
         <form action={logBodyweightAction} className="rounded-3xl border border-line bg-surface p-5">

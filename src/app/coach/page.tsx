@@ -68,8 +68,8 @@ export default async function CoachPage() {
         </p>
         {briefing?.citeIds?.length ? (
           <div className="mt-3 flex flex-wrap gap-1">
-            {briefing.citeIds.map((id) => (
-              <Link key={id} href={`/knowledge#${id}`} className="rounded-full bg-bg px-2 py-0.5 text-[10px] text-copper-2">
+            {briefing.citeIds.map((id, i) => (
+              <Link key={`${id}-${i}`} href={`/knowledge#${id}`} className="rounded-full bg-bg px-2 py-0.5 text-[10px] text-copper-2">
                 {id}
               </Link>
             ))}

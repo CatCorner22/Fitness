@@ -2,6 +2,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { bodyweightLogs, nutritionLogs } from "@/lib/db/schema";
 import type { ProfileRow } from "@/lib/auth";
+import { goalNutrition } from "@/lib/nutrition/goals";
 
 export function mifflinStJeor(profile: ProfileRow) {
   const weight = profile.weightKg;
@@ -20,21 +21,45 @@ export function activityFactor(daysPerWeek: number) {
 
 export function proteinTargetG(profile: ProfileRow) {
   const kg = profile.weightKg ?? 70;
-  return Math.round(1.8 * kg);
+  return Math.round(goalNutrition(profile.goal).proteinPerKg * kg);
+}
+
+export function estimatedTdee(profile: ProfileRow) {
+  const bmr = mifflinStJeor(profile);
+  if (!bmr) return null;
+  return Math.round(bmr * activityFactor(profile.daysPerWeek));
 }
 
 export function calorieTarget(profile: ProfileRow) {
-  const bmr = mifflinStJeor(profile);
-  if (!bmr) return null;
-  const tdee = Math.round(bmr * activityFactor(profile.daysPerWeek));
-  if (profile.goal === "bodybuilding" || profile.goal === "glute_specialization") {
-    return tdee + 200;
-  }
-  return tdee;
+  const spec = goalNutrition(profile.goal);
+  const tdee = estimatedTdee(profile);
+  if (!tdee) return spec.fallbackCalories;
+  return Math.round(tdee + spec.delta);
+}
+
+export function macroTargets(calories: number, proteinG: number, goal: ProfileRow["goal"]) {
+  const spec = goalNutrition(goal);
+  const safeCalories = Math.max(calories, proteinG * 4 + 200);
+  const proteinCals = proteinG * 4;
+  const remaining = Math.max(0, safeCalories - proteinCals);
+  const ratio = spec.carbRatio + spec.fatRatio;
+  const carbShare = ratio > 0 ? spec.carbRatio / ratio : 0.6;
+  return {
+    calories: Math.round(safeCalories),
+    protein: Math.round(proteinG),
+    carbs: Math.round((remaining * carbShare) / 4),
+    fat: Math.round((remaining * (1 - carbShare)) / 9),
+  };
+}
+
+function clampCalories(n: number) {
+  return Math.min(6000, Math.max(1200, Math.round(n)));
 }
 
 export function adaptiveCalories(userId: string, profile: ProfileRow) {
-  const base = calorieTarget(profile);
+  const spec = goalNutrition(profile.goal);
+  const staticTdee = estimatedTdee(profile);
+  const protein = proteinTargetG(profile);
   const weights = db
     .select()
     .from(bodyweightLogs)
@@ -43,15 +68,20 @@ export function adaptiveCalories(userId: string, profile: ProfileRow) {
     .all()
     .slice(0, 14);
 
-  if (!base || weights.length < 8) {
+  if (!staticTdee || weights.length < 8) {
+    const calories = clampCalories(calorieTarget(profile));
+    const macros = macroTargets(calories, protein, profile.goal);
     return {
-      calories: base,
-      protein: proteinTargetG(profile),
-      tdee: base,
-      note: base
-        ? "Static estimate from Mifflin-St Jeor × activity. Log ~8 morning weigh-ins and your meals so we can adapt like MacroFactor, with the math shown."
-        : "Add age, height, and weight in settings for a calorie target.",
+      ...macros,
+      tdee: staticTdee,
+      surplus: spec.delta,
+      goalTitle: spec.title,
+      goalLabel: spec.label,
+      goalBlurb: spec.blurb,
       weeklyChangeKg: null,
+      note: staticTdee
+        ? `${spec.title}: Mifflin-St Jeor TDEE ${staticTdee} kcal ${spec.delta >= 0 ? "+" : ""}${spec.delta} for ${spec.label.toLowerCase()}. Log ~8 morning weigh-ins and meals to switch to adaptive TDEE.`
+        : `Add age, height, and weight in settings for a personal TDEE. Using a ${macros.calories} kcal ${spec.title.toLowerCase()} placeholder until then.`,
     };
   }
 
@@ -87,16 +117,20 @@ export function adaptiveCalories(userId: string, profile: ProfileRow) {
     }
   }
 
-  const avgIntake = intakeDays ? intake / intakeDays : base;
-  // ~7700 kcal per kg. If weight is rising faster than intended (~0.25 kg/wk surplus), trim.
+  const avgIntake = intakeDays ? intake / intakeDays : staticTdee;
   const impliedTdee = avgIntake - (weeklyChange * 7700) / 7;
-  const adapted = Math.round(impliedTdee);
+  const adapted = clampCalories(Math.round(impliedTdee));
+  const calories = clampCalories(Math.round(adapted + spec.delta));
+  const macros = macroTargets(calories, protein, profile.goal);
 
   return {
-    calories: adapted,
-    protein: proteinTargetG(profile),
+    ...macros,
     tdee: adapted,
+    surplus: spec.delta,
+    goalTitle: spec.title,
+    goalLabel: spec.label,
+    goalBlurb: spec.blurb,
     weeklyChangeKg: weeklyChange,
-    note: `Adaptive TDEE from ${intakeDays} logged days and ${weights.length} weigh-ins. Trend: ${weeklyChange >= 0 ? "+" : ""}${weeklyChange.toFixed(2)} kg/week. Implied expenditure ≈ ${adapted} kcal. This is inspectable math, not a black box.`,
+    note: `Adaptive TDEE ${adapted} kcal from ${intakeDays} logged days and ${weights.length} weigh-ins (${weeklyChange >= 0 ? "+" : ""}${weeklyChange.toFixed(2)} kg/week), then ${spec.delta >= 0 ? "+" : ""}${spec.delta} for ${spec.title.toLowerCase()}.`,
   };
 }

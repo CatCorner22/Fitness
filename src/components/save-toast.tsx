@@ -11,6 +11,8 @@ const MESSAGES: Record<string, string> = {
   workout: "Workout complete!",
   settings: "Settings updated.",
   skipped: "Session skipped.",
+  "plan-full": "All meals already have food — use Replace to swap the whole day.",
+  "plan-missing": "That meal plan is no longer available.",
 };
 
 export function SaveToast() {

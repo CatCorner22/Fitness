@@ -131,9 +131,9 @@ export function SpiritAdvisor({
 
           {advice?.citeIds?.length && !loading ? (
             <div className="mt-2 flex flex-wrap gap-1">
-              {advice.citeIds.map((id) => (
+              {advice.citeIds.map((id, i) => (
                 <Link
-                  key={id}
+                  key={`${id}-${i}`}
                   href={`/knowledge#${id}`}
                   className="rounded-full bg-bg px-2 py-0.5 text-[10px] text-copper-2 hover:underline"
                 >
