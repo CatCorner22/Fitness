@@ -86,6 +86,15 @@ export type ProgramId =
   | "rucking"
   | "big_ass";
 
+export type DietId =
+  | "steady_cut"
+  | "mini_cut"
+  | "lean_bulk"
+  | "recomp"
+  | "reverse"
+  | "beach_week"
+  | "stage_lean";
+
 export interface Exercise {
   id: string;
   name: string;
@@ -161,4 +170,5 @@ export interface PlannedSession {
   estimatedMinutes: number;
   trimmed: boolean;
   droppedExerciseIds: string[];
+  fitnessNotes?: string[];
 }

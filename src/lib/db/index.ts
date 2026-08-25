@@ -8,9 +8,55 @@ import { seedIfNeeded } from "./seed";
 const dataDir = path.join(process.cwd(), "data");
 const dbPath = path.join(dataDir, "garanimal.db");
 
+function migrate(sqlite: Database.Database) {
+  sqlite.exec(`
+    CREATE TABLE IF NOT EXISTS fitness_assessments (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id),
+      taken_at TEXT NOT NULL,
+      fitness_tier TEXT,
+      payload TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_assess_user_taken ON fitness_assessments(user_id, taken_at);
+    CREATE TABLE IF NOT EXISTS fasts (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id),
+      protocol TEXT NOT NULL,
+      target_minutes INTEGER NOT NULL,
+      started_at TEXT NOT NULL,
+      planned_end_at TEXT NOT NULL,
+      ended_at TEXT,
+      status TEXT NOT NULL DEFAULT 'running',
+      notes TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS fast_adjustments (
+      id TEXT PRIMARY KEY,
+      fast_id TEXT NOT NULL REFERENCES fasts(id),
+      user_id TEXT NOT NULL REFERENCES users(id),
+      created_at TEXT NOT NULL,
+      kind TEXT NOT NULL,
+      summary TEXT NOT NULL,
+      payload TEXT NOT NULL DEFAULT '{}'
+    );
+    CREATE INDEX IF NOT EXISTS idx_fasts_user_status ON fasts(user_id, status);
+    CREATE INDEX IF NOT EXISTS idx_fasts_user_started ON fasts(user_id, started_at);
+    CREATE INDEX IF NOT EXISTS idx_fast_adj_fast ON fast_adjustments(fast_id, created_at);
+  `);
+  const cols = sqlite.prepare("PRAGMA table_info(profiles)").all() as { name: string }[];
+  const names = new Set(cols.map((c) => c.name));
+  if (!names.has("assessment_json")) sqlite.exec("ALTER TABLE profiles ADD COLUMN assessment_json TEXT");
+  if (!names.has("fitness_tier")) sqlite.exec("ALTER TABLE profiles ADD COLUMN fitness_tier TEXT");
+  if (!names.has("assessed_at")) sqlite.exec("ALTER TABLE profiles ADD COLUMN assessed_at TEXT");
+  if (!names.has("active_diet_id")) sqlite.exec("ALTER TABLE profiles ADD COLUMN active_diet_id TEXT");
+  if (!names.has("diet_start_date")) sqlite.exec("ALTER TABLE profiles ADD COLUMN diet_start_date TEXT");
+  if (!names.has("diet_week")) sqlite.exec("ALTER TABLE profiles ADD COLUMN diet_week INTEGER NOT NULL DEFAULT 1");
+}
+
 function createConnection() {
   fs.mkdirSync(dataDir, { recursive: true });
-  const sqlite = new Database(dbPath);
+  const sqlite = globalForDb.sqlite ?? new Database(dbPath);
   sqlite.pragma("journal_mode = WAL");
   sqlite.pragma("foreign_keys = ON");
   sqlite.pragma("busy_timeout = 5000");
@@ -40,8 +86,22 @@ function createConnection() {
       onboarded INTEGER NOT NULL DEFAULT 0,
       active_program_id TEXT,
       program_start_date TEXT,
-      current_week INTEGER NOT NULL DEFAULT 1
+      current_week INTEGER NOT NULL DEFAULT 1,
+      assessment_json TEXT,
+      fitness_tier TEXT,
+      assessed_at TEXT,
+      active_diet_id TEXT,
+      diet_start_date TEXT,
+      diet_week INTEGER NOT NULL DEFAULT 1
     );
+    CREATE TABLE IF NOT EXISTS fitness_assessments (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id),
+      taken_at TEXT NOT NULL,
+      fitness_tier TEXT,
+      payload TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_assess_user_taken ON fitness_assessments(user_id, taken_at);
     CREATE TABLE IF NOT EXISTS workouts (
       id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL REFERENCES users(id),
@@ -128,16 +188,23 @@ function createConnection() {
     CREATE INDEX IF NOT EXISTS idx_checkins_user_date ON daily_checkins(user_id, date);
     CREATE INDEX IF NOT EXISTS idx_coach_user_created ON coach_messages(user_id, created_at);
   `);
+  migrate(sqlite);
+  globalForDb.sqlite = sqlite;
   return drizzle(sqlite, { schema });
 }
 
 const globalForDb = globalThis as unknown as {
+  sqlite?: Database.Database;
   db?: ReturnType<typeof createConnection>;
   seeded?: boolean;
 };
 
-export const db = globalForDb.db ?? createConnection();
-globalForDb.db = db;
+if (!globalForDb.db) {
+  globalForDb.db = createConnection();
+} else if (globalForDb.sqlite) {
+  migrate(globalForDb.sqlite);
+}
+export const db = globalForDb.db;
 
 if (!globalForDb.seeded) {
   seedIfNeeded(db);

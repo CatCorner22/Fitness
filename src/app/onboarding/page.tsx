@@ -1,13 +1,15 @@
+import { redirect } from "next/navigation";
 import { saveOnboardingAction } from "@/app/actions/profile";
 import { requireAuthed } from "@/lib/session-page";
 
 export default async function OnboardingPage() {
-  const { user } = await requireAuthed({ allowOnboarding: true });
+  const { user, profile } = await requireAuthed({ allowOnboarding: true });
+  if (profile?.activeProgramId && !profile.onboarded) redirect("/onboarding/assess");
 
   return (
     <div className="mx-auto max-w-md px-4 py-10">
       <h1 className="display text-4xl">Hi {user.displayName}</h1>
-      <p className="mt-3 text-muted">Three questions. You can change anything later.</p>
+      <p className="mt-3 text-muted">A few questions, then a short fitness check. You can change anything later.</p>
       <form action={saveOnboardingAction} className="mt-8 space-y-8">
         <input type="hidden" name="displayName" value={user.displayName} />
         <fieldset className="space-y-2">
@@ -60,7 +62,23 @@ export default async function OnboardingPage() {
         </fieldset>
 
         <fieldset className="space-y-3">
-          <legend className="text-lg font-semibold">Optional</legend>
+          <legend className="text-lg font-semibold">For scoring the tests</legend>
+          <label className="block text-sm text-muted">
+            Age
+            <input name="age" type="number" min={15} max={99} className="mt-1" />
+          </label>
+          <label className="block text-sm text-muted">
+            Sex (norms only — not a gender interview)
+            <select name="sex" className="mt-1" defaultValue="unspecified">
+              <option value="unspecified">Unspecified</option>
+              <option value="female">Female</option>
+              <option value="male">Male</option>
+            </select>
+          </label>
+          <label className="block text-sm text-muted">
+            Height (optional, inches if pounds)
+            <input name="height" type="number" step="0.1" className="mt-1" />
+          </label>
           <label className="block text-sm text-muted">
             Bodyweight
             <input name="weight" type="number" step="0.1" className="mt-1" />
@@ -75,7 +93,7 @@ export default async function OnboardingPage() {
         </fieldset>
 
         <button type="submit" className="btn-primary">
-          Show me today
+          Next: fitness check
         </button>
         <p className="text-sm text-muted">
           Not medical advice. If something is sharp, hot, or numb — stop.
