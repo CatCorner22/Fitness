@@ -7,13 +7,29 @@
   --surface-2: #2b261e;
   --line: #3a3429;
   --text: #f4efe6;
-  --muted: #a69c8b;
+  --muted: #c9c0b0;
   --copper: #e07a3d;
   --copper-2: #f0a36a;
   --moss: #8f9a6b;
   --danger: #d46a6a;
   --font-display: var(--font-display);
   --font-sans: var(--font-sans);
+  --on-copper: #12110e;
+}
+
+html.light {
+  --bg: #f6f1e8;
+  --bg-2: #efe8dc;
+  --surface: #fffdf8;
+  --surface-2: #f3ece1;
+  --line: #d7cbb8;
+  --text: #1c1914;
+  --muted: #5a5348;
+  --copper: #c45a1c;
+  --copper-2: #a34712;
+  --moss: #5d6a3e;
+  --danger: #b42318;
+  --on-copper: #fffdf8;
 }
 
 @theme inline {
@@ -41,16 +57,21 @@ body {
 
 body {
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
-  background-image:
-    radial-gradient(1200px 600px at 10% -10%, rgba(224, 122, 61, 0.12), transparent 50%),
-    radial-gradient(800px 400px at 100% 0%, rgba(143, 154, 107, 0.08), transparent 40%);
+  font-size: 1.05rem;
+  line-height: 1.5;
 }
 
 h1,
-h2,
 .display {
   font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
   letter-spacing: -0.03em;
+}
+
+h2,
+h3 {
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0;
+  font-weight: 600;
 }
 
 input,
@@ -59,9 +80,10 @@ textarea {
   background: var(--bg);
   border: 1px solid var(--line);
   color: var(--text);
-  border-radius: 0.75rem;
-  padding: 0.7rem 0.85rem;
+  border-radius: 0.9rem;
+  padding: 0.85rem 0.95rem;
   width: 100%;
+  font-size: 1.05rem;
 }
 
 input:focus,
@@ -73,6 +95,33 @@ textarea:focus {
 
 button:not(:disabled) {
   cursor: pointer;
+}
+
+.btn-primary {
+  display: inline-flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1rem;
+  background: var(--copper);
+  color: var(--on-copper);
+  font-weight: 600;
+  padding: 1.05rem 1.25rem;
+  font-size: 1.15rem;
+}
+
+.btn-primary:disabled {
+  opacity: 0.55;
+}
+
+.btn-quiet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1rem;
+  padding: 0.7rem 1rem;
+  color: var(--muted);
+  font-size: 1rem;
 }
 
 ::selection {

@@ -9,7 +9,7 @@ import { getProgram } from "@/lib/programs/catalog";
 import { estimateSessionMinutes } from "@/lib/programs/plan";
 import { requireAuthed } from "@/lib/session-page";
 import { suggestionsForExercises, lastWorkingSets } from "@/lib/autoregulation";
-import { aiEnabled } from "@/lib/ai/spirit";
+import { getAiOptIn } from "@/lib/prefs";
 
 export default async function WorkoutPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -60,7 +60,8 @@ export default async function WorkoutPage({ params }: { params: Promise<{ id: st
           })),
         )}
         decisions={decisions}
-        aiAvailable={aiEnabled()}
+        aiAvailable={false}
+        aiOptIn={await getAiOptIn()}
         ghostSets={ghostSets}
       />
     </AppShell>

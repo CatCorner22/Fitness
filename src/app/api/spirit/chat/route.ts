@@ -1,11 +1,11 @@
 import { convertToModelMessages, createUIMessageStream, createUIMessageStreamResponse, streamText, type UIMessage } from "ai";
 import { eq, desc } from "drizzle-orm";
 import { getProfile, getSession } from "@/lib/auth";
-import { generateChatReply } from "@/lib/ai/live-advice";
 import { db } from "@/lib/db";
 import { coachMessages } from "@/lib/db/schema";
 import { aiEnabled } from "@/lib/spirit/config";
-import { coachMetaSuffix, buildCoachContextSummary, textFromUIMessageParts } from "@/lib/spirit/context";
+import { coachMetaSuffix, textFromUIMessageParts } from "@/lib/spirit/context";
+import { getAiOptIn } from "@/lib/prefs";
 import { prepareSpiritChatStream } from "@/lib/spirit/chat-stream";
 import { modelForTier } from "@/lib/spirit/provider";
 
@@ -44,18 +44,17 @@ export async function POST(request: Request) {
       .run();
   }
 
-  if (!aiEnabled()) {
-    const { text, citeIds } = await generateChatReply({
-      profile,
-      question,
-      contextSummary: buildCoachContextSummary(user.id, profile),
-    });
+  const optIn = await getAiOptIn();
+  if (!optIn || !aiEnabled()) {
+    const text = optIn
+      ? "Coach is in local mode right now. Train the session on Today, eat enough protein, and stop if something hurts."
+      : "Coach stays off until you turn it on under You. Today still has your workout.";
     db.insert(coachMessages)
       .values({
         id: crypto.randomUUID(),
         userId: user.id,
         role: "coach",
-        content: text + coachMetaSuffix(citeIds),
+        content: text,
         createdAt: new Date().toISOString(),
       })
       .run();

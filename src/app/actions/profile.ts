@@ -7,7 +7,9 @@ import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { bodyweightLogs, dailyCheckins, profiles, users } from "@/lib/db/schema";
 import { todayISO } from "@/lib/utils";
+import { programForGoal } from "@/lib/copy";
 import { getProgram } from "@/lib/programs/catalog";
+import { setPrefCookies } from "@/lib/prefs";
 
 async function requireUser() {
   const user = await getSession();
@@ -18,7 +20,7 @@ async function requireUser() {
 export async function saveOnboardingAction(formData: FormData) {
   const user = await requireUser();
   const goal = String(formData.get("goal") || "general");
-  const programId = String(formData.get("programId") || "upper_lower");
+  const programId = String(formData.get("programId") || programForGoal(goal));
   const program = getProgram(programId);
   const weight = Number(formData.get("weight"));
   const height = Number(formData.get("height"));
@@ -30,8 +32,8 @@ export async function saveOnboardingAction(formData: FormData) {
     .set({
       goal,
       experience: String(formData.get("experience") || "novice"),
-      daysPerWeek: Number(formData.get("daysPerWeek") || 4),
-      sessionMinutes: Number(formData.get("sessionMinutes") || 60),
+      daysPerWeek: Number(formData.get("daysPerWeek") || 3),
+      sessionMinutes: Number(formData.get("sessionMinutes") || 45),
       injuries: JSON.stringify(formData.getAll("injuries")),
       units,
       persona: String(formData.get("persona") || "scientist"),
@@ -107,6 +109,11 @@ export async function saveSettingsAction(formData: FormData) {
     .set({ displayName: String(formData.get("displayName") || user.displayName) })
     .where(eq(users.id, user.id))
     .run();
+
+  await setPrefCookies(
+    String(formData.get("aiOptIn") || "") === "1",
+    String(formData.get("theme") || "") === "light" ? "light" : "dark",
+  );
 
   revalidatePath("/");
   revalidatePath("/settings");

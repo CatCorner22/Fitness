@@ -1,7 +1,8 @@
 import { streamText } from "ai";
 import { getProfile, getSession } from "@/lib/auth";
+import { getAiOptIn } from "@/lib/prefs";
 import { aiEnabled } from "@/lib/spirit/config";
-import { buildTodayContextSummary, offlineBriefing } from "@/lib/spirit/context";
+import { buildTodayContextSummary } from "@/lib/spirit/context";
 import { prepareSpiritBriefingStream } from "@/lib/spirit/chat-stream";
 
 function textResponse(text: string) {
@@ -22,11 +23,11 @@ export async function POST() {
   const profile = getProfile(user.id);
   if (!profile) return new Response("Profile missing", { status: 400 });
 
-  const todaySummary = buildTodayContextSummary(user.id, profile);
-
-  if (!aiEnabled()) {
-    return textResponse(offlineBriefing(user.id, profile));
+  if (!aiEnabled() || !(await getAiOptIn())) {
+    return textResponse("Coach is off. Open You to turn it on if you want a briefing.");
   }
+
+  const todaySummary = buildTodayContextSummary(user.id, profile);
 
   const { system, prompt, model } = await prepareSpiritBriefingStream(profile, user.id, todaySummary);
 

@@ -10,8 +10,8 @@ const MESSAGES: Record<string, string> = {
   food: "Food logged.",
   workout: "Workout complete!",
   settings: "Settings updated.",
-  skipped: "Session skipped.",
-  "plan-full": "All meals already have food — use Replace to swap the whole day.",
+  skipped: "Rest is fine.",
+  "plan-full": "Today already has food — tap Replace if you want a new menu.",
   "plan-missing": "That meal plan is no longer available.",
 };
 

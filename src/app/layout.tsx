@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Outfit } from "next/font/google";
 import { SaveToast } from "@/components/save-toast";
+import { getTheme } from "@/lib/prefs";
 import "./globals.css";
 
 const sans = Outfit({
@@ -16,7 +17,7 @@ const display = Fraunces({
 
 export const metadata: Metadata = {
   title: "Garanimal",
-  description: "Evidence-based household training and nutrition. Two users. No circus exercises.",
+  description: "Simple household training and food logging.",
 };
 
 export const viewport: Viewport = {
@@ -25,9 +26,10 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const theme = await getTheme();
   return (
-    <html lang="en" className={`${sans.variable} ${display.variable} h-full`}>
+    <html lang="en" className={`${sans.variable} ${display.variable} h-full ${theme === "light" ? "light" : ""}`}>
       <body className="min-h-full antialiased">
         <Suspense fallback={null}>
           <SaveToast />

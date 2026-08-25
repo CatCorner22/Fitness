@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { completeWorkoutAction, swapExerciseAction } from "@/app/actions/workout";
 import { PlateCalc } from "@/components/plate-calc";
 import { SpiritAdvisor, type SpiritAdvicePanel } from "@/components/spirit-advisor";
+import { hardnessToRpe, parseRepTarget } from "@/lib/copy";
 import type { Exercise } from "@/lib/types";
 import { kgToDisplay } from "@/lib/utils";
 
@@ -18,8 +19,6 @@ type SetRow = {
   rpe: number | null;
   completed: number;
 };
-
-type LiveAdvice = SpiritAdvicePanel;
 
 type GhostSet = { weightKg: number; reps: number; rpe: number | null };
 
@@ -43,18 +42,46 @@ function playRestBeep() {
   }
 }
 
+function HardnessButtons({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (next: string) => void;
+}) {
+  return (
+    <div className="flex gap-2">
+      {(
+        [
+          ["easy", "Easy"],
+          ["ok", "OK"],
+          ["hard", "Hard"],
+        ] as const
+      ).map(([id, label]) => (
+        <button
+          key={id}
+          type="button"
+          onClick={() => onChange(value === id ? "" : id)}
+          className={`min-h-11 flex-1 rounded-xl border px-2 text-sm ${
+            value === id ? "border-copper bg-copper/15 text-copper-2" : "border-line text-muted"
+          }`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function WorkoutPlayer({
   workoutId,
   dayName,
-  week,
-  phase,
   units,
   sets: initialSets,
   exercises,
   swaps,
   estimatedMinutes,
-  decisions,
-  aiAvailable,
+  aiOptIn,
   ghostSets,
 }: {
   workoutId: string;
@@ -68,10 +95,14 @@ export function WorkoutPlayer({
   estimatedMinutes: number;
   decisions: { exerciseId: string; reason: string }[];
   aiAvailable: boolean;
+  aiOptIn: boolean;
   ghostSets: Record<string, GhostSet>;
 }) {
   const [sets, setSets] = useState(initialSets);
   const [editingSetId, setEditingSetId] = useState<string | null>(null);
+  const [hardness, setHardness] = useState<Record<string, string>>({});
+  const [sessionFeel, setSessionFeel] = useState("");
+  const [logError, setLogError] = useState<string | null>(null);
   const grouped = useMemo(() => {
     const map = new Map<string, SetRow[]>();
     for (const set of sets) {
@@ -86,12 +117,12 @@ export function WorkoutPlayer({
   const [running, setRunning] = useState(false);
   const alertedRef = useRef(false);
   const [started] = useState(() => Date.now());
-  const [spiritAdvice, setSpiritAdvice] = useState<LiveAdvice | null>(null);
-  const [spiritLoading, setSpiritLoading] = useState(false);
+  const [spiritAdvice, setSpiritAdvice] = useState<SpiritAdvicePanel | null>(null);
   const [lastExerciseId, setLastExerciseId] = useState<string | null>(null);
   const [loadHints, setLoadHints] = useState<Record<string, number>>({});
 
   const completedCount = sets.filter((s) => s.completed).length;
+  const current = grouped.find(([, rows]) => rows.some((s) => !s.completed)) ?? grouped[grouped.length - 1];
 
   useEffect(() => {
     if (!running || seconds <= 0) return;
@@ -123,24 +154,28 @@ export function WorkoutPlayer({
       const fd = new FormData(form);
       const weight = Number(fd.get("weight"));
       const reps = Number(fd.get("reps"));
-      const rpe = Number(fd.get("rpe"));
+      const rpe = hardnessToRpe(hardness[set.id] ?? "") ?? Number.NaN;
       const elapsedMinutes = Math.max(1, Math.round((Date.now() - started) / 60000));
       const doneGroups = new Set(
         sets.filter((s) => s.completed || s.id === set.id).map((s) => s.exerciseId),
       );
       const remainingExercises = grouped.length - doneGroups.size;
 
-      setSpiritLoading(true);
-      startRest(90);
-      setSpiritAdvice({
-        message: "*tail swish* Crunching your set...",
-        restSeconds: 90,
-        nextAction: "repeat_load",
-        weightDeltaKg: null,
-        swapToExerciseId: null,
-        mood: "thinking",
-        citeIds: [],
-      });
+      setLogError(null);
+      setEditingSetId(null);
+      setSets((prev) =>
+        prev.map((s) =>
+          s.id === set.id
+            ? {
+                ...s,
+                completed: 1,
+                weightKg: Number.isFinite(weight) ? (units === "lb" ? weight / 2.20462 : weight) : s.weightKg,
+                reps: Number.isFinite(reps) ? reps : s.reps,
+                rpe: Number.isFinite(rpe) ? rpe : null,
+              }
+            : s,
+        ),
+      );
 
       try {
         const res = await fetch("/api/workout/log-set", {
@@ -150,137 +185,128 @@ export function WorkoutPlayer({
             setId: set.id,
             weight,
             reps,
-            rpe,
+            rpe: Number.isFinite(rpe) ? rpe : null,
             elapsedMinutes,
             remainingExercises,
           }),
         });
         if (!res.ok) throw new Error("log failed");
         const data = await res.json();
-        setSpiritAdvice(data.advice);
-        startRest(data.advice.restSeconds);
         setLastExerciseId(set.exerciseId);
-        setEditingSetId(null);
-        const nextSet = sets.find(
-          (s) => s.exerciseId === set.exerciseId && s.setIndex === set.setIndex + 1,
-        );
-        if (nextSet && data.advice.weightDeltaKg != null && Number.isFinite(weight)) {
-          const baseKg = units === "lb" ? weight / 2.20462 : weight;
-          const hinted = kgToDisplay(baseKg + data.advice.weightDeltaKg, units);
-          setLoadHints((prev) => ({ ...prev, [nextSet.id]: hinted }));
+        if (aiOptIn && data.advice) {
+          setSpiritAdvice(data.advice);
+          const nextSet = sets.find(
+            (s) => s.exerciseId === set.exerciseId && s.setIndex === set.setIndex + 1,
+          );
+          if (nextSet && data.advice.weightDeltaKg != null && Number.isFinite(weight)) {
+            const baseKg = units === "lb" ? weight / 2.20462 : weight;
+            const hinted = kgToDisplay(baseKg + data.advice.weightDeltaKg, units);
+            setLoadHints((prev) => ({ ...prev, [nextSet.id]: hinted }));
+          }
         }
-        setSets((prev) =>
-          prev.map((s) =>
-            s.id === set.id
-              ? {
-                  ...s,
-                  completed: 1,
-                  weightKg: Number.isFinite(weight) ? (units === "lb" ? weight / 2.20462 : weight) : s.weightKg,
-                  reps: Number.isFinite(reps) ? reps : s.reps,
-                  rpe: Number.isFinite(rpe) ? rpe : s.rpe,
-                }
-              : s,
-          ),
-        );
       } catch {
-        setSpiritAdvice({
-          message: "Signal lost on the mountain — logged locally? Try again. Default 90s rest, nya~",
-          restSeconds: 90,
-          nextAction: "repeat_load",
-          weightDeltaKg: null,
-          swapToExerciseId: null,
-          mood: "caution",
-          citeIds: [],
-          source: "rules",
-        });
-        startRest(90);
-      } finally {
-        setSpiritLoading(false);
+        setLogError("Could not save that set. Check the numbers and tap Log again.");
+        setSets((prev) => prev.map((s) => (s.id === set.id ? { ...s, completed: 0 } : s)));
       }
     },
-    [grouped.length, sets, started, units],
+    [aiOptIn, grouped.length, hardness, sets, started, units],
   );
 
+  const durationMinutes = Math.max(1, Math.round((Date.now() - started) / 60000) || estimatedMinutes);
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="text-sm uppercase tracking-[0.18em] text-copper">Live session</p>
-          <h1 className="display text-4xl">{dayName}</h1>
-          <p className="text-muted">
-            Week {week} · {phase} · budget ~{estimatedMinutes} min · {completedCount}/{sets.length} sets
-          </p>
-        </div>
-        <div
-          className={`rounded-2xl border bg-surface px-5 py-3 text-center transition-colors ${
-            running && seconds <= 10 ? "border-copper animate-pulse" : "border-line"
-          }`}
-        >
-          <p className="text-xs uppercase text-muted">Rest</p>
-          <p className={`display text-4xl tabular-nums ${running && seconds <= 10 ? "text-copper-2" : ""}`}>
-            {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, "0")}
-          </p>
-          <div className="mt-2 flex gap-2 text-xs">
-            <button type="button" onClick={() => startRest(90)} className="text-copper-2">
-              1:30
+    <div className="space-y-5">
+      <div>
+        <h1 className="display text-4xl">{dayName}</h1>
+        <p className="mt-1 text-muted">
+          {completedCount}/{sets.length} sets
+        </p>
+      </div>
+
+      <div
+        className={`rounded-3xl border bg-surface px-5 py-4 text-center ${
+          running && seconds <= 10 ? "border-copper" : "border-line"
+        }`}
+      >
+        <p className="text-sm text-muted">Rest when you want it</p>
+        <p className={`display mt-1 text-5xl tabular-nums ${running && seconds <= 10 ? "text-copper-2" : ""}`}>
+          {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, "0")}
+        </p>
+        <div className="mt-3 flex justify-center gap-3">
+          <button type="button" onClick={() => startRest(90)} className="min-h-11 rounded-xl border border-line px-4">
+            1:30
+          </button>
+          <button type="button" onClick={() => startRest(180)} className="min-h-11 rounded-xl border border-line px-4">
+            3:00
+          </button>
+          {running ? (
+            <button type="button" onClick={() => setRunning(false)} className="min-h-11 rounded-xl px-4 text-muted">
+              Pause
             </button>
-            <button type="button" onClick={() => startRest(180)} className="text-copper-2">
-              3:00
-            </button>
-            <button type="button" onClick={() => setRunning(false)} className="text-muted">
-              pause
-            </button>
-          </div>
+          ) : null}
         </div>
       </div>
 
-      <SpiritAdvisor
-        advice={spiritAdvice}
-        loading={spiritLoading}
-        aiAvailable={aiAvailable}
-        units={units}
-        kgToDisplay={kgToDisplay}
-        swapButton={
-          spiritAdvice?.swapToExerciseId && lastExerciseId ? (
-            <form action={swapExerciseAction} className="mt-2">
-              <input type="hidden" name="workoutId" value={workoutId} />
-              <input type="hidden" name="fromId" value={lastExerciseId} />
-              <input type="hidden" name="toId" value={spiritAdvice.swapToExerciseId} />
-              <button type="submit" className="text-sm text-copper-2 underline-offset-2 hover:underline">
-                Apply Spirit&apos;s swap →{" "}
-                {exercises[spiritAdvice.swapToExerciseId]?.name ?? spiritAdvice.swapToExerciseId}
-              </button>
-            </form>
-          ) : null
-        }
-      />
+      {logError ? <p className="text-sm text-danger">{logError}</p> : null}
 
-      <PlateCalc units={units} />
+      {aiOptIn ? (
+        <SpiritAdvisor
+          advice={spiritAdvice}
+          loading={false}
+          aiAvailable
+          units={units}
+          kgToDisplay={kgToDisplay}
+          swapButton={
+            spiritAdvice?.swapToExerciseId && lastExerciseId ? (
+              <form action={swapExerciseAction} className="mt-2">
+                <input type="hidden" name="workoutId" value={workoutId} />
+                <input type="hidden" name="fromId" value={lastExerciseId} />
+                <input type="hidden" name="toId" value={spiritAdvice.swapToExerciseId} />
+                <button type="submit" className="text-sm text-copper-2 underline-offset-2 hover:underline">
+                  Use suggested swap: {exercises[spiritAdvice.swapToExerciseId]?.name ?? spiritAdvice.swapToExerciseId}
+                </button>
+              </form>
+            ) : null
+          }
+        />
+      ) : null}
 
       {grouped.map(([exerciseId, rows]) => {
         const ex = exercises[exerciseId];
-        const decision = decisions.find((d) => d.exerciseId === exerciseId);
         const ghost = ghostSets[exerciseId];
+        const isCurrent = current?.[0] === exerciseId;
+        const doneHere = rows.filter((s) => s.completed).length;
+        if (!isCurrent) {
+          return (
+            <section key={exerciseId} className="rounded-3xl border border-line bg-surface px-4 py-3">
+              <p className="font-semibold">{ex?.name ?? exerciseId}</p>
+              <p className="text-sm text-muted">
+                {doneHere}/{rows.length} sets
+              </p>
+            </section>
+          );
+        }
         return (
-          <section key={exerciseId} className="rounded-3xl border border-line bg-surface p-4 md:p-6">
+          <section
+            key={exerciseId}
+            className={`rounded-3xl border bg-surface p-4 ${isCurrent ? "border-copper/40" : "border-line"}`}
+          >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h2 className="text-xl">{ex?.name ?? exerciseId}</h2>
-                <p className="text-xs text-muted">
-                  {rows[0]?.targetReps} @ RPE {rows[0]?.targetRpe}
-                  {ex?.safety === "caution" ? ` · Caution: ${ex.safetyNote}` : ""}
+                <h2 className="text-xl font-semibold">{ex?.name ?? exerciseId}</h2>
+                <p className="text-sm text-muted">
+                  {rows.length} sets of {rows[0]?.targetReps ?? "8"}
                 </p>
-                {ghost && (
-                  <p className="mt-1 text-xs text-muted/80">
-                    Last: {kgToDisplay(ghost.weightKg, units)} {units} × {ghost.reps}
-                    {ghost.rpe != null ? ` @ RPE ${ghost.rpe}` : ""}
+                {ghost ? (
+                  <p className="mt-1 text-sm text-muted">
+                    Last time: {kgToDisplay(ghost.weightKg, units)} {units} × {ghost.reps}
                   </p>
-                )}
-                {decision && <p className="mt-2 text-xs text-copper-2">{decision.reason}</p>}
+                ) : null}
+                {ex?.safety === "caution" ? <p className="mt-1 text-sm text-muted">{ex.safetyNote}</p> : null}
               </div>
               {swaps[exerciseId]?.length ? (
                 <details className="text-sm">
-                  <summary className="cursor-pointer text-muted">Swap</summary>
+                  <summary className="cursor-pointer text-muted">Swap lift</summary>
                   <div className="mt-2 space-y-1">
                     {swaps[exerciseId].map((alt) => (
                       <form key={alt.id} action={swapExerciseAction}>
@@ -296,76 +322,80 @@ export function WorkoutPlayer({
                 </details>
               ) : null}
             </div>
-            <div className="mt-4 space-y-3">
+            <div className="mt-4 space-y-4">
               {rows.map((set) => {
                 const isDone = Boolean(set.completed) && editingSetId !== set.id;
+                const firstOpen = rows.find((s) => !s.completed || s.id === editingSetId);
+                if (isDone) {
+                  return (
+                    <button
+                      key={set.id}
+                      type="button"
+                      className="flex w-full items-center justify-between rounded-2xl bg-moss/10 px-4 py-3 text-left text-sm"
+                      onClick={() => setEditingSetId(set.id)}
+                    >
+                      <span>
+                        Set {set.setIndex + 1} · {set.weightKg != null ? kgToDisplay(set.weightKg, units) : "—"} {units} ×{" "}
+                        {set.reps ?? "—"}
+                      </span>
+                      <span className="text-moss">Done</span>
+                    </button>
+                  );
+                }
+                if (firstOpen && firstOpen.id !== set.id) {
+                  return (
+                    <p key={set.id} className="px-1 text-sm text-muted">
+                      Set {set.setIndex + 1} waiting
+                    </p>
+                  );
+                }
+                const weightDefault =
+                  loadHints[set.id] ??
+                  (set.weightKg != null ? kgToDisplay(set.weightKg, units) : "");
+                const repsDefault = set.reps ?? parseRepTarget(set.targetReps);
                 return (
                   <form
                     key={set.id}
                     onSubmit={(e) => {
                       e.preventDefault();
-                      if (isDone) return;
                       logSet(set, e.currentTarget);
                     }}
-                    className={`grid grid-cols-12 items-end gap-2 rounded-2xl p-3 ${
-                      isDone ? "bg-moss/10" : "bg-bg-2"
-                    }`}
+                    className="space-y-3 rounded-2xl bg-bg-2 p-4"
                   >
-                    <p className="col-span-1 text-sm text-muted">{set.setIndex + 1}</p>
-                    <label className="col-span-3 text-xs text-muted">
-                      Weight
-                      <input
-                        name="weight"
-                        type="number"
-                        step="0.5"
-                        disabled={isDone}
-                        defaultValue={
-                          loadHints[set.id] ??
-                          (set.weightKg != null ? kgToDisplay(set.weightKg, units) : "")
-                        }
-                        className="mt-1 py-2 disabled:opacity-60"
+                    <p className="text-sm text-muted">Set {set.setIndex + 1}</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <label className="text-sm text-muted">
+                        Weight ({units})
+                        <input
+                          name="weight"
+                          type="number"
+                          step="0.5"
+                          inputMode="decimal"
+                          defaultValue={weightDefault}
+                          className="mt-1 min-h-12"
+                        />
+                      </label>
+                      <label className="text-sm text-muted">
+                        Reps
+                        <input
+                          name="reps"
+                          type="number"
+                          inputMode="numeric"
+                          defaultValue={repsDefault}
+                          className="mt-1 min-h-12"
+                        />
+                      </label>
+                    </div>
+                    <div>
+                      <p className="mb-2 text-sm text-muted">How did that feel? Optional.</p>
+                      <HardnessButtons
+                        value={hardness[set.id] ?? ""}
+                        onChange={(next) => setHardness((prev) => ({ ...prev, [set.id]: next }))}
                       />
-                    </label>
-                    <label className="col-span-3 text-xs text-muted">
-                      Reps
-                      <input
-                        name="reps"
-                        type="number"
-                        disabled={isDone}
-                        defaultValue={set.reps ?? ""}
-                        className="mt-1 py-2 disabled:opacity-60"
-                      />
-                    </label>
-                    <label className="col-span-3 text-xs text-muted">
-                      RPE
-                      <input
-                        name="rpe"
-                        type="number"
-                        min={5}
-                        max={10}
-                        step="0.5"
-                        disabled={isDone}
-                        defaultValue={set.rpe ?? set.targetRpe ?? 8}
-                        className="mt-1 py-2 disabled:opacity-60"
-                      />
-                    </label>
-                    {isDone ? (
-                      <button
-                        className="col-span-2 rounded-xl bg-moss/20 py-2 text-sm text-moss"
-                        type="button"
-                        onClick={() => setEditingSetId(set.id)}
-                      >
-                        ✓
-                      </button>
-                    ) : (
-                      <button
-                        className="col-span-2 rounded-xl bg-copper py-2 text-sm text-bg"
-                        type="submit"
-                        disabled={spiritLoading}
-                      >
-                        Log
-                      </button>
-                    )}
+                    </div>
+                    <button className="btn-primary" type="submit">
+                      Log set
+                    </button>
                   </form>
                 );
               })}
@@ -374,31 +404,34 @@ export function WorkoutPlayer({
         );
       })}
 
-      <form action={completeWorkoutAction} className="rounded-3xl border border-line bg-surface p-6">
-        <input type="hidden" name="workoutId" value={workoutId} />
-        <h2 className="text-xl">Finish</h2>
-        <p className="text-sm text-muted">Session RPE is how hard the whole workout felt, 0–10.</p>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <label className="text-sm text-muted">
-            Session RPE
-            <input name="sessionRpe" type="number" min={0} max={10} step="0.5" defaultValue={7} className="mt-1" />
-          </label>
-          <label className="text-sm text-muted">
-            Actual minutes
-            <input
-              name="durationMinutes"
-              type="number"
-              defaultValue={Math.max(1, Math.round((Date.now() - started) / 60000) || estimatedMinutes)}
-              className="mt-1"
-            />
-          </label>
+      <details className="rounded-3xl border border-line bg-surface p-4 text-sm">
+        <summary className="cursor-pointer text-muted">Plate math</summary>
+        <div className="mt-3">
+          <PlateCalc units={units} />
         </div>
-        <label className="mt-3 block text-sm text-muted">
-          Notes
+      </details>
+
+      <form action={completeWorkoutAction} className="space-y-4 rounded-3xl border border-line bg-surface p-5">
+        <input type="hidden" name="workoutId" value={workoutId} />
+        <input type="hidden" name="durationMinutes" value={durationMinutes} />
+        <input type="hidden" name="sessionRpe" value={hardnessToRpe(sessionFeel) ?? ""} />
+        <h2 className="text-lg font-semibold">Finish</h2>
+        <p className="text-sm text-muted">How was the whole session? Optional.</p>
+        <HardnessButtons value={sessionFeel} onChange={setSessionFeel} />
+        <label className="block text-sm text-muted">
+          Note
           <textarea name="notes" rows={2} className="mt-1" />
         </label>
-        <button className="mt-4 w-full rounded-2xl bg-copper py-3 font-semibold text-bg" type="submit">
-          Save session
+        <button className="btn-primary" type="submit">
+          Done
+        </button>
+      </form>
+      <form action={completeWorkoutAction} className="text-center">
+        <input type="hidden" name="workoutId" value={workoutId} />
+        <input type="hidden" name="durationMinutes" value={durationMinutes} />
+        <input type="hidden" name="stop" value="1" />
+        <button className="btn-quiet w-full" type="submit">
+          Stop — something hurts
         </button>
       </form>
     </div>
