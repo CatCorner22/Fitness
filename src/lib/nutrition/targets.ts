@@ -57,8 +57,9 @@ export function estimatedTdee(profile: ProfileRow) {
 export function calorieTarget(profile: ProfileRow) {
   const spec = nutritionSpec(profile);
   const tdee = estimatedTdee(profile);
+  const floor = dietCalorieFloor(profile);
   if (!tdee) return spec.fallbackCalories;
-  return Math.round(tdee + spec.delta);
+  return clampCalories(Math.round(tdee + spec.delta), floor);
 }
 
 export function macroTargets(calories: number, proteinG: number, spec: MacroSpec) {
