@@ -96,15 +96,19 @@ export async function POST(request: Request) {
     system,
     messages: modelMessages,
     onFinish: async ({ text }) => {
-      db.insert(coachMessages)
-        .values({
-          id: crypto.randomUUID(),
-          userId: user.id,
-          role: "coach",
-          content: text + coachMetaSuffix(citeIds),
-          createdAt: new Date().toISOString(),
-        })
-        .run();
+      try {
+        db.insert(coachMessages)
+          .values({
+            id: crypto.randomUUID(),
+            userId: user.id,
+            role: "coach",
+            content: text + coachMetaSuffix(citeIds),
+            createdAt: new Date().toISOString(),
+          })
+          .run();
+      } catch (error) {
+        console.error("Failed to store Spirit reply", error);
+      }
     },
   });
 

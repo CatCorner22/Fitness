@@ -3,12 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --turbopack --hostname 0.0.0.0",
     "build": "next build",
-    "start": "next start",
+    "start": "next start --hostname 0.0.0.0",
     "lint": "eslint",
     "assert:programs": "python3 scripts/assert-untruncated.py",
+    "assert:runtime": "node --experimental-strip-types scripts/assert-runtime.mjs",
     "perf:stability": "node scripts/perf-stability.mjs"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "dependencies": {
     "@ai-sdk/gateway": "^4.0.63",

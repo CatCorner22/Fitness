@@ -1,8 +1,20 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 import { authSecretBytes } from "@/lib/auth-secret";
+import { publicOriginFromHeaders } from "@/lib/runtime";
 
-const PUBLIC = ["/login"];
+const PUBLIC = ["/login", "/api/health"];
+
+function publicUrl(request: NextRequest, pathname: string): URL {
+  return new URL(
+    pathname,
+    publicOriginFromHeaders({
+      requestUrl: request.url,
+      forwardedHost: request.headers.get("x-forwarded-host"),
+      forwardedProto: request.headers.get("x-forwarded-proto"),
+    }),
+  );
+}
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -19,7 +31,7 @@ export async function proxy(request: NextRequest) {
     if (pathname.startsWith("/api/")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(publicUrl(request, "/login"));
   }
   try {
     await jwtVerify(token, authSecretBytes(), { algorithms: ["HS256"] });
@@ -28,7 +40,7 @@ export async function proxy(request: NextRequest) {
     if (pathname.startsWith("/api/")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(publicUrl(request, "/login"));
   }
 }
 

@@ -13,16 +13,29 @@ A private, two-user web app for evidence-based strength training and simple nutr
 - Day-at-a-glance nutrition, protein targets, optional adaptive calories from weigh-ins
 - Progress charts and CSV export
 
-## Run it
+## Run it locally
 
 ```bash
 npm install
+cp .env.example .env.local
+# set AUTH_SECRET to a long random string
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). SQLite lives in `data/garanimal.db` and is created on first boot.
+Open [http://localhost:3000](http://localhost:3000). SQLite lives in `data/garanimal.db` and is created on first boot. Node 20+ is required.
 
-Copy `.env.example` to `.env.local` and set `AUTH_SECRET` before deploying.
+Set `TZ` (for example `America/Chicago`) if the machine's timezone is not the household's. "Today" follows the process timezone.
+
+## Replit
+
+1. Import the GitHub repo. Replit picks up `.replit` (`npm run dev` on `0.0.0.0`) and `replit.nix` (gcc/python so `better-sqlite3` can compile).
+2. Add Secrets: `AUTH_SECRET` (32+ random characters). Optional: `TZ`, `AI_GATEWAY_API_KEY`.
+3. Press Run. Preview uses `*.replit.dev`; session cookies use `SameSite=None; Secure` so the IDE iframe keeps the login.
+4. Health check: `/api/health` (no login).
+
+`data/garanimal.db` persists on the Replit workspace disk (it is gitignored). **Publish on Autoscale / Cloud Run wipes that disk on restart.** Deploy with a **Reserved VM**, or keep using the always-on workspace. Do not migrate this household app to Postgres unless you mean to.
+
+If the native SQLite module fails to load after a Nix change, run `npm rebuild better-sqlite3`.
 
 ## Stack
 
