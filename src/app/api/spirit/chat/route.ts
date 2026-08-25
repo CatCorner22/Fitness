@@ -8,6 +8,7 @@ import { coachMetaSuffix, textFromUIMessageParts } from "@/lib/spirit/context";
 import { getAiOptIn } from "@/lib/prefs";
 import { prepareSpiritChatStream } from "@/lib/spirit/chat-stream";
 import { modelForTier } from "@/lib/spirit/provider";
+import { generateCoachReply } from "@/lib/coach/engine";
 
 export async function POST(request: Request) {
   const user = await getSession();
@@ -46,9 +47,7 @@ export async function POST(request: Request) {
 
   const optIn = await getAiOptIn();
   if (!optIn || !aiEnabled()) {
-    const text = optIn
-      ? "Coach is in local mode right now. Train the session on Today, eat enough protein, and stop if something hurts."
-      : "Coach stays off until you turn it on under You. Today still has your workout.";
+    const text = generateCoachReply(user.id, profile, question);
     db.insert(coachMessages)
       .values({
         id: crypto.randomUUID(),

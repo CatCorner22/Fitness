@@ -146,7 +146,7 @@ function answerQuestion(
   if (q.includes("protein") || q.includes("eat") || q.includes("calorie")) {
     return `Protein target is about 1.6–2.2 g/kg. Yours is based on ${profile.weightKg ?? "your"} kg bodyweight. Eat enough to train. This app will not praise a crash diet.`;
   }
-  if (q.includes("time") || q.includes("busy") || q.includes("minutes")) {
+  if (q.includes("time") || q.includes("busy") || q.includes("minutes") || q.includes("skip extra") || q.includes("drop isolation") || q.includes("cut the list")) {
     return `Your clock cap is ${profile.sessionMinutes} minutes. The planner still keeps every programmed drill and tells you if the day runs long. We do not hide or drop lifts to fake a short session.`;
   }
   if (q.includes("glute") || q.includes("butt") || q.includes("ass")) {

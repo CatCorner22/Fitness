@@ -35,7 +35,7 @@ export default async function CoachPage() {
     <AppShell user={user} profile={profile}>
       <h1 className="display text-4xl">Coach</h1>
       <p className="mt-2 text-muted">
-        Optional. Ask a question when you want a second opinion. Turn it on under You if you want live replies.
+        Ask about a lift, a swap, or the clock. Local rules always answer. A cloud model is optional under You.
       </p>
       {briefing?.text ? <p className="mt-4 text-sm text-muted">{briefing.text}</p> : null}
       <SpiritCoachChat initialMessages={initialMessages} aiAvailable={optIn && aiEnabled()} />
