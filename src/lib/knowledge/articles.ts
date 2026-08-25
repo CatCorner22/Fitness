@@ -91,7 +91,7 @@ Three C’s: consistency, conciseness, clarity. Simple words. One step at a time
 
 From the user’s P2C review doctrine we also keep: autonomy (pause, replay, skip a channel, take a break); no speed-demand “cognitive load” tricks; we do not infer disability, anxiety, or skill from style. Pain is a stop.
 
-Nyx is a fictional adult instructor. Studio photos and editorial plates are photoreal stills of the same woman in a sports bra and yoga pants. Voice is a slow, low female pass you can replay. Instructional clips mux that same voice over a slow still.`,
+Nyx is a fictional adult instructor. Studio photos and editorial plates are identity-locked 85mm photographs of the same woman in a sports bra and yoga pants. Voice is a slow, low female pass you can replay. Instructional clips mux that same voice over a slow still.`,
     citations: [
       "CAST Universal Design for Learning",
       "Hasson et al. 2024 InPACT for Everyone / Frontiers in Physiology",

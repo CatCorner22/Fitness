@@ -9,7 +9,7 @@ import { parseCoachMeta, textFromUIMessageParts } from "@/lib/spirit/client-util
 
 const PROMPTS = [
   "Are bench dips good for triceps?",
-  "Should I skip extras if I'm short on time?",
+  "I'm short on time — what can I drop?",
   "Swap for a sore shoulder?",
 ];
 
