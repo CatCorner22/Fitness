@@ -32,13 +32,24 @@ type AdjRow = {
   summary: string;
 };
 
+let tick = 0;
+
 function subscribeNow(onStoreChange: () => void) {
-  const id = window.setInterval(onStoreChange, 1000);
+  tick = Date.now();
+  const id = window.setInterval(() => {
+    tick = Date.now();
+    onStoreChange();
+  }, 1000);
   return () => window.clearInterval(id);
 }
 
 function nowMs() {
-  return Date.now();
+  if (!tick) tick = Date.now();
+  return tick;
+}
+
+function serverNow() {
+  return 0;
 }
 
 function formatClock(iso: string) {
@@ -62,7 +73,7 @@ export function FastingTimer({
   adjustments: AdjRow[];
   defaultStart: string;
 }) {
-  const now = useSyncExternalStore(subscribeNow, nowMs, nowMs);
+  const now = useSyncExternalStore(subscribeNow, nowMs, serverNow);
   const past = recent.filter((f) => f.id !== running?.id);
 
   return (
@@ -353,7 +364,8 @@ function CompletedFast({ fast }: { fast: FastRow }) {
 }
 
 export function FastingStrip({ running }: { running: FastRow }) {
-  const now = useSyncExternalStore(subscribeNow, nowMs, () => Date.parse(running.startedAt));
+  const startedMs = Date.parse(running.startedAt);
+  const now = useSyncExternalStore(subscribeNow, nowMs, () => startedMs);
   const remaining = Date.parse(running.plannedEndAt) - now;
   const overtime = remaining <= 0;
   return (
