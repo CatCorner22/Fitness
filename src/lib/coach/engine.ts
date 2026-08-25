@@ -62,10 +62,6 @@ function scientistVoice(input: ReturnType<typeof coachContext>, profile: Profile
   if (input.checkin?.fatigue && input.checkin.fatigue >= 4) {
     lines.push("Today's fatigue is high. Keep every listed drill. Cut RPE, not the list. Do not chase RPE 9.");
   }
-  if (question?.toLowerCase().includes("dip")) {
-    const banned = bannedExercises().find((e) => e.id === "bench-dip");
-    lines.push(banned?.safetyNote ?? "Bench dips are banned in this app.");
-  }
   if (question) {
     lines.push(answerQuestion(question, input, profile, "scientist"));
   } else {
@@ -110,10 +106,23 @@ function answerQuestion(
   persona: "scientist" | "garanimal",
 ) {
   const q = question.toLowerCase();
-  const bannedHit = bannedExercises().find((e) => q.includes(e.name.split(" ")[0].toLowerCase()) || q.includes(e.id));
-  if (q.includes("bench dip") || q.includes("chair dip") || bannedHit?.id === "bench-dip") {
+  const bannedHit = bannedExercises().find((e) => {
+    const name = e.name.toLowerCase();
+    const idWords = e.id.replaceAll("-", " ");
+    return q.includes(e.id) || q.includes(idWords) || q.includes(name);
+  });
+  if (
+    /\bdips?\b/.test(q) ||
+    q.includes("bench dip") ||
+    q.includes("chair dip") ||
+    q.includes("bar dip") ||
+    q.includes("tricep dip") ||
+    q.includes("triceps dip") ||
+    bannedHit?.id === "bench-dip" ||
+    bannedHit?.id === "parallel-bar-dip"
+  ) {
     return persona === "garanimal"
-      ? "Bench dips? That is how you buy a cranky shoulder. Cable pushdowns. Close-grip bench. Narrow push-ups. Stay dangerous, stay intact."
+      ? "Dips off a bench, chair, or parallel bars? That is how you buy a cranky shoulder. Cable pushdowns. Close-grip bench. Narrow push-ups. Stay dangerous, stay intact."
       : getExercise("bench-dip")?.safetyNote ?? "";
   }
   if (q.includes("behind") && q.includes("neck")) {

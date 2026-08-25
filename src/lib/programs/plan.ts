@@ -64,14 +64,24 @@ export function pickSubstitute(
   equipment: string[],
 ) {
   const original = getExercise(exerciseId);
-  if (!original) return undefined;
+  if (!original || original.safety === "banned") {
+    const safe = allowedSubstitutes(exerciseId, injuries).filter(
+      (ex) =>
+        ex.safety !== "banned" &&
+        (ex.equipment.some((eq) => equipment.includes(eq) || eq === "bodyweight") ||
+          ex.equipment.includes("bodyweight")),
+    );
+    return safe[0] ?? allowedSubstitutes(exerciseId, injuries).find((ex) => ex.safety !== "banned");
+  }
   if (isExerciseAllowed(original, injuries) && original.equipment.some((eq) => equipment.includes(eq) || eq === "bodyweight")) {
     return original;
   }
   const options = allowedSubstitutes(exerciseId, injuries).filter(
-    (ex) => ex.equipment.some((eq) => equipment.includes(eq) || eq === "bodyweight"),
+    (ex) =>
+      ex.safety !== "banned" &&
+      ex.equipment.some((eq) => equipment.includes(eq) || eq === "bodyweight"),
   );
-  return options[0] ?? allowedSubstitutes(exerciseId, injuries)[0];
+  return options[0] ?? allowedSubstitutes(exerciseId, injuries).find((ex) => ex.safety !== "banned");
 }
 
 /** Keep every programmed lift. Time budget never deletes work. */
@@ -113,13 +123,16 @@ export function buildPlannedSession(options: {
   for (const item of phased) {
     const chosen = pickSubstitute(item.exerciseId, options.injuries, options.equipment);
     if (!chosen) {
-      // Keep the programmed slot even if equipment/injury blocked every substitute.
+      const original = getExercise(item.exerciseId);
+      // Never keep a banned lift. Keep other programmed slots even if gear/injury blocked every substitute.
+      if (!original || original.safety === "banned") continue;
       if (!usedIds.has(item.exerciseId)) {
         usedIds.add(item.exerciseId);
         resolved.push(item);
       }
       continue;
     }
+    if (chosen.safety === "banned") continue;
     if (!usedIds.has(chosen.id)) {
       usedIds.add(chosen.id);
       resolved.push({ ...item, exerciseId: chosen.id });

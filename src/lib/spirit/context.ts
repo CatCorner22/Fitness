@@ -49,7 +49,7 @@ export function offlineBriefing(userId: string, profile: ProfileRow) {
       `Today: ${plan.planned.day.name} — ${plan.planned.day.focus}. ~${plan.planned.estimatedMinutes} min.`,
     );
     if (ctx.checkin?.fatigue && ctx.checkin.fatigue >= 4) {
-      lines.push("Fatigue is high — keep compounds, skip extras, honest RPE.");
+      lines.push("Fatigue is high — keep every listed drill, lighter and honest RPE.");
     }
   }
   return lines.join("\n\n");

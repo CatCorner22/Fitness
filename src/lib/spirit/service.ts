@@ -62,7 +62,7 @@ function validateAdvice(
     if (advice.nextAction === "swap_exercise") advice.nextAction = "repeat_load";
   }
   advice.citeIds = advice.citeIds.filter((id) => Boolean(getArticle(id)));
-  const banned = ["bench dip", "behind-the-neck", "kipping"];
+  const banned = ["bench dip", "chair dip", "bar dip", "behind-the-neck", "kipping"];
   const lower = advice.message.toLowerCase();
   if (banned.some((b) => lower.includes(b) && !lower.includes("banned") && !lower.includes("avoid"))) {
     return null;

@@ -54,6 +54,8 @@ banned_copy = [
     "drop optional isolation",
     "Drop optional isolation",
     "skip optional work",
+    "skip extras",
+    "keep compounds, skip extras",
 ]
 blob = "\n".join(read(p) for p in SRC.rglob("*.ts")) + "\n".join(read(p) for p in SRC.rglob("*.tsx"))
 for phrase in banned_copy:
@@ -110,6 +112,29 @@ stills = [
 for still in stills:
     if not still.exists() or still.stat().st_size < 40_000:
         errors.append(f"photoreal still missing or still tiny: {still.name}")
+
+banned_ids = set()
+for path in exercise_files:
+    text = read(path)
+    blocks = re.split(r"\n  \{", text)
+    for block in blocks:
+        eid = re.search(r'id:\s*"([^"]+)"', block)
+        safety = re.search(r'safety:\s*"([^"]+)"', block)
+        if eid and safety and safety.group(1) == "banned":
+            banned_ids.add(eid.group(1))
+required_bans = {"bench-dip", "parallel-bar-dip", "behind-neck-press", "behind-neck-pulldown", "upright-row-chin", "kipping-pullup"}
+missing_bans = sorted(required_bans - banned_ids)
+if missing_bans:
+    errors.append(f"expected banned lifts missing from registry: {missing_bans}")
+programmed_banned = sorted({eid for eid in programmed if eid in banned_ids})
+if programmed_banned:
+    errors.append(f"banned lifts are programmed: {programmed_banned}")
+risky_names = ("sit-up", "situp", "crunch", "headstand", "plow-pose", "skull-crusher", "good-morning")
+risky_programmed = sorted({eid for eid in programmed if any(r in eid for r in risky_names)})
+if risky_programmed:
+    errors.append(f"risky movement ids programmed: {risky_programmed}")
+if 'original.safety === "banned") continue' not in plan and "original.safety === 'banned') continue" not in plan:
+    errors.append("planner must refuse to keep a banned lift")
 
 if errors:
     print("FAIL")

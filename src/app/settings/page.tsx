@@ -42,27 +42,27 @@ export default async function SettingsPage() {
       <h1 className="display text-4xl">You</h1>
       <p className="mt-2 text-muted">This is {user.displayName}&apos;s log. Other people in the house stay separate.</p>
 
-      <nav className="mt-6 grid grid-cols-2 gap-2 text-sm">
-        <Link className="rounded-2xl border border-line bg-surface px-4 py-3" href="/programs">
-          Plans
-        </Link>
-        <Link className="rounded-2xl border border-line bg-surface px-4 py-3" href="/assess">
-          Fitness check
-        </Link>
-        <Link className="rounded-2xl border border-line bg-surface px-4 py-3" href="/diets">
-          Diet
-        </Link>
-        <Link className="rounded-2xl border border-line bg-surface px-4 py-3" href="/coach">
-          Coach
-        </Link>
-        <Link className="rounded-2xl border border-line bg-surface px-4 py-3" href="/course">
-          Nyx course
-        </Link>
-        <Link className="rounded-2xl border border-line bg-surface px-4 py-3" href="/knowledge">
-          Guide
-        </Link>
-        <a className="rounded-2xl border border-line bg-surface px-4 py-3" href="/api/export">
-          Download data
+      <nav className="mt-6 grid grid-cols-2 gap-2">
+        {[
+          ["/programs", "Plans", "Every drill, listed"],
+          ["/assess", "Fitness check", "Scale from a baseline"],
+          ["/diets", "Diet", "Cut, bulk, reverse, peak"],
+          ["/course", "Nyx course", "Amateur night and pole class"],
+          ["/coach", "Coach", "Ask why a lift is banned"],
+          ["/knowledge", "Guide", "The research notes"],
+        ].map(([href, label, hint]) => (
+          <Link
+            key={href}
+            className="min-h-16 rounded-2xl border border-line bg-surface px-4 py-3 transition-colors hover:border-copper/40 hover:bg-surface-2"
+            href={href}
+          >
+            <span className="block text-sm font-semibold text-ink">{label}</span>
+            <span className="mt-0.5 block text-xs text-muted">{hint}</span>
+          </Link>
+        ))}
+        <a className="min-h-16 rounded-2xl border border-line bg-surface px-4 py-3 transition-colors hover:border-copper/40 hover:bg-surface-2" href="/api/export">
+          <span className="block text-sm font-semibold text-ink">Download data</span>
+          <span className="mt-0.5 block text-xs text-muted">CSV of your logs</span>
         </a>
       </nav>
 

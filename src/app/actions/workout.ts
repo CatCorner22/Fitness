@@ -11,7 +11,7 @@ import { lastWorkingSets, suggestionsForExercises } from "@/lib/autoregulation";
 import { buildPlannedSession } from "@/lib/programs/plan";
 import { todayISO } from "@/lib/utils";
 import { parseRepTarget } from "@/lib/copy";
-import { getExercise } from "@/lib/exercises/registry";
+import { allowedSubstitutes, getExercise } from "@/lib/exercises/registry";
 
 async function requireUser() {
   const user = await getSession();
@@ -140,11 +140,14 @@ export async function logSetAction(formData: FormData) {
 
 export async function swapExerciseAction(formData: FormData) {
   const user = await requireUser();
+  const profile = getProfile(user.id);
   const workoutId = String(formData.get("workoutId") || "");
   const fromId = String(formData.get("fromId") || "");
   const toId = String(formData.get("toId") || "");
   const exercise = getExercise(toId);
   if (!exercise || exercise.safety === "banned") return;
+  const allowed = allowedSubstitutes(fromId, profile?.injuries ?? []).some((alt) => alt.id === toId);
+  if (!allowed) return;
 
   db.transaction((tx) => {
     const rows = tx
@@ -162,6 +165,12 @@ export async function swapExerciseAction(formData: FormData) {
 export async function completeWorkoutAction(formData: FormData) {
   const user = await requireUser();
   const workoutId = String(formData.get("workoutId") || "");
+  const existing = db
+    .select()
+    .from(workouts)
+    .where(and(eq(workouts.id, workoutId), eq(workouts.userId, user.id)))
+    .get();
+  if (!existing) redirect("/");
   const sessionRaw = String(formData.get("sessionRpe") || "");
   const sessionRpe = sessionRaw === "" ? Number.NaN : Number(sessionRaw);
   const durationMinutes = Number(formData.get("durationMinutes"));

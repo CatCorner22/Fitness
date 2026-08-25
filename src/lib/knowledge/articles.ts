@@ -144,8 +144,8 @@ Use a chair as a barre. This app's ballet/barre plans are for balance and a smoo
     title: "Exercises we do not prescribe",
     tags: ["safety", "shoulder", "bench dip", "upright row", "behind neck", "injury"],
     summary:
-      "Bench dips, behind-the-neck press/pulldown, chin-height upright rows, and kipping pull-ups in prep programs are banned. Swaps must come from the registry.",
-    body: `Bench dips: loaded end-range shoulder extension — McKenzie 2022 advises against regular use. Use cable pushdowns, close-grip bench, narrow push-ups instead.
+      "Bench/chair/parallel-bar dips, behind-the-neck press/pulldown, chin-height upright rows, and kipping pull-ups in prep programs are banned. Swaps must come from the registry.",
+    body: `Bench dips: loaded end-range shoulder extension — McKenzie 2022 advises against regular use. Parallel-bar dips are omitted for the same extension problem at depth. Use cable pushdowns, close-grip bench, narrow push-ups instead.
 Behind-the-neck work: high-five shoulder position. Upright rows to chin: Hawkins impingement position. Kipping: labrum traction without strict strength.`,
     citations: ["McKenzie et al. 2022", "NSCA shoulder strategies 2021"],
   },
@@ -265,11 +265,13 @@ Pain that is sharp, radiating, or worsening = stop — that is medical territory
   },
   {
     id: "triceps-safe",
-    title: "Triceps without bench dips",
-    tags: ["triceps", "pushdown", "close grip", "elbow", "shoulder"],
+    title: "Triceps without dips",
+    tags: ["triceps", "pushdown", "close grip", "elbow", "shoulder", "dip"],
     summary:
-      "Default: cable pushdowns, close-grip bench, overhead cable extensions, JM press, narrow push-ups. Parallel-bar dips only with pain-free mobility.",
-    body: `Bench dips shear the anterior shoulder capsule. If elbows bark on skull crushers, switch to pushdowns or neutral-grip work.`,
+      "Default: cable pushdowns, close-grip bench, overhead cable extensions, JM press, narrow push-ups. No bench, chair, or parallel-bar dips.",
+    body: `Bench and chair dips shear the anterior shoulder capsule (McKenzie et al. 2022: the humerus travels past self-selected max extension). Deep parallel-bar dips share that end-range extension. This app never programs them.
+
+If elbows bark on skull crushers, switch to pushdowns or neutral-grip work. Close-grip bench and narrow push-ups load the triceps with the shoulder in a friendlier path.`,
   },
   {
     id: "warmup",

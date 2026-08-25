@@ -101,12 +101,19 @@ export default async function TodayPage() {
         </section>
       )}
 
-      <p className="mt-6 text-center text-sm text-muted">
-        <Link href="/nutrition" className="underline-offset-2 hover:underline">
-          Food {Math.round(food.calories)} / {targets.calories} · protein {Math.round(food.protein)} / {targets.protein}g
+      <section className="mt-6 rounded-3xl border border-line bg-surface p-5">
+        <Link href="/nutrition" className="block">
+          <p className="text-xs uppercase tracking-[0.16em] text-copper">Eat</p>
+          <p className="mt-1 text-lg font-semibold text-ink">
+            {Math.round(food.calories)} / {targets.calories} kcal
+          </p>
+          <p className="mt-1 text-sm text-muted">
+            Protein {Math.round(food.protein)} / {targets.protein}g
+            {spec.label ? ` · ${spec.label}` : ""}
+          </p>
         </Link>
-      </p>
-      {fast ? <FastingStrip running={fast} /> : null}
+      </section>
+      {fast ? <div className="mt-4"><FastingStrip running={fast} /></div> : null}
     </AppShell>
   );
 }
