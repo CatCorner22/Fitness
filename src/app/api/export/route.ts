@@ -3,6 +3,8 @@ import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { bodyweightLogs, calendarMarks, fasts, nutritionLogs, setLogs, workouts } from "@/lib/db/schema";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const user = await getSession();
   if (!user) {
@@ -43,6 +45,7 @@ export async function GET() {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
       "Content-Disposition": `attachment; filename="garanimal-${user.username}.csv"`,
+      "Cache-Control": "private, no-store",
     },
   });
 }

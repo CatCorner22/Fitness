@@ -36,3 +36,13 @@ export function formatWeight(kg: number, units: "lb" | "kg") {
 export function clamp(n: number, min: number, max: number) {
   return Math.min(max, Math.max(min, n));
 }
+
+export function clampInt(raw: unknown, fallback: number, min: number, max: number) {
+  const n = typeof raw === "number" ? raw : Number(raw);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.round(clamp(n, min, max));
+}
+
+export function pickEnum<T extends string>(raw: unknown, allowed: readonly T[], fallback: T): T {
+  return allowed.includes(raw as T) ? (raw as T) : fallback;
+}

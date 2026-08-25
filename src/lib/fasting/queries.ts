@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { fastAdjustments, fasts } from "@/lib/db/schema";
 
@@ -21,17 +21,19 @@ export function recentFasts(userId: string, limit = 8) {
     .all();
 }
 
-export function adjustmentsForFast(fastId: string) {
+export function adjustmentsForFast(fastId: string, userId: string) {
   return db
     .select()
     .from(fastAdjustments)
-    .where(eq(fastAdjustments.fastId, fastId))
+    .where(and(eq(fastAdjustments.fastId, fastId), eq(fastAdjustments.userId, userId)))
     .orderBy(desc(fastAdjustments.createdAt))
     .all();
 }
 
 export function fastOwnedBy(fastId: string, userId: string) {
-  const row = db.select().from(fasts).where(eq(fasts.id, fastId)).get();
-  if (!row || row.userId !== userId) return null;
-  return row;
+  return db
+    .select()
+    .from(fasts)
+    .where(and(eq(fasts.id, fastId), eq(fasts.userId, userId)))
+    .get();
 }

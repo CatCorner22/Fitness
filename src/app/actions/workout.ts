@@ -10,8 +10,9 @@ import { CALENDAR_EPOCH, compareISO } from "@/lib/calendar-core";
 import { db } from "@/lib/db";
 import { setLogs, workouts } from "@/lib/db/schema";
 import { lastWorkingSets, suggestionsForExercises } from "@/lib/autoregulation";
+import { getProgram } from "@/lib/programs/catalog";
 import { buildPlannedSession } from "@/lib/programs/plan";
-import { todayISO } from "@/lib/utils";
+import { clamp, clampInt, todayISO } from "@/lib/utils";
 import { parseRepTarget } from "@/lib/copy";
 import { allowedSubstitutes, getExercise } from "@/lib/exercises/registry";
 
@@ -124,19 +125,23 @@ export async function logSetAction(formData: FormData) {
   const rpe = Number(formData.get("rpe"));
   const profile = getProfile(user.id);
   const units = profile?.units ?? "lb";
-  const weightKg = Number.isFinite(weight) ? (units === "lb" ? weight / 2.20462 : weight) : null;
+  const weightKg = Number.isFinite(weight) ? (units === "lb" ? clamp(weight, 0, 1000) / 2.20462 : clamp(weight, 0, 1000)) : null;
 
   db.update(setLogs)
     .set({
       weightKg,
-      reps: Number.isFinite(reps) ? reps : null,
-      rpe: Number.isFinite(rpe) ? rpe : null,
+      reps: Number.isFinite(reps) ? Math.round(clamp(reps, 0, 100)) : null,
+      rpe: Number.isFinite(rpe) ? clamp(rpe, 1, 10) : null,
       completed: 1,
     })
     .where(and(eq(setLogs.id, id), eq(setLogs.userId, user.id)))
     .run();
 
-  const set = db.select().from(setLogs).where(eq(setLogs.id, id)).get();
+  const set = db
+    .select()
+    .from(setLogs)
+    .where(and(eq(setLogs.id, id), eq(setLogs.userId, user.id)))
+    .get();
   revalidatePath(`/workout/${set?.workoutId}`);
 }
 
@@ -152,6 +157,12 @@ export async function swapExerciseAction(formData: FormData) {
   if (!allowed) return;
 
   db.transaction((tx) => {
+    const owned = tx
+      .select()
+      .from(workouts)
+      .where(and(eq(workouts.id, workoutId), eq(workouts.userId, user.id)))
+      .get();
+    if (!owned) return;
     const rows = tx
       .select()
       .from(setLogs)
@@ -202,17 +213,20 @@ export async function completeWorkoutAction(formData: FormData) {
   redirect(`/workout/${workoutId}/complete`);
 }
 
-export async function skipWorkoutAction(dayId: string, dayName: string, programId: string, week: number) {
+export async function skipWorkoutAction(dayId: string, _dayName: string, programId: string, week: number) {
   const user = await requireUser();
+  const program = getProgram(programId);
+  const day = program?.days.find((d) => d.id === dayId);
+  if (!program || !day) return;
   const date = todayISO();
   db.insert(workouts)
     .values({
       id: crypto.randomUUID(),
       userId: user.id,
-      programId,
-      dayId,
-      dayName,
-      week,
+      programId: program.id,
+      dayId: day.id,
+      dayName: day.name,
+      week: clampInt(week, 1, 1, program.durationWeeks),
       date,
       startedAt: new Date().toISOString(),
       completedAt: new Date().toISOString(),

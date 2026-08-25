@@ -1,6 +1,6 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
@@ -98,7 +98,7 @@ export async function nudgeFastAction(formData: FormData) {
   const now = new Date().toISOString();
   db.update(fasts)
     .set({ targetMinutes, plannedEndAt, updatedAt: now })
-    .where(eq(fasts.id, row.id))
+    .where(and(eq(fasts.id, row.id), eq(fasts.userId, user.id)))
     .run();
   const label = minutes > 0 ? `Extended ${minutes} min` : `Shortened ${Math.abs(minutes)} min`;
   recordAdjustment(row.id, user.id, "nudge", label, { minutes, targetMinutes });
@@ -159,7 +159,7 @@ export async function adjustFastAction(formData: FormData) {
         notes: notes || row.notes,
         updatedAt: now,
       })
-      .where(eq(fasts.id, row.id))
+      .where(and(eq(fasts.id, row.id), eq(fasts.userId, user.id)))
       .run();
   } else {
     const endedAt = localInputToIso(endRaw) ?? row.endedAt ?? plannedEndAt;
@@ -174,7 +174,7 @@ export async function adjustFastAction(formData: FormData) {
         notes: notes || row.notes,
         updatedAt: now,
       })
-      .where(eq(fasts.id, row.id))
+      .where(and(eq(fasts.id, row.id), eq(fasts.userId, user.id)))
       .run();
   }
 
@@ -201,7 +201,7 @@ export async function endFastAction(formData: FormData) {
       status: abort ? "aborted" : "completed",
       updatedAt: now,
     })
-    .where(eq(fasts.id, row.id))
+    .where(and(eq(fasts.id, row.id), eq(fasts.userId, user.id)))
     .run();
   recordAdjustment(
     row.id,

@@ -13,9 +13,10 @@ export function coachMetaSuffix(citeIds: string[]) {
   return citeIds.length ? `\n\n<!-- spirit-meta: ${JSON.stringify({ citeIds })} -->` : "";
 }
 
-export function textFromUIMessageParts(parts: { type: string; text?: string }[]) {
+export function textFromUIMessageParts(parts: { type: string; text?: string }[] | undefined) {
+  if (!Array.isArray(parts)) return "";
   return parts
-    .filter((p) => p.type === "text" && p.text)
+    .filter((p) => p && p.type === "text" && typeof p.text === "string")
     .map((p) => p.text!)
     .join("");
 }
