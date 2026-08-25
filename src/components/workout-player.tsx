@@ -275,6 +275,17 @@ export function WorkoutPlayer({
         const ex = exercises[exerciseId];
         const ghost = ghostSets[exerciseId];
         const isCurrent = current?.[0] === exerciseId;
+        const doneHere = rows.filter((s) => s.completed).length;
+        if (!isCurrent) {
+          return (
+            <section key={exerciseId} className="rounded-3xl border border-line bg-surface px-4 py-3">
+              <p className="font-semibold">{ex?.name ?? exerciseId}</p>
+              <p className="text-sm text-muted">
+                {doneHere}/{rows.length} sets
+              </p>
+            </section>
+          );
+        }
         return (
           <section
             key={exerciseId}
@@ -314,6 +325,30 @@ export function WorkoutPlayer({
             <div className="mt-4 space-y-4">
               {rows.map((set) => {
                 const isDone = Boolean(set.completed) && editingSetId !== set.id;
+                const firstOpen = rows.find((s) => !s.completed || s.id === editingSetId);
+                if (isDone) {
+                  return (
+                    <button
+                      key={set.id}
+                      type="button"
+                      className="flex w-full items-center justify-between rounded-2xl bg-moss/10 px-4 py-3 text-left text-sm"
+                      onClick={() => setEditingSetId(set.id)}
+                    >
+                      <span>
+                        Set {set.setIndex + 1} · {set.weightKg != null ? kgToDisplay(set.weightKg, units) : "—"} {units} ×{" "}
+                        {set.reps ?? "—"}
+                      </span>
+                      <span className="text-moss">Done</span>
+                    </button>
+                  );
+                }
+                if (firstOpen && firstOpen.id !== set.id) {
+                  return (
+                    <p key={set.id} className="px-1 text-sm text-muted">
+                      Set {set.setIndex + 1} waiting
+                    </p>
+                  );
+                }
                 const weightDefault =
                   loadHints[set.id] ??
                   (set.weightKg != null ? kgToDisplay(set.weightKg, units) : "");
@@ -323,10 +358,9 @@ export function WorkoutPlayer({
                     key={set.id}
                     onSubmit={(e) => {
                       e.preventDefault();
-                      if (isDone) return;
                       logSet(set, e.currentTarget);
                     }}
-                    className={`space-y-3 rounded-2xl p-4 ${isDone ? "bg-moss/10" : "bg-bg-2"}`}
+                    className="space-y-3 rounded-2xl bg-bg-2 p-4"
                   >
                     <p className="text-sm text-muted">Set {set.setIndex + 1}</p>
                     <div className="grid grid-cols-2 gap-3">
@@ -337,9 +371,8 @@ export function WorkoutPlayer({
                           type="number"
                           step="0.5"
                           inputMode="decimal"
-                          disabled={isDone}
                           defaultValue={weightDefault}
-                          className="mt-1 min-h-12 disabled:opacity-60"
+                          className="mt-1 min-h-12"
                         />
                       </label>
                       <label className="text-sm text-muted">
@@ -348,34 +381,21 @@ export function WorkoutPlayer({
                           name="reps"
                           type="number"
                           inputMode="numeric"
-                          disabled={isDone}
                           defaultValue={repsDefault}
-                          className="mt-1 min-h-12 disabled:opacity-60"
+                          className="mt-1 min-h-12"
                         />
                       </label>
                     </div>
-                    {!isDone ? (
-                      <div>
-                        <p className="mb-2 text-sm text-muted">How did that feel? Optional.</p>
-                        <HardnessButtons
-                          value={hardness[set.id] ?? ""}
-                          onChange={(next) => setHardness((prev) => ({ ...prev, [set.id]: next }))}
-                        />
-                      </div>
-                    ) : null}
-                    {isDone ? (
-                      <button
-                        className="min-h-12 w-full rounded-xl bg-moss/20 text-moss"
-                        type="button"
-                        onClick={() => setEditingSetId(set.id)}
-                      >
-                        Done · edit
-                      </button>
-                    ) : (
-                      <button className="btn-primary" type="submit">
-                        Log set
-                      </button>
-                    )}
+                    <div>
+                      <p className="mb-2 text-sm text-muted">How did that feel? Optional.</p>
+                      <HardnessButtons
+                        value={hardness[set.id] ?? ""}
+                        onChange={(next) => setHardness((prev) => ({ ...prev, [set.id]: next }))}
+                      />
+                    </div>
+                    <button className="btn-primary" type="submit">
+                      Log set
+                    </button>
                   </form>
                 );
               })}
