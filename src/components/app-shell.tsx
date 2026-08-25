@@ -4,8 +4,6 @@ import type { SessionUser } from "@/lib/auth";
 import type { ProfileRow } from "@/lib/auth";
 
 export function AppShell({
-  user: _user,
-  profile: _profile,
   children,
 }: {
   user: SessionUser;

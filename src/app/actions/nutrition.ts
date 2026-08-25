@@ -87,32 +87,34 @@ export async function applyMealPlanAction(formData: FormData) {
   const existing = todayNutrition(user.id);
   const filledMeals = new Set(existing.logs.map((l) => l.meal));
 
-  if (replace) {
-    db.delete(nutritionLogs)
-      .where(and(eq(nutritionLogs.userId, user.id), eq(nutritionLogs.date, date)))
-      .run();
-  }
-
   let inserted = 0;
-  for (const item of match.items) {
-    if (!replace && filledMeals.has(item.meal)) continue;
-    db.insert(nutritionLogs)
-      .values({
-        id: crypto.randomUUID(),
-        userId: user.id,
-        date,
-        meal: item.meal,
-        foodId: item.foodId,
-        foodName: item.foodName,
-        calories: item.calories,
-        protein: item.protein,
-        carbs: item.carbs,
-        fat: item.fat,
-        servings: item.servings,
-      })
-      .run();
-    inserted++;
-  }
+  db.transaction((tx) => {
+    if (replace) {
+      tx.delete(nutritionLogs)
+        .where(and(eq(nutritionLogs.userId, user.id), eq(nutritionLogs.date, date)))
+        .run();
+    }
+
+    for (const item of match.items) {
+      if (!replace && filledMeals.has(item.meal)) continue;
+      tx.insert(nutritionLogs)
+        .values({
+          id: crypto.randomUUID(),
+          userId: user.id,
+          date,
+          meal: item.meal,
+          foodId: item.foodId,
+          foodName: item.foodName,
+          calories: item.calories,
+          protein: item.protein,
+          carbs: item.carbs,
+          fat: item.fat,
+          servings: item.servings,
+        })
+        .run();
+      inserted++;
+    }
+  });
 
   revalidatePath("/nutrition");
   revalidatePath("/");

@@ -23,14 +23,6 @@ export async function startWorkoutAction(dayId?: string) {
   const profile = getProfile(user.id);
   if (!profile?.activeProgramId) redirect("/programs");
 
-  const open = db
-    .select()
-    .from(workouts)
-    .where(and(eq(workouts.userId, user.id), eq(workouts.status, "in_progress")))
-    .get();
-  if (open) redirect(`/workout/${open.id}`);
-
-  const last = lastWorkingSets(user.id);
   const draft = buildPlannedSession({
     programId: profile.activeProgramId,
     week: profile.currentWeek,
@@ -38,9 +30,12 @@ export async function startWorkoutAction(dayId?: string) {
     sessionMinutes: profile.sessionMinutes,
     injuries: profile.injuries,
     equipment: profile.equipment,
-    lastSets: last,
   });
   if (!draft) redirect("/programs");
+  const last = lastWorkingSets(
+    user.id,
+    draft.exercises.map((e) => e.exerciseId),
+  );
   const { suggested } = suggestionsForExercises(
     user.id,
     draft.exercises.map((e) => ({
@@ -48,6 +43,7 @@ export async function startWorkoutAction(dayId?: string) {
       targetRpe: e.targetRpe,
       reps: e.reps,
     })),
+    last,
   );
   const planned = buildPlannedSession({
     programId: profile.activeProgramId,
@@ -62,40 +58,54 @@ export async function startWorkoutAction(dayId?: string) {
   if (!planned) redirect("/programs");
 
   const id = crypto.randomUUID();
-  db.insert(workouts)
-    .values({
-      id,
-      userId: user.id,
-      programId: planned.program.id,
-      dayId: planned.day.id,
-      dayName: planned.day.name,
-      week: planned.week,
-      date: todayISO(),
-      startedAt: new Date().toISOString(),
-      status: "in_progress",
-    })
-    .run();
-
-  for (const item of planned.exercises) {
-    for (let i = 0; i < item.sets; i++) {
-      db.insert(setLogs)
-        .values({
-          id: crypto.randomUUID(),
-          workoutId: id,
-          userId: user.id,
-          exerciseId: item.exerciseId,
-          setIndex: i,
-          targetReps: item.reps,
-          targetRpe: item.targetRpe,
-          weightKg: item.suggestedWeightKg,
-          reps: last[item.exerciseId]?.reps ?? parseRepTarget(item.reps),
-          rpe: null,
-          completed: 0,
-        })
-        .run();
+  let resumeId: string | null = null;
+  db.transaction((tx) => {
+    const open = tx
+      .select()
+      .from(workouts)
+      .where(and(eq(workouts.userId, user.id), eq(workouts.status, "in_progress")))
+      .get();
+    if (open) {
+      resumeId = open.id;
+      return;
     }
-  }
 
+    tx.insert(workouts)
+      .values({
+        id,
+        userId: user.id,
+        programId: planned.program.id,
+        dayId: planned.day.id,
+        dayName: planned.day.name,
+        week: planned.week,
+        date: todayISO(),
+        startedAt: new Date().toISOString(),
+        status: "in_progress",
+      })
+      .run();
+
+    for (const item of planned.exercises) {
+      for (let i = 0; i < item.sets; i++) {
+        tx.insert(setLogs)
+          .values({
+            id: crypto.randomUUID(),
+            workoutId: id,
+            userId: user.id,
+            exerciseId: item.exerciseId,
+            setIndex: i,
+            targetReps: item.reps,
+            targetRpe: item.targetRpe,
+            weightKg: item.suggestedWeightKg,
+            reps: last[item.exerciseId]?.reps ?? parseRepTarget(item.reps),
+            rpe: null,
+            completed: 0,
+          })
+          .run();
+      }
+    }
+  });
+
+  if (resumeId) redirect(`/workout/${resumeId}`);
   revalidatePath("/");
   redirect(`/workout/${id}`);
 }
@@ -132,14 +142,16 @@ export async function swapExerciseAction(formData: FormData) {
   const exercise = getExercise(toId);
   if (!exercise || exercise.safety === "banned") return;
 
-  const rows = db
-    .select()
-    .from(setLogs)
-    .where(and(eq(setLogs.workoutId, workoutId), eq(setLogs.userId, user.id), eq(setLogs.exerciseId, fromId)))
-    .all();
-  for (const row of rows) {
-    db.update(setLogs).set({ exerciseId: toId, completed: 0 }).where(eq(setLogs.id, row.id)).run();
-  }
+  db.transaction((tx) => {
+    const rows = tx
+      .select()
+      .from(setLogs)
+      .where(and(eq(setLogs.workoutId, workoutId), eq(setLogs.userId, user.id), eq(setLogs.exerciseId, fromId)))
+      .all();
+    for (const row of rows) {
+      tx.update(setLogs).set({ exerciseId: toId, completed: 0 }).where(eq(setLogs.id, row.id)).run();
+    }
+  });
   revalidatePath(`/workout/${workoutId}`);
 }
 

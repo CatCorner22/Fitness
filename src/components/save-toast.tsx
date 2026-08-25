@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 const MESSAGES: Record<string, string> = {
@@ -20,31 +20,26 @@ export function SaveToast() {
   const pathname = usePathname();
   const router = useRouter();
   const key = searchParams.get("toast");
-  const [visible, setVisible] = useState(false);
+  const message = key ? MESSAGES[key] : undefined;
 
   useEffect(() => {
-    if (!key || !MESSAGES[key]) return;
-    setVisible(true);
-    const hide = window.setTimeout(() => setVisible(false), 2800);
+    if (!key || !message) return;
     const clean = window.setTimeout(() => {
-      const next = new URLSearchParams(searchParams.toString());
+      const next = new URLSearchParams(window.location.search);
       next.delete("toast");
       const q = next.toString();
       router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
-    }, 3200);
-    return () => {
-      window.clearTimeout(hide);
-      window.clearTimeout(clean);
-    };
-  }, [key, pathname, router, searchParams]);
+    }, 2800);
+    return () => window.clearTimeout(clean);
+  }, [key, message, pathname, router]);
 
-  if (!visible || !key) return null;
+  if (!message) return null;
   return (
     <div
       role="status"
       className="fixed left-1/2 top-4 z-50 -translate-x-1/2 rounded-full border border-line bg-surface px-4 py-2 text-sm shadow-lg"
     >
-      {MESSAGES[key] ?? "Saved."}
+      {message}
     </div>
   );
 }

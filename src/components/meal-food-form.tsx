@@ -1,20 +1,44 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { addFoodLogAction } from "@/app/actions/nutrition";
 
 type Food = { id: string; name: string; calories: number; protein: number };
 
+const RECENTS_EVENT = "garanimal-recents";
+
+function recentsKey(userId: string) {
+  return `garanimal-recent-foods-${userId}`;
+}
+
+function readRecents(userId: string): string[] {
+  try {
+    const raw = localStorage.getItem(recentsKey(userId));
+    const ids = raw ? (JSON.parse(raw) as unknown) : [];
+    return Array.isArray(ids) ? ids.filter((id): id is string => typeof id === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
 function rememberFood(userId: string, foodId: string) {
   try {
-    const key = `garanimal-recent-foods-${userId}`;
-    const raw = localStorage.getItem(key);
-    const ids = raw ? (JSON.parse(raw) as string[]) : [];
+    const ids = readRecents(userId);
     const next = [foodId, ...ids.filter((id) => id !== foodId)].slice(0, 8);
-    localStorage.setItem(key, JSON.stringify(next));
+    localStorage.setItem(recentsKey(userId), JSON.stringify(next));
+    window.dispatchEvent(new Event(RECENTS_EVENT));
   } catch {
     /* ignore */
   }
+}
+
+function subscribeRecents(onChange: () => void) {
+  window.addEventListener(RECENTS_EVENT, onChange);
+  window.addEventListener("storage", onChange);
+  return () => {
+    window.removeEventListener(RECENTS_EVENT, onChange);
+    window.removeEventListener("storage", onChange);
+  };
 }
 
 export function MealFoodForm({
@@ -28,16 +52,12 @@ export function MealFoodForm({
 }) {
   const [query, setQuery] = useState("");
   const [foodId, setFoodId] = useState("");
-  const [recents, setRecents] = useState<string[]>([]);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(`garanimal-recent-foods-${userId}`);
-      setRecents(raw ? (JSON.parse(raw) as string[]) : []);
-    } catch {
-      setRecents([]);
-    }
-  }, [userId]);
+  const recentsJson = useSyncExternalStore(
+    subscribeRecents,
+    () => JSON.stringify(readRecents(userId)),
+    () => "[]",
+  );
+  const recents = useMemo(() => JSON.parse(recentsJson) as string[], [recentsJson]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -53,14 +73,6 @@ export function MealFoodForm({
         const id = String(formData.get("foodId") || "");
         if (id) rememberFood(userId, id);
         await addFoodLogAction(formData);
-        setRecents(() => {
-          try {
-            const raw = localStorage.getItem(`garanimal-recent-foods-${userId}`);
-            return raw ? (JSON.parse(raw) as string[]) : [];
-          } catch {
-            return [];
-          }
-        });
       }}
       className="mt-4 space-y-2"
     >
