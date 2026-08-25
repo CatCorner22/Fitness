@@ -8,7 +8,9 @@ import { db } from "@/lib/db";
 import { fastAdjustments, fasts } from "@/lib/db/schema";
 import {
   clampFastMinutes,
+  elapsedFastMinutes,
   localInputToIso,
+  MAX_FAST_MINUTES,
   plannedEndIso,
   protocolHours,
   type FastAdjustmentKind,
@@ -126,7 +128,7 @@ export async function adjustFastAction(formData: FormData) {
       plannedEndAt = endIso;
       const delta = Date.parse(endIso) - Date.parse(startedAt);
       if (Number.isFinite(delta) && delta > 0) {
-        targetMinutes = clampFastMinutes(delta / 60_000);
+        targetMinutes = Math.min(MAX_FAST_MINUTES, Math.max(1, Math.round(delta / 60_000)));
       }
     }
   } else if (Number.isFinite(hoursRaw) && hoursRaw > 0) {
@@ -136,18 +138,19 @@ export async function adjustFastAction(formData: FormData) {
     plannedEndAt = plannedEndIso(startedAt, targetMinutes);
   }
 
-  if (Date.parse(plannedEndAt) <= Date.parse(startedAt)) {
-    redirect("/nutrition?toast=fast-order");
-  }
-
   const now = new Date().toISOString();
   const kind: FastAdjustmentKind = row.status === "running" ? "shift_start" : "edit_completed";
   const summary =
     row.status === "running"
       ? `Adjusted start/target — ${Math.round(targetMinutes / 60)} h`
-      : `Edited completed fast`;
+      : notes
+        ? `Edited completed fast — ${notes}`
+        : `Edited completed fast`;
 
   if (row.status === "running") {
+    if (Date.parse(plannedEndAt) <= Date.parse(startedAt)) {
+      redirect("/nutrition?toast=fast-order");
+    }
     db.update(fasts)
       .set({
         startedAt,
@@ -160,8 +163,8 @@ export async function adjustFastAction(formData: FormData) {
       .run();
   } else {
     const endedAt = localInputToIso(endRaw) ?? row.endedAt ?? plannedEndAt;
-    if (Date.parse(endedAt) <= Date.parse(startedAt)) redirect("/nutrition?toast=fast-order");
-    const actualMinutes = clampFastMinutes((Date.parse(endedAt) - Date.parse(startedAt)) / 60_000);
+    if (Date.parse(endedAt) < Date.parse(startedAt)) redirect("/nutrition?toast=fast-order");
+    const actualMinutes = elapsedFastMinutes(startedAt, endedAt);
     db.update(fasts)
       .set({
         startedAt,

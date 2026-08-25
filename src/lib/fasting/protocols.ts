@@ -17,6 +17,21 @@ export function clampFastMinutes(n: number) {
   return Math.min(MAX_FAST_MINUTES, Math.max(MIN_FAST_MINUTES, Math.round(n)));
 }
 
+/** Actual elapsed time on a finished fast. Can be shorter than a protocol window. */
+export function elapsedFastMinutes(startedAt: string, endedAt: string) {
+  const delta = Date.parse(endedAt) - Date.parse(startedAt);
+  if (!Number.isFinite(delta) || delta < 0) return 0;
+  return Math.min(MAX_FAST_MINUTES, Math.round(delta / 60_000));
+}
+
+export function formatElapsedLabel(startedAt: string, endedAt: string) {
+  const ms = Date.parse(endedAt) - Date.parse(startedAt);
+  if (!Number.isFinite(ms) || ms < 60_000) return "<1 min";
+  if (ms < 3_600_000) return `${Math.round(ms / 60_000)} min`;
+  const hours = Math.round((ms / 3_600_000) * 10) / 10;
+  return `${hours} h`;
+}
+
 export function hoursToMinutes(hours: number) {
   return clampFastMinutes(hours * 60);
 }

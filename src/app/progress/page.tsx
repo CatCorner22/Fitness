@@ -6,6 +6,7 @@ import { bestSets, VOLUME_LANDMARKS, weeklyVolume } from "@/lib/autoregulation";
 import { db } from "@/lib/db";
 import { bodyweightLogs, fasts, workouts } from "@/lib/db/schema";
 import { getExercise } from "@/lib/exercises/registry";
+import { formatElapsedLabel } from "@/lib/fasting/protocols";
 import { requireAuthed } from "@/lib/session-page";
 import { formatWeight, todayISO } from "@/lib/utils";
 
@@ -65,14 +66,13 @@ export default async function ProgressPage() {
           {fastRows.length === 0 && <li className="text-muted">No fasts yet. Start one under Eat.</li>}
           {fastRows.map((f) => {
             const end = f.endedAt ?? f.plannedEndAt;
-            const hours = Math.round(((Date.parse(end) - Date.parse(f.startedAt)) / 3_600_000) * 10) / 10;
             return (
               <li key={f.id} className="flex justify-between gap-3 border-b border-line/50 py-2 last:border-0">
                 <span>
                   {f.startedAt.slice(0, 10)} · {f.protocol}
                   <span className="block text-xs text-muted">{f.status}</span>
                 </span>
-                <span className="text-muted">{hours} h</span>
+                <span className="text-muted">{formatElapsedLabel(f.startedAt, end)}</span>
               </li>
             );
           })}

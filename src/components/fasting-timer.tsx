@@ -10,6 +10,7 @@ import {
 import {
   FAST_PROTOCOLS,
   formatDuration,
+  formatElapsedLabel,
   isoToLocalInput,
 } from "@/lib/fasting/protocols";
 
@@ -303,16 +304,16 @@ function RunningFast({
 
 function CompletedFast({ fast }: { fast: FastRow }) {
   const ended = fast.endedAt ?? fast.plannedEndAt;
-  const ms = Date.parse(ended) - Date.parse(fast.startedAt);
-  const hours = Math.round((ms / 3_600_000) * 10) / 10;
   return (
     <div>
       <p className="text-sm">
-        {fast.protocol} · {hours} h · {fast.status === "aborted" ? "stopped" : "done"}
+        {fast.protocol} · {formatElapsedLabel(fast.startedAt, ended)} ·{" "}
+        {fast.status === "aborted" ? "stopped" : "done"}
       </p>
       <p className="text-xs text-muted">
         {formatClock(fast.startedAt)} → {formatClock(ended)}
       </p>
+      {fast.notes ? <p className="mt-1 text-xs text-muted">{fast.notes}</p> : null}
       <details className="mt-2">
         <summary className="cursor-pointer text-sm text-muted">Edit this fast</summary>
         <form action={adjustFastAction} className="mt-3 space-y-3">
