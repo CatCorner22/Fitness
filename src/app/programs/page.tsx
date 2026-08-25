@@ -27,7 +27,7 @@ export default async function ProgramsPage() {
     <AppShell user={user} profile={profile}>
       <h1 className="display text-4xl">Plans</h1>
       <p className="mt-2 max-w-2xl text-muted">
-        Pick one. You can switch later under You. Pole and amateur-night plans include a full Nyx course — every drill listed, none cut.
+        Pick one. You can switch later under You. Every plan lists every drill — we do not cut for the clock. Pole and amateur-night plans include a full Nyx course.
       </p>
       <div className="mt-8 space-y-10">
         {grouped.map((group) => (

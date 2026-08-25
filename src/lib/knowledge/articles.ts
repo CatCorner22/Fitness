@@ -74,7 +74,7 @@ Invert readiness: hanging tuck → controlled on-pole tuck with a spot → studi
 
 Amateur night / club-style exotic: walk, eye-line, arms, hand styling, stage map (rail and corners), heel walk after the trainer walk is quiet, body wave, figure-8, hip pulse, rib isolation, shoulder shimmy, standing grind on a chair back, floor descent, tabletop, cat crawl, knee circle, floor roll, floor hip work, mermaid sit both sides, level ladder, chair approach/straddle/roll, reverse chair sit, three-part chair set (approach, body, close on furniture — not on a person), skirt work, top peel, heels-on-floor plan, rail approach, 8-counts, two-song map, song-length run-through, closing walk-off, slip recovery. Pole as prop: walk, back-to-pole, fireman, sit, climb, controlled descent. Heels later. No new tricks in the show set.
 
-Nyx course: Watch me / With Nyx / Your turn. Each skill is a short cue, one step at a time, a diagram, a photo, an illustrated plate, a sultry spoken pass with the words on screen, and a clip. Pick a channel. Replay freely. Move on when the pass line is true. We never drop a listed drill to fake a shorter clock.`,
+Nyx course: Watch me / With Nyx / Your turn. Each skill is a short cue, one step at a time, a diagram, a photo, an editorial plate, a sultry spoken pass with the words on screen, and a clip. Pick a channel. Replay freely. Move on when the pass line is true. We never drop a listed drill to fake a shorter clock.`,
     citations: ["Lee et al. 2022 MPPA", "Nawrocka et al. amateur pole injury surveys", "Szopa et al. 2021 Sci Rep"],
   },
   {
@@ -82,7 +82,7 @@ Nyx course: Watch me / With Nyx / Your turn. Each skill is a short cue, one step
     title: "How Nyx teaches (multi-channel, neurodivergent-friendly)",
     tags: ["nyx", "course", "udl", "neurodivergent", "voice", "pole", "exotic", "instruction"],
     summary:
-      "Each skill ships as a short cue, numbered steps, a diagram, a photo, an illustrated plate, a spoken pass, and a clip. Pick any channel. Nothing is hidden. We do not infer a diagnosis from how you move.",
+      "Each skill ships as a short cue, numbered steps, a diagram, a photo, an editorial plate, a spoken pass, and a clip. Pick any channel. Nothing is hidden. We do not infer a diagnosis from how you move.",
     body: `This copies the Universal Design for Learning idea of multiple means of representation (CAST; InPACT-at-Home / InPACT for Everyone, Hasson et al. 2024): detailed instructions, short cues, and visuals — plus audio and video.
 
 Studio modes: Watch me (photo, plate, clip, diagram), With Nyx (cue, one step at a time, spoken pass with the transcript on screen), Your turn (practice block). First/Then strips sit on skills that have a prerequisite.
@@ -91,7 +91,7 @@ Three C’s: consistency, conciseness, clarity. Simple words. One step at a time
 
 From the user’s P2C review doctrine we also keep: autonomy (pause, replay, skip a channel, take a break); no speed-demand “cognitive load” tricks; we do not infer disability, anxiety, or skill from style. Pain is a stop.
 
-Nyx is a fictional adult instructor. Illustrated plates are topless in yoga pants. Studio photos of the same character use a sports bra because the photo pipeline blocks nudity. Voice is a slow, low female pass you can replay. Instructional clips mux that same voice over a slow still.`,
+Nyx is a fictional adult instructor. Studio photos and editorial plates are photoreal stills of the same woman in a sports bra and yoga pants. Voice is a slow, low female pass you can replay. Instructional clips mux that same voice over a slow still.`,
     citations: [
       "CAST Universal Design for Learning",
       "Hasson et al. 2024 InPACT for Everyone / Frontiers in Physiology",
@@ -173,7 +173,7 @@ Glute/pole/strength goals still need fuel. The app will not praise crash dieting
     tags: ["deload", "fatigue", "recovery", "session rpe", "overtraining"],
     summary:
       "Rolling session RPE ≥8.2 with multiple very hard days, stalled loads, and high subjective fatigue → cut volume ~40% for a week.",
-    body: `Deloads are productive, not lazy. Drop optional isolation first, keep movement quality on compounds at RPE 6–7.
+    body: `Deloads are productive, not lazy. Keep every listed drill. Cut load and RPE (compounds at about 6–7), not the list.
 Pain that is sharp, radiating, or worsening = stop — that is medical territory, not a deload tweak.`,
   },
   {
@@ -181,8 +181,8 @@ Pain that is sharp, radiating, or worsening = stop — that is medical territory
     title: "Training when time is short",
     tags: ["duration", "superset", "efficiency", "30 min", "45 min"],
     summary:
-      "Keep bilateral compounds, drop lowest-priority isolation, use antagonist supersets, skip general stretching unless mobility is the goal.",
-    body: `Iversen et al.: minimum effective dose includes at least one squat pattern, one pull, one push. Advanced techniques (supersets, rest-pause) can halve session time with similar volume for hypertrophy.`,
+      "Keep every listed drill. If the clock is short, the session runs long. Shorten rest. Do not delete lifts.",
+    body: `Iversen et al.: minimum effective dose includes at least one squat pattern, one pull, one push. This app never hides or drops a programmed exercise to fake a shorter session. If you are over the clock cap, keep the list — trim rest, not work.`,
     citations: ["Iversen et al. 2021"],
   },
   {
@@ -233,7 +233,7 @@ If RPE ≤ target − 1 on working sets, add the smallest plate increment. If RP
     tags: ["sleep", "recovery", "fatigue", "deload", "check-in"],
     summary:
       "Chronic sleep debt raises session RPE and blunts performance. High fatigue check-ins should trigger shorter, simpler sessions.",
-    body: `7–9 h is the practical target for most lifters. When sleep is poor 3+ nights, keep compounds, cut optional volume, and avoid RPE 9+ grind sets.
+    body: `7–9 h is the practical target for most lifters. When sleep is poor 3+ nights, keep every listed drill, cut RPE, and avoid grind sets at 9+.
 Spirit reads your daily fatigue check-in — treat it honestly.`,
   },
   {

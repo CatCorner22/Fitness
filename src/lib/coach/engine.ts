@@ -60,7 +60,7 @@ function scientistVoice(input: ReturnType<typeof coachContext>, profile: Profile
     );
   }
   if (input.checkin?.fatigue && input.checkin.fatigue >= 4) {
-    lines.push("Today's fatigue is high. Keep main lifts, drop optional isolation, and do not chase RPE 9.");
+    lines.push("Today's fatigue is high. Keep every listed drill. Cut RPE, not the list. Do not chase RPE 9.");
   }
   if (question?.toLowerCase().includes("dip")) {
     const banned = bannedExercises().find((e) => e.id === "bench-dip");
@@ -92,7 +92,7 @@ function garanimalVoice(input: ReturnType<typeof coachContext>, profile: Profile
   }
   if (input.checkin?.fatigue && input.checkin.fatigue >= 4) {
     lines.push(
-      "You marked fatigue high. We do not play hero with joints. Hit the compounds, skip the extras, go home. Calluses over excuses — not bone spurs over ego.",
+      "You marked fatigue high. We do not play hero with joints. Every listed drill still happens — lighter, slower, honest RPE. Calluses over excuses — not bone spurs over ego.",
     );
   }
   if (question) {

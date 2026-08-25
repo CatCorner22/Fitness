@@ -84,7 +84,7 @@ export function measureGauges(input: {
       },
       time: {
         why: `${input.elapsedMinutes}/${input.sessionMinutesBudget} min used, ${input.remainingExercises} exercises left.`,
-        next: !onTrack ? "Trim rest on accessories or skip optional work." : undefined,
+        next: !onTrack ? "Keep every listed drill. Shorten rest if the clock is tight — do not delete work." : undefined,
       },
     },
   };

@@ -401,7 +401,7 @@ export const MOVEMENT_PROGRAMS: Program[] = [
           { exerciseId: "half-kneeling-hamstring", sets: 3, reps: "30-45s/side", targetRpe: 4, priority: 1, role: "main" },
           { exerciseId: "lunge-hip-flexor", sets: 3, reps: "30-45s/side", targetRpe: 4, priority: 2, role: "secondary" },
           { exerciseId: "adductor-rock", sets: 2, reps: "8/side", targetRpe: 4, priority: 2, role: "secondary" },
-          { exerciseId: "pancake-block", sets: 2, reps: "30s", targetRpe: 4, priority: 4, role: "accessory", optional: true, notes: "Sit on a towel. Stop at stretch, not nerve pain." },
+          { exerciseId: "pancake-block", sets: 2, reps: "30s", targetRpe: 4, priority: 4, role: "accessory", notes: "Sit on a towel. Stop at stretch, not nerve pain. Stays in the session." },
           { exerciseId: "legs-up-wall", sets: 1, reps: "3 min", targetRpe: 2, priority: 5, role: "prehab" },
         ],
       },
@@ -464,7 +464,7 @@ export const MOVEMENT_PROGRAMS: Program[] = [
           { exerciseId: "couch-stretch", sets: 3, reps: "30-45s/side", targetRpe: 4, priority: 1, role: "main", notes: "Glute on, pelvis tucked slightly so the lumbar spine does not crank." },
           { exerciseId: "hip-90-90", sets: 3, reps: "30-45s/side", targetRpe: 4, priority: 2, role: "secondary" },
           { exerciseId: "adductor-rock", sets: 3, reps: "8/side", targetRpe: 4, priority: 2, role: "secondary" },
-          { exerciseId: "pancake-block", sets: 2, reps: "30s", targetRpe: 4, priority: 4, role: "accessory", optional: true },
+          { exerciseId: "pancake-block", sets: 2, reps: "30s", targetRpe: 4, priority: 4, role: "accessory", notes: "Sit on a towel. Stop at stretch, not nerve pain. Stays in the session." },
         ],
       },
       {
@@ -661,7 +661,7 @@ export const MOVEMENT_PROGRAMS: Program[] = [
         estimatedMinutes: 50,
         exercises: [
           { exerciseId: "ruck-hills", sets: 1, reps: "20-30 min", targetRpe: 5, priority: 1, role: "conditioning", notes: "Same or lighter pack than easy day. Walk down." },
-          { exerciseId: "ruck-walk", sets: 1, reps: "10-20 min easy", targetRpe: 3, priority: 2, role: "conditioning", optional: true, notes: "Only if the hills were quiet. Do not stack a long flat ruck on a hard hill day." },
+          { exerciseId: "ruck-walk", sets: 1, reps: "10-20 min easy", targetRpe: 3, priority: 2, role: "conditioning", notes: "Keep this walk. If the hills already cooked the feet, make it a short cooldown — do not delete the slot." },
           { exerciseId: "legs-up-wall", sets: 1, reps: "3 min", targetRpe: 2, priority: 5, role: "prehab" },
         ],
       },

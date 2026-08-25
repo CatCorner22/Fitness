@@ -4,7 +4,7 @@ export const NYX = {
   fullName: "Nyx Vale",
   ageLabel: "adult, late 20s",
   role: "Stage and class instructor",
-  look: "Pale, long black hair, blunt fringe, dark liner, black lipstick, septum ring. Black yoga pants. Illustrated plates are topless; studio photos show the same character in a sports bra because the photo pipeline blocks nudity.",
+  look: "Photoreal studio stills: pale skin, long jet-black hair, blunt bangs, winged liner, matte black lipstick, silver septum ring, black sports bra and high-waisted yoga pants. Editorial plates are the same photographs with stage-lab type. Fictional adult instructor.",
   voice: {
     nameHints: ["Aria", "Jenny", "Ava", "Samantha", "Zira", "Female", "Woman"],
     rate: 0.82,
@@ -15,12 +15,14 @@ export const NYX = {
   },
   portrait: "/instructor/nyx-portrait.webp",
   plates: {
-    portrait: "/instructor/plates/nyx-plate-portrait.png",
-    walk: "/instructor/plates/nyx-plate-walk.png",
-    wave: "/instructor/plates/nyx-plate-wave.png",
-    floor: "/instructor/plates/nyx-plate-floor.png",
-    chair: "/instructor/plates/nyx-plate-chair.png",
-    sit: "/instructor/plates/nyx-plate-sit.png",
+    portrait: "/instructor/plates/nyx-plate-portrait.webp",
+    walk: "/instructor/plates/nyx-plate-walk.webp",
+    wave: "/instructor/plates/nyx-plate-wave.webp",
+    floor: "/instructor/plates/nyx-plate-walk.webp",
+    chair: "/instructor/plates/nyx-plate-chair.webp",
+    sit: "/instructor/plates/nyx-plate-sit.webp",
+    pole: "/instructor/plates/nyx-plate-pole.webp",
+    hang: "/instructor/plates/nyx-plate-hang.webp",
   },
   photos: {
     portrait: "/instructor/nyx-portrait.webp",
@@ -28,5 +30,7 @@ export const NYX = {
     wave: "/instructor/nyx-wave.webp",
     chair: "/instructor/nyx-chair.webp",
     sit: "/instructor/nyx-sit.webp",
+    pole: "/instructor/nyx-pole.webp",
+    hang: "/instructor/nyx-hang.webp",
   },
 } as const;

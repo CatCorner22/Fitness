@@ -24,8 +24,8 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
       <p className="mt-4 text-sm">{course.description}</p>
       {course.adult ? (
         <p className="mt-3 text-xs text-copper-2">
-          Adult stage-craft. {NYX.name}’s illustrated plates are topless in yoga pants. Studio photos use a sports bra
-          because the photo pipeline blocks nudity.
+          Adult stage-craft. {NYX.name} is a photoreal goth instructor in a sports bra and yoga pants — same woman on
+          the photos, plates, and clips.
         </p>
       ) : null}
       <form action={enrollProgramAction.bind(null, course.programId)} className="mt-6">

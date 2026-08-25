@@ -9,7 +9,7 @@ export const COURSES: Course[] = [
     tagline: "Walk, body, floor, chair/lap stand-in, costume, pole-as-prop, and a two-song map you can finish.",
     adult: true,
     description:
-      "A training course for an adult amateur-night / club-style set. This is actual exotic skill — walk, heels, hands, stage map, commercial hips, floor crawls, chair phrases trained on furniture, costume peels, rail visits, and a close — not a pole-fitness trick list. Nyx teaches each skill several ways: a short cue, one step at a time, a diagram, a photo or illustrated plate, and a sultry spoken pass you can pause and replay. Pick the channel that lands. Skip the rest. Chair work is a stand-in, not a person. Inverts stay out of the show until they are boring in class.",
+      "A training course for an adult amateur-night / club-style set. This is actual exotic skill — walk, heels, hands, stage map, commercial hips, floor crawls, chair phrases trained on furniture, costume peels, rail visits, and a close — not a pole-fitness trick list. Nyx teaches each skill several ways: a short cue, one step at a time, a diagram, a photoreal photo or editorial plate, and a sultry spoken pass you can pause and replay. Pick the channel that lands. Skip the rest. Chair work is a stand-in, not a person. Inverts stay out of the show until they are boring in class.",
     howToLearn: [
       "Watch Nyx (photo, plate, or clip).",
       "Read the short cue, then do one numbered step at a time.",
@@ -77,7 +77,7 @@ export const COURSES: Course[] = [
     tagline: "Grip, both-side spins, sit, climb, invert prep, and class-length lungs.",
     adult: false,
     description:
-      "Show up to an intermediate pole-fitness class with the strength, grip, and cardio to last the hour. Off-pole engine plus on-pole skills, both sides, no kipping. A spotted invert is studio-only. This course uses the same multi-channel lessons: cue, steps, diagram, photo, voice.",
+      "Show up to an intermediate pole-fitness class with the strength, grip, and cardio to last the hour. Off-pole engine (repeat hangs, strict pull-ups, inverted rows) plus on-pole skills both sides: walk, squat hold, fireman, hook, sit, climb, controlled down, hanging tuck then on-pole tuck. No kipping. A spotted invert is studio-only. Same multi-channel lessons: cue, steps, diagram, photoreal photo, editorial plate, voice, clip.",
     howToLearn: [
       "Start with hangs and pulls. Grip fails first in class.",
       "Train every spin both directions. No bonus sets for the pretty side.",
@@ -90,15 +90,15 @@ export const COURSES: Course[] = [
         id: "engine",
         title: "1. Class engine",
         weeks: "Weeks 1–8",
-        intent: "Hangs you can repeat and lungs that last a class.",
-        skillIds: ["hang", "capacity"],
+        intent: "Hangs you can repeat, pulls class actually uses, and lungs that last the hour.",
+        skillIds: ["hang", "repeat-hang", "pullup", "inverted-row", "capacity"],
       },
       {
         id: "spins",
         title: "2. Spins both sides",
         weeks: "Weeks 2–7",
-        intent: "Fireman and hook, equal volume, static pole first.",
-        skillIds: ["pole-walk", "fireman", "hook"],
+        intent: "Walk, squat hold, fireman, hook — equal volume, static pole first.",
+        skillIds: ["pole-walk", "pole-squat", "fireman", "hook"],
       },
       {
         id: "climb-mod",
@@ -111,8 +111,8 @@ export const COURSES: Course[] = [
         id: "invert-mod",
         title: "4. Invert-ready",
         weeks: "Weeks 6–8",
-        intent: "Tuck holds. No kip. Studio spot if you invert at all.",
-        skillIds: ["tuck"],
+        intent: "Bar tuck, then on-pole tuck. No kip. Studio spot if you invert at all.",
+        skillIds: ["hanging-tuck", "tuck"],
       },
     ],
   },

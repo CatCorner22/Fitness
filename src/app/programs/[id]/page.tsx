@@ -39,16 +39,13 @@ export default async function ProgramDetailPage({ params }: { params: Promise<{ 
             <ul className="mt-4 space-y-2 text-sm">
               {day.exercises.map((item, idx) => {
                 const ex = getExercise(item.exerciseId);
+                const lesson = skillByExerciseId(item.exerciseId)[0];
                 return (
                   <li key={`${item.exerciseId}-${idx}`} className="flex justify-between gap-4 border-b border-line/50 py-2">
                     <span>
                       {ex?.name ?? item.exerciseId}
-                      {item.optional ? " (optional)" : ""}
-                      {skillByExerciseId(item.exerciseId)[0] ? (
-                        <Link
-                          href={`/course/${courseForProgram(program.id)?.id ?? "exotic_amateur_night"}/${skillByExerciseId(item.exerciseId)[0].id}`}
-                          className="ml-2 text-xs text-copper-2"
-                        >
+                      {lesson ? (
+                        <Link href={`/course/${lesson.courseId}/${lesson.id}`} className="ml-2 text-xs text-copper-2">
                           How
                         </Link>
                       ) : null}

@@ -1,5 +1,6 @@
 import { EXOTIC_CLUB_SKILLS } from "./exotic-club-skills";
 import { NYX } from "./instructor";
+import { POLE_CLASS_SKILLS } from "./pole-class-skills";
 import { makeSkill as skill } from "./skill-factory";
 import type { CourseId, Skill } from "./types";
 
@@ -637,8 +638,8 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Active hang. Shoulders packed — not a dead dump. Short hangs. Full rest. Repeat. Intermediate class will ask you to hang, spin, and hang again. One hero hang that cooks the tendon helps no one. If the elbow talks, we carry instead.",
     diagram: "hang",
-    photo: NYX.photos.portrait,
-    plate: NYX.plates.portrait,
+    photo: NYX.photos.hang,
+    plate: NYX.plates.hang,
   }),
   skill({
     id: "capacity",
@@ -667,7 +668,7 @@ const SKILLS_CORE: Skill[] = [
   }),
 ];
 
-export const SKILLS: Skill[] = [...SKILLS_CORE, ...EXOTIC_CLUB_SKILLS];
+export const SKILLS: Skill[] = [...SKILLS_CORE, ...EXOTIC_CLUB_SKILLS, ...POLE_CLASS_SKILLS];
 
 export function skillById(id: string) {
   return SKILLS.find((s) => s.id === id);

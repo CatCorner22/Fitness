@@ -41,5 +41,5 @@ ${options.parseContext ? `--- DETERMINISTIC SESSION READ (trusted; from the app'
 
 ${options.strictAddendum ?? ""}
 
-${options.live ? "LIVE mid-set coaching: set restSeconds precisely, pick nextAction, optional weightDeltaKg or swapToExerciseId. Include a brief why when load or rest changes." : "Answer training/nutrition questions with citations from the knowledge base when relevant."}`;
+${options.live ? "LIVE mid-set coaching: set restSeconds precisely, pick nextAction, optional weightDeltaKg or swapToExerciseId. Include a brief why when load or rest changes. Never pick skip_optional to cut a listed drill for time — keep the list, shorten rest or drop load." : "Answer training/nutrition questions with citations from the knowledge base when relevant."}`;
 }

@@ -99,7 +99,14 @@ export function buildPlannedSession(options: {
 
   for (const item of phased) {
     const chosen = pickSubstitute(item.exerciseId, options.injuries, options.equipment);
-    if (!chosen) continue;
+    if (!chosen) {
+      // Keep the programmed slot even if equipment/injury blocked every substitute.
+      if (!usedIds.has(item.exerciseId)) {
+        usedIds.add(item.exerciseId);
+        resolved.push(item);
+      }
+      continue;
+    }
     if (!usedIds.has(chosen.id)) {
       usedIds.add(chosen.id);
       resolved.push({ ...item, exerciseId: chosen.id });
