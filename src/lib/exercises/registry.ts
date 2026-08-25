@@ -1,6 +1,7 @@
 import type { Exercise } from "@/lib/types";
+import { MOVEMENT_EXERCISES } from "./movement";
 
-export const EXERCISES: Exercise[] = [
+const CORE_EXERCISES: Exercise[] = [
   // --- Banned (kept so the app can explain why they never appear) ---
   {
     id: "bench-dip",
@@ -1142,6 +1143,8 @@ export const EXERCISES: Exercise[] = [
     isCardio: true,
   },
 ];
+
+export const EXERCISES: Exercise[] = [...CORE_EXERCISES, ...MOVEMENT_EXERCISES];
 
 const byId = new Map(EXERCISES.map((e) => [e.id, e]));
 

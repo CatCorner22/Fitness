@@ -3,7 +3,7 @@
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth";
+import { getProfile, getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { bodyweightLogs, dailyCheckins, profiles, users } from "@/lib/db/schema";
 import { todayISO } from "@/lib/utils";
@@ -139,12 +139,14 @@ export async function enrollProgramAction(programId: string) {
   const user = await requireUser();
   const program = getProgram(programId);
   if (!program) return;
+  const existing = getProfile(user.id);
+  const keepGoal = existing && program.recommendedFor.includes(existing.goal);
   db.update(profiles)
     .set({
       activeProgramId: program.id,
       programStartDate: todayISO(),
       currentWeek: 1,
-      goal: program.recommendedFor[0] ?? "general",
+      goal: keepGoal ? existing.goal : (program.recommendedFor[0] ?? "general"),
     })
     .where(eq(profiles.userId, user.id))
     .run();

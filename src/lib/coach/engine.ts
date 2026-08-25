@@ -132,8 +132,17 @@ function answerQuestion(
   if (q.includes("glute") || q.includes("butt") || q.includes("ass")) {
     return "Hip thrust, squat or split squat, RDL, abduction, 45° extension. Variety. Plotkin 2023: thrust ≈ squat for glute size. Kassiano 2024: adding thrusts on top of hinges and presses grew more glute. Do the work.";
   }
-  if (q.includes("pole") || q.includes("strip") || q.includes("invert")) {
-    return "Grip, strict pull-ups, hollow body, hanging tucks, push balance, hip mobility. No kipping. Studio time is still required — this is prep, not a trick list.";
+  if (q.includes("pole") || q.includes("strip") || q.includes("invert") || q.includes("amateur")) {
+    return "Two plans: Pole class prep (walk, fireman, sit, climb, invert prep, both sides) and Couch to amateur night (walk, floor, spins, a short set — no new inverts in the show). Off-pole: hangs, strict pulls, hollow, push balance. Shoulders and wrists take most pole injuries. Crash mat. Studio for inverts. No kipping.";
+  }
+  if (q.includes("ruck") || q.includes("rucking") || q.includes("pack")) {
+    return "Start around 10–15% bodyweight, talking pace. Add distance or load, not both, in the same week. Stay under ~30% bodyweight unless you have a real event and a base.";
+  }
+  if (q.includes("stretch") || q.includes("split") || q.includes("flexib")) {
+    return "Warm first. Hinge at the hip. 30–45 second holds. No bounce. No behind-the-neck stretches. Do not sit in long static stretches right before a heavy lift.";
+  }
+  if (q.includes("barre") || q.includes("ballet") || q.includes("turnout") || q.includes("plie")) {
+    return "Turnout from the hips. Knees track toes. About 45 degrees is honest. A chair is a barre. This is balance and a smoother walk, not vocational ballet.";
   }
   return persona === "garanimal"
     ? "Stop looking for a magic question. Open Today. Start the session. Log the RPE. That is the whole religion."

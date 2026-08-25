@@ -22,6 +22,8 @@ const EQUIPMENT_OPTIONS: { value: Equipment; label: string }[] = [
   { value: "trap_bar", label: "Trap bar" },
   { value: "landmine", label: "Landmine" },
   { value: "cardio_machine", label: "Cardio machine" },
+  { value: "pole", label: "Pole (home or studio)" },
+  { value: "backpack", label: "Backpack / ruck" },
 ];
 
 export default async function SettingsPage() {

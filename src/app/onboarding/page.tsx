@@ -16,6 +16,7 @@ export default async function OnboardingPage() {
             ["general", "Stay fit"],
             ["powerlifting", "Get stronger"],
             ["bodybuilding", "Build muscle"],
+            ["pole_stage", "Pole / stage"],
           ].map(([value, label]) => (
             <label
               key={value}

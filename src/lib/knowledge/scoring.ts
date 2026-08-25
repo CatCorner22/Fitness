@@ -56,6 +56,11 @@ export function scoreArticle(article: KnowledgeArticle, ctx: SearchContext) {
       }
       if (ctx.programId === "big_ass" && article.id === "glute-science") score += 8;
       if (ctx.programId === "pole_stage" && article.id === "pole-prep") score += 8;
+      if (ctx.programId === "pole_amateur_night" && article.id === "pole-prep") score += 8;
+      if (ctx.programId === "smart_stretch" && article.id === "stretching-ergonomics") score += 8;
+      if (ctx.programId === "home_yoga" && article.id === "stretching-ergonomics") score += 6;
+      if (ctx.programId === "rucking" && article.id === "rucking-load") score += 8;
+      if ((ctx.programId === "barre" || ctx.programId === "ballet_basics") && article.id === "turnout-alignment") score += 8;
       if (ctx.programId === "conjugate" && article.id === "conjugate-overview") score += 8;
       if (ctx.programId === "strength_endurance" && article.id === "concurrent-training") score += 8;
     }

@@ -212,7 +212,11 @@ export function WorkoutPlayer({
     [aiOptIn, grouped.length, hardness, sets, started, units],
   );
 
-  const durationMinutes = Math.max(1, Math.round((Date.now() - started) / 60000) || estimatedMinutes);
+  function stampDuration(form: HTMLFormElement) {
+    const minutes = Math.max(1, Math.round((Date.now() - started) / 60000) || estimatedMinutes);
+    const field = form.elements.namedItem("durationMinutes");
+    if (field instanceof HTMLInputElement) field.value = String(minutes);
+  }
 
   return (
     <div className="space-y-5">
@@ -411,9 +415,13 @@ export function WorkoutPlayer({
         </div>
       </details>
 
-      <form action={completeWorkoutAction} className="space-y-4 rounded-3xl border border-line bg-surface p-5">
+      <form
+        action={completeWorkoutAction}
+        className="space-y-4 rounded-3xl border border-line bg-surface p-5"
+        onSubmit={(e) => stampDuration(e.currentTarget)}
+      >
         <input type="hidden" name="workoutId" value={workoutId} />
-        <input type="hidden" name="durationMinutes" value={durationMinutes} />
+        <input type="hidden" name="durationMinutes" defaultValue={estimatedMinutes} />
         <input type="hidden" name="sessionRpe" value={hardnessToRpe(sessionFeel) ?? ""} />
         <h2 className="text-lg font-semibold">Finish</h2>
         <p className="text-sm text-muted">How was the whole session? Optional.</p>
@@ -426,9 +434,13 @@ export function WorkoutPlayer({
           Done
         </button>
       </form>
-      <form action={completeWorkoutAction} className="text-center">
+      <form
+        action={completeWorkoutAction}
+        className="text-center"
+        onSubmit={(e) => stampDuration(e.currentTarget)}
+      >
         <input type="hidden" name="workoutId" value={workoutId} />
-        <input type="hidden" name="durationMinutes" value={durationMinutes} />
+        <input type="hidden" name="durationMinutes" defaultValue={estimatedMinutes} />
         <input type="hidden" name="stop" value="1" />
         <button className="btn-quiet w-full" type="submit">
           Stop — something hurts

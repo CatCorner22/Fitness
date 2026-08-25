@@ -62,12 +62,59 @@ Program variety: horizontal thrust + squat/split pattern + hip-extension hinge (
   },
   {
     id: "pole-prep",
-    title: "Pole and stage athletic prep",
-    tags: ["pole", "stage", "grip", "invert", "pull", "core", "shoulder"],
+    title: "Pole class prep and amateur-night sets",
+    tags: ["pole", "stage", "grip", "invert", "pull", "core", "shoulder", "wrist", "amateur"],
     summary:
-      "Grip fails first, then vertical pull and isometric core. Balance pushing. Strict pulls only — no kipping. Studio technique still required.",
-    body: `Off-pole prep: dead hangs, assisted→strict pull-ups, inverted rows, hollow body, hanging tucks, landmine/push-up pressing, face pulls, hip/shoulder mobility, set-endurance circuits.
-Invert readiness: hanging tuck → controlled negatives → spotted inverts. Never kip without a strict base.`,
+      "Shoulder, then wrist and hamstring, take most pole injuries. Train both sides. Climbs and sits before inverts. Amateur night is a short set of skills you already own — not a handspring.",
+    body: `Lee et al. 2022 (prospective, Australia): ~8.95 injuries/1000 exposure hours; shoulder ~20%, hamstring/thigh next; loaded internal rotation and front-split shapes were common mechanisms. Amateur surveys repeatedly put shoulder first (~25–27%) and wrist next (~12%). Most problems are repetitive, not one heroic fall.
+
+Off-pole: dead hangs, assisted→strict pull-ups, inverted rows, hollow body, hanging tucks, landmine/push-up pressing, face pulls, hip mobility. On-pole class skills: walk, fireman, chair/hook, sit, basic climb, tuck prep. Equal volume both sides.
+
+Invert readiness: hanging tuck → controlled on-pole tuck with a spot → studio invert. Never kip. Crash mat. Do not learn inverts from a phone on carpet.
+
+Amateur night: walk, body wave, floorwork, one or two spins, sit or climb, 2–3 minute run-through. Heels are optional and later. No new tricks in the show set.`,
+    citations: ["Lee et al. 2022 MPPA", "Nawrocka et al. amateur pole injury surveys", "Szopa et al. 2021 Sci Rep"],
+  },
+  {
+    id: "stretching-ergonomics",
+    title: "Stretching that respects joints and force",
+    tags: ["stretch", "mobility", "flexibility", "warmup", "hamstring", "yoga", "ergonomics"],
+    summary:
+      "When ROM is the goal: warm first, hinge from the hip, 30–45s holds, 2–4 rounds, 2–3 days/week. Do not dump 60+ second static stretches immediately before a max lift.",
+    body: `Kay & Blazevich 2012: static stretch ≥60s per muscle before maximal strength/power is the dose most likely to reduce force; stretches under ~45s are usually quiet. Behm, Blazevich, Kay, McHugh 2016: if you stretch before sport, follow with dynamic work. A 2025 expert Delphi (Warneke et al.) agrees: skip prolonged static stretch immediately before isolated max efforts.
+
+ACSM flexibility: 2–3 days/week, 10–30s, 2–4 reps. We use 30–45s when the session IS stretching.
+
+Ergonomics: hamstrings = hip hinge with a long spine, not a rounded 'touch the toes' contest. Hip flexors = glute on, slight posterior tilt, not a dumped lumbar backbend. Shoulders = in front of the body, never behind the neck. Stop at stretch; nerve zing, numbness, or sharp joint pain is a stop. Much of ROM gain is stretch tolerance (Weppler 2010), not overnight longer muscles.
+
+Ballistic bouncing is not in this app. Stretching is not an injury-prevention spell for a sport you under-recover.`,
+    citations: ["Kay & Blazevich 2012", "Behm et al. 2016", "Weppler 2010", "ACSM flexibility guidelines"],
+  },
+  {
+    id: "rucking-load",
+    title: "Rucking load and progression",
+    tags: ["ruck", "rucking", "pack", "cardio", "feet", "load carriage"],
+    summary:
+      "Start ~10–15% bodyweight, talking pace, 20–40 minutes. Add distance or load — not both — in a week. Recreational rucks do not need 30%+ bodyweight.",
+    body: `Military load-carriage literature (Knapik reviews; NSCA TSAC summaries) shows injury risk climbing as pack mass rises, especially toward ~26–50% bodyweight. That is operator territory, not a household Tuesday.
+
+Start 10–15% BW (or 10–20 lb if you have no scale). Pack high and close to the back. Tall posture. Conversational pace. Progress one variable: minutes/distance or ~5 lb, not both the same week. Hills use the same or a lighter pack. Walk down.
+
+Feet and Achilles adapt slower than lungs. Unload-strength days (hinge, squat, calves, carries) belong in the week. Skip a ruck after a grinding lower-body max.`,
+    citations: ["Knapik load-carriage reviews", "NSCA TSAC load carriage"],
+  },
+  {
+    id: "turnout-alignment",
+    title: "Turnout, plié, and barre knees",
+    tags: ["barre", "ballet", "turnout", "knee", "hip", "plie"],
+    summary:
+      "Turnout comes from the hip. Knees track toes. About 45° is honest for most people. Do not roll the feet to fake 180°.",
+    body: `IADMS resource paper on turnout: forcing the feet and pronating to look more turned out loads the knee and ankle — the joints that already take the most dance injuries.
+
+Plié is a controlled knee bend with hip rotation you can keep, heels down as long as they stay honest, spine long. Pulses stay in a range you can align; fatigue is usually when the knee caves.
+
+Use a chair as a barre. This app's ballet/barre plans are for balance and a smoother walk, not vocational technique.`,
+    citations: ["IADMS turnout resource paper"],
   },
   {
     id: "banned-exercises",
@@ -137,7 +184,7 @@ Pain that is sharp, radiating, or worsening = stop — that is medical territory
     tags: ["warmup", "ramp", "activation", "mobility"],
     summary:
       "Exercise-specific warm-ups only: 2–4 ramp sets on the first compound, brief activation for the session's priority muscles.",
-    body: `Skip long general stretching unless flexibility is the session goal. For first heavy lift: empty bar → 50% → 70% → first working weight. Shoulder CARs before overhead/pole days.`,
+    body: `Skip long general stretching unless flexibility is the session goal (use the Smart stretch or Home yoga plans). For first heavy lift: empty bar → 50% → 70% → first working weight. Shoulder CARs before overhead/pole days. Do not park 60+ second static stretches immediately before a max set (Kay & Blazevich 2012).`,
   },
   {
     id: "program-splits",

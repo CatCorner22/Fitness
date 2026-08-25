@@ -56,7 +56,9 @@ export type Equipment =
   | "trap_bar"
   | "landmine"
   | "sled"
-  | "cardio_machine";
+  | "cardio_machine"
+  | "pole"
+  | "backpack";
 
 export type Injury = "shoulder" | "knee" | "low_back" | "wrist" | "elbow" | "hip";
 
@@ -76,6 +78,12 @@ export type ProgramId =
   | "upper_lower"
   | "strength_endurance"
   | "pole_stage"
+  | "pole_amateur_night"
+  | "home_yoga"
+  | "smart_stretch"
+  | "barre"
+  | "ballet_basics"
+  | "rucking"
   | "big_ass";
 
 export interface Exercise {
