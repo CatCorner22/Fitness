@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, gte } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { coachMessages, dailyCheckins, workouts } from "@/lib/db/schema";
 import type { ProfileRow } from "@/lib/auth";
@@ -18,10 +18,9 @@ export function coachContext(userId: string, profile: ProfileRow) {
   const recent = db
     .select()
     .from(workouts)
-    .where(eq(workouts.userId, userId))
+    .where(and(eq(workouts.userId, userId), gte(workouts.date, since)))
     .orderBy(desc(workouts.startedAt))
-    .all()
-    .filter((w) => w.date >= since);
+    .all();
 
   const completed = recent.filter((w) => w.status === "completed");
   const missed = recent.filter((w) => w.status === "skipped");
@@ -163,7 +162,7 @@ export function historyForUser(userId: string) {
     .from(coachMessages)
     .where(eq(coachMessages.userId, userId))
     .orderBy(desc(coachMessages.createdAt))
+    .limit(40)
     .all()
-    .slice(0, 40)
     .reverse();
 }

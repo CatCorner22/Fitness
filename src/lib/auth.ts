@@ -85,6 +85,16 @@ export type ProfileRow = {
   currentWeek: number;
 };
 
+function parseStringList(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  try {
+    const value = JSON.parse(raw) as unknown;
+    return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
 export function getProfile(userId: string): ProfileRow | null {
   const row = db.select().from(profiles).where(eq(profiles.userId, userId)).get();
   if (!row) return null;
@@ -94,8 +104,8 @@ export function getProfile(userId: string): ProfileRow | null {
     experience: row.experience as Experience,
     daysPerWeek: row.daysPerWeek,
     sessionMinutes: row.sessionMinutes,
-    equipment: JSON.parse(row.equipment) as string[],
-    injuries: JSON.parse(row.injuries) as Injury[],
+    equipment: parseStringList(row.equipment),
+    injuries: parseStringList(row.injuries) as Injury[],
     units: row.units as Units,
     persona: row.persona as Persona,
     sex: row.sex as ProfileRow["sex"],

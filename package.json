@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "perf:stability": "node scripts/perf-stability.mjs"
   },
   "dependencies": {
     "@ai-sdk/gateway": "^4.0.63",
