@@ -114,8 +114,10 @@ export function WorkoutPlayer({
   }, [sets]);
 
   const [seconds, setSeconds] = useState(0);
-  const [running, setRunning] = useState(false);
+  const [resting, setResting] = useState(false);
+  const secondsRef = useRef(0);
   const alertedRef = useRef(false);
+  const loggingRef = useRef<string | null>(null);
   const [started] = useState(() => Date.now());
   const [spiritAdvice, setSpiritAdvice] = useState<SpiritAdvicePanel | null>(null);
   const [lastExerciseId, setLastExerciseId] = useState<string | null>(null);
@@ -125,32 +127,39 @@ export function WorkoutPlayer({
   const current = grouped.find(([, rows]) => rows.some((s) => !s.completed)) ?? grouped[grouped.length - 1];
 
   useEffect(() => {
-    if (!running || seconds <= 0) return;
-    alertedRef.current = false;
+    if (!resting) return;
     const id = window.setInterval(() => {
-      setSeconds((s) => {
-        if (s <= 1) {
-          setRunning(false);
-          if (!alertedRef.current) {
-            alertedRef.current = true;
-            playRestBeep();
-          }
-          return 0;
+      const next = Math.max(0, secondsRef.current - 1);
+      secondsRef.current = next;
+      setSeconds(next);
+      if (next === 0) {
+        setResting(false);
+        if (!alertedRef.current) {
+          alertedRef.current = true;
+          playRestBeep();
         }
-        return s - 1;
-      });
+      }
     }, 1000);
     return () => window.clearInterval(id);
-  }, [running, seconds]);
+  }, [resting]);
 
   function startRest(rest: number) {
     alertedRef.current = false;
+    secondsRef.current = rest;
     setSeconds(rest);
-    setRunning(true);
+    setResting(true);
+  }
+
+  function stampDuration(form: HTMLFormElement) {
+    const minutes = Math.max(1, Math.round((Date.now() - started) / 60000) || estimatedMinutes);
+    const field = form.elements.namedItem("durationMinutes");
+    if (field instanceof HTMLInputElement) field.value = String(minutes);
   }
 
   const logSet = useCallback(
     async (set: SetRow, form: HTMLFormElement) => {
+      if (loggingRef.current === set.id) return;
+      loggingRef.current = set.id;
       const fd = new FormData(form);
       const weight = Number(fd.get("weight"));
       const reps = Number(fd.get("reps"));
@@ -178,41 +187,58 @@ export function WorkoutPlayer({
       );
 
       try {
-        const res = await fetch("/api/workout/log-set", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            setId: set.id,
-            weight,
-            reps,
-            rpe: Number.isFinite(rpe) ? rpe : null,
-            elapsedMinutes,
-            remainingExercises,
-          }),
-        });
-        if (!res.ok) throw new Error("log failed");
-        const data = await res.json();
-        setLastExerciseId(set.exerciseId);
-        if (aiOptIn && data.advice) {
-          setSpiritAdvice(data.advice);
-          const nextSet = sets.find(
-            (s) => s.exerciseId === set.exerciseId && s.setIndex === set.setIndex + 1,
-          );
-          if (nextSet && data.advice.weightDeltaKg != null && Number.isFinite(weight)) {
-            const baseKg = units === "lb" ? weight / 2.20462 : weight;
-            const hinted = kgToDisplay(baseKg + data.advice.weightDeltaKg, units);
-            setLoadHints((prev) => ({ ...prev, [nextSet.id]: hinted }));
+        let res: Response | null = null;
+        for (let attempt = 0; attempt < 2; attempt++) {
+          try {
+            res = await fetch("/api/workout/log-set", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              redirect: "manual",
+              body: JSON.stringify({
+                setId: set.id,
+                weight,
+                reps,
+                rpe: Number.isFinite(rpe) ? rpe : null,
+                elapsedMinutes,
+                remainingExercises,
+              }),
+            });
+            if (res.ok || (res.status >= 400 && res.status < 500)) break;
+          } catch {
+            if (attempt === 1) throw new Error("log failed");
           }
+        }
+        if (!res?.ok) throw new Error("log failed");
+        const contentType = res.headers.get("content-type") ?? "";
+        if (!contentType.includes("application/json")) throw new Error("log failed");
+        setLastExerciseId(set.exerciseId);
+        try {
+          const data = (await res.json()) as {
+            advice?: { weightDeltaKg?: number | null } & SpiritAdvicePanel;
+          };
+          if (aiOptIn && data.advice) {
+            setSpiritAdvice(data.advice);
+            const nextSet = sets.find(
+              (s) => s.exerciseId === set.exerciseId && s.setIndex === set.setIndex + 1,
+            );
+            if (nextSet && data.advice.weightDeltaKg != null && Number.isFinite(weight)) {
+              const baseKg = units === "lb" ? weight / 2.20462 : weight;
+              const hinted = kgToDisplay(baseKg + data.advice.weightDeltaKg, units);
+              setLoadHints((prev) => ({ ...prev, [nextSet.id]: hinted }));
+            }
+          }
+        } catch {
+          /* set is saved; advice is optional */
         }
       } catch {
         setLogError("Could not save that set. Check the numbers and tap Log again.");
         setSets((prev) => prev.map((s) => (s.id === set.id ? { ...s, completed: 0 } : s)));
+      } finally {
+        if (loggingRef.current === set.id) loggingRef.current = null;
       }
     },
     [aiOptIn, grouped.length, hardness, sets, started, units],
   );
-
-  const durationMinutes = Math.max(1, Math.round((Date.now() - started) / 60000) || estimatedMinutes);
 
   return (
     <div className="space-y-5">
@@ -225,11 +251,11 @@ export function WorkoutPlayer({
 
       <div
         className={`rounded-3xl border bg-surface px-5 py-4 text-center ${
-          running && seconds <= 10 ? "border-copper" : "border-line"
+          resting && seconds <= 10 ? "border-copper" : "border-line"
         }`}
       >
         <p className="text-sm text-muted">Rest when you want it</p>
-        <p className={`display mt-1 text-5xl tabular-nums ${running && seconds <= 10 ? "text-copper-2" : ""}`}>
+        <p className={`display mt-1 text-5xl tabular-nums ${resting && seconds <= 10 ? "text-copper-2" : ""}`}>
           {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, "0")}
         </p>
         <div className="mt-3 flex justify-center gap-3">
@@ -239,8 +265,8 @@ export function WorkoutPlayer({
           <button type="button" onClick={() => startRest(180)} className="min-h-11 rounded-xl border border-line px-4">
             3:00
           </button>
-          {running ? (
-            <button type="button" onClick={() => setRunning(false)} className="min-h-11 rounded-xl px-4 text-muted">
+          {resting ? (
+            <button type="button" onClick={() => setResting(false)} className="min-h-11 rounded-xl px-4 text-muted">
               Pause
             </button>
           ) : null}
@@ -411,9 +437,13 @@ export function WorkoutPlayer({
         </div>
       </details>
 
-      <form action={completeWorkoutAction} className="space-y-4 rounded-3xl border border-line bg-surface p-5">
+      <form
+        action={completeWorkoutAction}
+        className="space-y-4 rounded-3xl border border-line bg-surface p-5"
+        onSubmit={(e) => stampDuration(e.currentTarget)}
+      >
         <input type="hidden" name="workoutId" value={workoutId} />
-        <input type="hidden" name="durationMinutes" value={durationMinutes} />
+        <input type="hidden" name="durationMinutes" defaultValue={estimatedMinutes} />
         <input type="hidden" name="sessionRpe" value={hardnessToRpe(sessionFeel) ?? ""} />
         <h2 className="text-lg font-semibold">Finish</h2>
         <p className="text-sm text-muted">How was the whole session? Optional.</p>
@@ -426,9 +456,13 @@ export function WorkoutPlayer({
           Done
         </button>
       </form>
-      <form action={completeWorkoutAction} className="text-center">
+      <form
+        action={completeWorkoutAction}
+        className="text-center"
+        onSubmit={(e) => stampDuration(e.currentTarget)}
+      >
         <input type="hidden" name="workoutId" value={workoutId} />
-        <input type="hidden" name="durationMinutes" value={durationMinutes} />
+        <input type="hidden" name="durationMinutes" defaultValue={estimatedMinutes} />
         <input type="hidden" name="stop" value="1" />
         <button className="btn-quiet w-full" type="submit">
           Stop — something hurts

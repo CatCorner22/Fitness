@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, gte, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { setLogs, workouts } from "@/lib/db/schema";
 import { getExercise } from "@/lib/exercises/registry";
@@ -56,7 +56,37 @@ export function suggestNextLoad(input: {
   };
 }
 
-export function lastWorkingSets(userId: string) {
+export function lastWorkingSets(userId: string, exerciseIds?: string[]) {
+  const map: Record<string, { weightKg: number; reps: number; rpe: number | null }> = {};
+  const ids = exerciseIds?.length ? [...new Set(exerciseIds)] : null;
+  if (ids) {
+    for (const exerciseId of ids) {
+      const row = db
+        .select({
+          exerciseId: setLogs.exerciseId,
+          weightKg: setLogs.weightKg,
+          reps: setLogs.reps,
+          rpe: setLogs.rpe,
+        })
+        .from(setLogs)
+        .innerJoin(workouts, eq(setLogs.workoutId, workouts.id))
+        .where(
+          and(
+            eq(setLogs.userId, userId),
+            eq(setLogs.completed, 1),
+            eq(setLogs.exerciseId, exerciseId),
+            eq(workouts.status, "completed"),
+          ),
+        )
+        .orderBy(desc(workouts.startedAt), desc(setLogs.setIndex))
+        .limit(1)
+        .get();
+      if (row?.weightKg == null || row.reps == null) continue;
+      map[exerciseId] = { weightKg: row.weightKg, reps: row.reps, rpe: row.rpe };
+    }
+    return map;
+  }
+
   const rows = db
     .select({
       exerciseId: setLogs.exerciseId,
@@ -72,7 +102,6 @@ export function lastWorkingSets(userId: string) {
     .orderBy(desc(workouts.startedAt), desc(setLogs.setIndex))
     .all();
 
-  const map: Record<string, { weightKg: number; reps: number; rpe: number | null }> = {};
   for (const row of rows) {
     if (map[row.exerciseId]) continue;
     if (row.weightKg == null || row.reps == null) continue;
@@ -88,8 +117,8 @@ export function lastWorkingSets(userId: string) {
 export function suggestionsForExercises(
   userId: string,
   items: { exerciseId: string; targetRpe: number; reps: string }[],
+  last = lastWorkingSets(userId),
 ) {
-  const last = lastWorkingSets(userId);
   const suggested: Record<string, number | null> = {};
   const decisions: LoadDecision[] = [];
   for (const item of items) {
@@ -137,18 +166,21 @@ export const VOLUME_LANDMARKS: Record<string, { mev: number; mav: number; mrv: n
 
 export function weeklyVolume(userId: string, sinceISO: string) {
   const completed = db
-    .select()
+    .select({ id: workouts.id })
     .from(workouts)
-    .where(and(eq(workouts.userId, userId), eq(workouts.status, "completed")))
-    .all()
-    .filter((w) => w.date >= sinceISO);
+    .where(and(eq(workouts.userId, userId), eq(workouts.status, "completed"), gte(workouts.date, sinceISO)))
+    .all();
+  if (!completed.length) return {} as Partial<Record<Muscle, number>>;
 
-  const ids = new Set(completed.map((w) => w.id));
-  const sets = db.select().from(setLogs).where(eq(setLogs.userId, userId)).all();
+  const ids = completed.map((w) => w.id);
+  const sets = db
+    .select()
+    .from(setLogs)
+    .where(and(eq(setLogs.userId, userId), eq(setLogs.completed, 1), inArray(setLogs.workoutId, ids)))
+    .all();
   const totals: Partial<Record<Muscle, number>> = {};
 
   for (const set of sets) {
-    if (!ids.has(set.workoutId) || !set.completed) continue;
     const ex = getExercise(set.exerciseId);
     if (!ex || ex.isCardio || ex.pattern === "mobility") continue;
     for (const muscle of ex.primaryMuscles) {
@@ -167,8 +199,8 @@ export function shouldDeload(userId: string) {
     .from(workouts)
     .where(and(eq(workouts.userId, userId), eq(workouts.status, "completed")))
     .orderBy(desc(workouts.startedAt))
-    .all()
-    .slice(0, 6);
+    .limit(6)
+    .all();
 
   if (recent.length < 4) return { deload: false, reason: "Not enough recent sessions to judge fatigue." };
   const rpes = recent.map((w) => w.sessionRpe).filter((n): n is number => n != null);

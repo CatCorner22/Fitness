@@ -1,8 +1,7 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, gte } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { nutritionLogs, workouts } from "@/lib/db/schema";
 import type { ProfileRow } from "@/lib/auth";
-import { lastWorkingSets, suggestionsForExercises, weeklyVolume } from "@/lib/autoregulation";
 import { getProgram } from "@/lib/programs/catalog";
 import { buildPlannedSession } from "@/lib/programs/plan";
 import { todayISO } from "@/lib/utils";
@@ -24,33 +23,20 @@ export function todaysPlan(userId: string, profile: ProfileRow) {
   const weekWorkouts = db
     .select()
     .from(workouts)
-    .where(and(eq(workouts.userId, userId), eq(workouts.programId, program.id)))
-    .all()
-    .filter((w) => w.date >= weekStart && w.week === profile.currentWeek);
+    .where(
+      and(
+        eq(workouts.userId, userId),
+        eq(workouts.programId, program.id),
+        eq(workouts.week, profile.currentWeek),
+        gte(workouts.date, weekStart),
+      ),
+    )
+    .all();
 
   const doneIds = weekWorkouts.filter((w) => w.status !== "in_progress").map((w) => w.dayId);
   const nextDay = program.days.find((d) => !doneIds.includes(d.id)) ?? program.days[0];
   const allDone = program.days.every((d) => doneIds.includes(d.id));
 
-  const last = lastWorkingSets(userId);
-  const draft = buildPlannedSession({
-    programId: program.id,
-    week: profile.currentWeek,
-    dayId: nextDay.id,
-    sessionMinutes: profile.sessionMinutes,
-    injuries: profile.injuries,
-    equipment: profile.equipment,
-    lastSets: last,
-  });
-  if (!draft) return null;
-  const { suggested, decisions } = suggestionsForExercises(
-    userId,
-    draft.exercises.map((e) => ({
-      exerciseId: e.exerciseId,
-      targetRpe: e.targetRpe,
-      reps: e.reps,
-    })),
-  );
   const planned = buildPlannedSession({
     programId: program.id,
     week: profile.currentWeek,
@@ -58,8 +44,6 @@ export function todaysPlan(userId: string, profile: ProfileRow) {
     sessionMinutes: profile.sessionMinutes,
     injuries: profile.injuries,
     equipment: profile.equipment,
-    lastSets: last,
-    suggested,
   });
 
   const open = db
@@ -71,11 +55,9 @@ export function todaysPlan(userId: string, profile: ProfileRow) {
   return {
     program,
     planned,
-    decisions,
     allDone,
     weekWorkouts,
     open,
-    volume: weeklyVolume(userId, weekStart),
   };
 }
 
