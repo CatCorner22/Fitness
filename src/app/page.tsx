@@ -42,9 +42,6 @@ export default async function TodayPage() {
               Or open Nyx courses
             </Link>
           </p>
-          <Link href="/course" className="mt-4 inline-block text-sm text-copper-2">
-            Or open Nyx courses
-          </Link>
         </section>
       ) : plan?.allDone ? (
         <section className="rounded-3xl border border-line bg-surface p-6">

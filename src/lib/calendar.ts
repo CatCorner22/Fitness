@@ -7,7 +7,7 @@ import {
   type CalendarFill,
   type CalendarMarkFill,
 } from "@/lib/calendar-core";
-import { db } from "@/lib/db";
+import { db, ensureMigrated } from "@/lib/db";
 import { calendarMarks, workouts } from "@/lib/db/schema";
 import { todayISO } from "@/lib/utils";
 
@@ -21,6 +21,7 @@ export {
 };
 
 export function loadCalendarState(userId: string, today = todayISO()) {
+  ensureMigrated();
   const completed = db
     .select({ date: workouts.date })
     .from(workouts)

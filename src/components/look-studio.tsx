@@ -51,6 +51,12 @@ export function LookStudio({ initial }: { initial: LookState }) {
       }}
       className="space-y-6 rounded-3xl border border-line bg-surface p-5"
     >
+      <input type="hidden" name="avatar" value={look.avatar} />
+      <input type="hidden" name="palette" value={look.palette} />
+      <input type="hidden" name="size" value={look.size} />
+      <input type="hidden" name="font" value={look.font} />
+      <input type="hidden" name="accent" value={look.accent} />
+      <input type="hidden" name="theme" value={look.theme} />
       <div className="flex items-center gap-4">
         <KawaiiAvatar id={look.avatar} size={72} />
         <div>
@@ -76,7 +82,7 @@ export function LookStudio({ initial }: { initial: LookState }) {
                 >
                   <input
                     type="radio"
-                    name="avatar"
+                    name="avatar-pick"
                     value={avatar.id}
                     checked={look.avatar === avatar.id}
                     onChange={() => update("avatar", avatar.id)}
@@ -103,7 +109,7 @@ export function LookStudio({ initial }: { initial: LookState }) {
             >
               <input
                 type="radio"
-                name="palette"
+                name="palette-pick"
                 value={palette.id}
                 checked={look.palette === palette.id}
                 onChange={() => update("palette", palette.id)}
@@ -122,8 +128,6 @@ export function LookStudio({ initial }: { initial: LookState }) {
       <label className="flex min-h-11 items-center gap-3 text-sm">
         <input
           type="checkbox"
-          name="theme"
-          value="light"
           checked={look.theme === "light"}
           onChange={(e) => update("theme", e.target.checked ? "light" : "dark")}
           className="w-auto"
@@ -143,7 +147,7 @@ export function LookStudio({ initial }: { initial: LookState }) {
             >
               <input
                 type="radio"
-                name="size"
+                name="size-pick"
                 value={size.id}
                 checked={look.size === size.id}
                 onChange={() => update("size", size.id)}
@@ -167,7 +171,7 @@ export function LookStudio({ initial }: { initial: LookState }) {
             >
               <input
                 type="radio"
-                name="font"
+                name="font-pick"
                 value={font.id}
                 checked={look.font === font.id}
                 onChange={() => update("font", font.id)}
@@ -192,7 +196,7 @@ export function LookStudio({ initial }: { initial: LookState }) {
             >
               <input
                 type="radio"
-                name="accent"
+                name="accent-pick"
                 value={accent.id}
                 checked={look.accent === accent.id}
                 onChange={() => update("accent", accent.id)}
