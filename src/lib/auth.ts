@@ -4,6 +4,8 @@ import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { profiles, users } from "@/lib/db/schema";
+import type { AssessmentResult, FitnessTier } from "@/lib/assessment/types";
+import { parseAssessment } from "@/lib/assessment/parse";
 import type { Experience, Goal, Injury, Persona, Units } from "@/lib/types";
 
 const COOKIE = "garanimal_session";
@@ -83,6 +85,12 @@ export type ProfileRow = {
   activeProgramId: string | null;
   programStartDate: string | null;
   currentWeek: number;
+  assessment: AssessmentResult | null;
+  fitnessTier: FitnessTier | null;
+  assessedAt: string | null;
+  activeDietId: string | null;
+  dietStartDate: string | null;
+  dietWeek: number;
 };
 
 function parseStringList(raw: string | null | undefined): string[] {
@@ -116,5 +124,11 @@ export function getProfile(userId: string): ProfileRow | null {
     activeProgramId: row.activeProgramId,
     programStartDate: row.programStartDate,
     currentWeek: row.currentWeek,
+    assessment: parseAssessment(row.assessmentJson),
+    fitnessTier: (row.fitnessTier as FitnessTier | null) ?? null,
+    assessedAt: row.assessedAt ?? null,
+    activeDietId: row.activeDietId ?? null,
+    dietStartDate: row.dietStartDate ?? null,
+    dietWeek: row.dietWeek ?? 1,
   };
 }

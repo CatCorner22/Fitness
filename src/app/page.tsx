@@ -1,22 +1,26 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
+import { FastingStrip } from "@/components/fasting-timer";
 import { SkipWorkoutButton } from "@/components/skip-workout-button";
 import { advanceWeekAction } from "@/app/actions/profile";
 import { skipWorkoutAction, startWorkoutAction } from "@/app/actions/workout";
 import { shouldDeload } from "@/lib/autoregulation";
+import { runningFast } from "@/lib/fasting/queries";
 import { requireAuthed } from "@/lib/session-page";
 import { todayNutrition, todaysPlan } from "@/lib/today";
-import { calorieTarget, macroTargets, proteinTargetG } from "@/lib/nutrition/targets";
+import { calorieTarget, macroTargets, nutritionSpec, proteinTargetG } from "@/lib/nutrition/targets";
 import { courseForProgram } from "@/lib/course/catalog";
 
 export default async function TodayPage() {
   const { user, profile } = await requireAuthed();
   const plan = todaysPlan(user.id, profile);
   const food = todayNutrition(user.id);
-  const targets = macroTargets(calorieTarget(profile), proteinTargetG(profile), profile.goal);
+  const spec = nutritionSpec(profile);
+  const targets = macroTargets(calorieTarget(profile), proteinTargetG(profile), spec);
   const planned = plan?.planned;
   const deload = shouldDeload(user.id);
   const open = plan?.open;
+  const fast = runningFast(user.id);
 
   return (
     <AppShell user={user} profile={profile}>
@@ -48,6 +52,9 @@ export default async function TodayPage() {
               ? ` — longer than your ${profile.sessionMinutes}-minute cap. We still keep every drill.`
               : ""}
           </p>
+          {planned && planned.fitnessNotes?.length ? (
+            <p className="mt-3 text-sm text-muted">{planned.fitnessNotes[0]}</p>
+          ) : null}
           {planned && planned.exercises.length > 0 ? (
             <ul className="mt-4 space-y-1 text-sm">
               {planned.exercises.map((ex) => (
@@ -99,6 +106,7 @@ export default async function TodayPage() {
           Food {Math.round(food.calories)} / {targets.calories} · protein {Math.round(food.protein)} / {targets.protein}g
         </Link>
       </p>
+      {fast ? <FastingStrip running={fast} /> : null}
     </AppShell>
   );
 }
