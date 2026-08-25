@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getProfile, getSession } from "@/lib/auth";
+import { planAdjustFromAssessment } from "@/lib/assessment/plan-adjust";
 import { db } from "@/lib/db";
 import { setLogs, workouts } from "@/lib/db/schema";
 import { lastWorkingSets, suggestionsForExercises } from "@/lib/autoregulation";
@@ -23,6 +24,7 @@ export async function startWorkoutAction(dayId?: string) {
   const profile = getProfile(user.id);
   if (!profile?.activeProgramId) redirect("/programs");
 
+  const fitness = planAdjustFromAssessment(profile.assessment);
   const draft = buildPlannedSession({
     programId: profile.activeProgramId,
     week: profile.currentWeek,
@@ -30,6 +32,7 @@ export async function startWorkoutAction(dayId?: string) {
     sessionMinutes: profile.sessionMinutes,
     injuries: profile.injuries,
     equipment: profile.equipment,
+    fitness,
   });
   if (!draft) redirect("/programs");
   const last = lastWorkingSets(
@@ -54,6 +57,7 @@ export async function startWorkoutAction(dayId?: string) {
     equipment: profile.equipment,
     lastSets: last,
     suggested,
+    fitness,
   });
   if (!planned) redirect("/programs");
 

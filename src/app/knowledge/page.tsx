@@ -26,7 +26,7 @@ export default async function KnowledgePage({
       <h1 className="display text-4xl">Guide</h1>
       <p className="mt-2 max-w-2xl text-muted">Short notes on lifting and food. Search if you want.</p>
       <form className="mt-6 flex gap-2" action="/knowledge" method="get">
-        <input name="q" defaultValue={q} placeholder="Search: glutes, rest, RPE, pole, protein..." />
+        <input name="q" defaultValue={q} placeholder="Search: glutes, rest, RPE, pole, stretch, ruck..." />
         <button className="rounded-2xl bg-copper px-4 text-sm text-bg" type="submit">
           Search
         </button>

@@ -3,6 +3,7 @@ import { logoutAction } from "@/app/actions/auth";
 import { saveSettingsAction } from "@/app/actions/profile";
 import { AppShell } from "@/components/app-shell";
 import { PROGRAMS } from "@/lib/programs/catalog";
+import { DIET_PROGRAMS } from "@/lib/nutrition/diets";
 import { getAiOptIn, getTheme } from "@/lib/prefs";
 import { requireAuthed } from "@/lib/session-page";
 import { kgToDisplay } from "@/lib/utils";
@@ -22,6 +23,8 @@ const EQUIPMENT_OPTIONS: { value: Equipment; label: string }[] = [
   { value: "trap_bar", label: "Trap bar" },
   { value: "landmine", label: "Landmine" },
   { value: "cardio_machine", label: "Cardio machine" },
+  { value: "pole", label: "Pole (home or studio)" },
+  { value: "backpack", label: "Backpack / ruck" },
 ];
 
 export default async function SettingsPage() {
@@ -42,6 +45,12 @@ export default async function SettingsPage() {
       <nav className="mt-6 grid grid-cols-2 gap-2 text-sm">
         <Link className="rounded-2xl border border-line bg-surface px-4 py-3" href="/programs">
           Plans
+        </Link>
+        <Link className="rounded-2xl border border-line bg-surface px-4 py-3" href="/assess">
+          Fitness check
+        </Link>
+        <Link className="rounded-2xl border border-line bg-surface px-4 py-3" href="/diets">
+          Diet
         </Link>
         <Link className="rounded-2xl border border-line bg-surface px-4 py-3" href="/coach">
           Coach
@@ -76,6 +85,17 @@ export default async function SettingsPage() {
             {PROGRAMS.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block text-sm text-muted">
+          Diet block
+          <select name="dietId" defaultValue={profile.activeDietId ?? ""} className="mt-1">
+            <option value="">Training-goal calories</option>
+            {DIET_PROGRAMS.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name}
               </option>
             ))}
           </select>

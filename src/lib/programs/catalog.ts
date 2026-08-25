@@ -1,4 +1,5 @@
 import type { Program } from "@/lib/types";
+import { MOVEMENT_PROGRAMS } from "./movement";
 
 const strengthPhases = [
   {
@@ -549,83 +550,7 @@ export const PROGRAMS: Program[] = [
       },
     ],
   },
-  {
-    id: "pole_stage",
-    name: "Pole & stage prep",
-    tagline: "Grip, pull, core, shoulders, and lines — so class is skill, not survival.",
-    category: "Performance",
-    daysPerWeek: 4,
-    durationWeeks: 8,
-    description:
-      "Off-apparatus athletic prep for pole fitness or stage work. This does not replace a studio. It builds the strength, grip, invert readiness, and set-endurance so you can learn technique instead of hanging on for dear life.",
-    evidenceNote:
-      "Pole fails first at grip, then pulling and isometric core. Balanced push work keeps the shoulder healthy. No kipping, no behind-the-neck work, no bench dips. Invert progressions stay strict.",
-    recommendedFor: ["pole_stage"],
-    phases: hypertrophyPhases,
-    days: [
-      {
-        id: "pole-pull",
-        name: "Pull, grip, invert prep",
-        focus: "The stuff that gets you onto the pole",
-        kind: "lift",
-        estimatedMinutes: 70,
-        exercises: [
-          { exerciseId: "wrist-prep", sets: 1, reps: "2 min", targetRpe: 3, priority: 5, role: "prehab" },
-          { exerciseId: "shoulder-cares", sets: 1, reps: "2 min", targetRpe: 3, priority: 5, role: "prehab" },
-          { exerciseId: "pullup", sets: 4, reps: "4-8", targetRpe: 8, priority: 1, role: "main", notes: "Assisted is correct until you own 5 strict reps." },
-          { exerciseId: "inverted-row", sets: 3, reps: "6-10", targetRpe: 8, priority: 2, role: "secondary" },
-          { exerciseId: "towel-row", sets: 3, reps: "8-10", targetRpe: 8, priority: 2, role: "accessory" },
-          { exerciseId: "dead-hang", sets: 4, reps: "15-40s", targetRpe: 8, priority: 2, role: "accessory" },
-          { exerciseId: "hanging-tuck", sets: 4, reps: "10-20s", targetRpe: 8, priority: 2, role: "accessory", notes: "Invert-readiness. No kip. Spot or band if needed." },
-          { exerciseId: "hollow-hold", sets: 4, reps: "20-40s", targetRpe: 8, priority: 3, role: "accessory" },
-        ],
-      },
-      {
-        id: "pole-push",
-        name: "Push & shoulder health",
-        focus: "Balance all that pulling",
-        kind: "lift",
-        estimatedMinutes: 60,
-        exercises: [
-          { exerciseId: "pushup", sets: 4, reps: "6-12", targetRpe: 8, priority: 1, role: "main" },
-          { exerciseId: "landmine-press", sets: 3, reps: "8-10", targetRpe: 8, priority: 1, role: "main" },
-          { exerciseId: "face-pull", sets: 4, reps: "12-15", targetRpe: 8, priority: 2, role: "prehab" },
-          { exerciseId: "db-lateral-raise", sets: 3, reps: "12-15", targetRpe: 8, priority: 3, role: "accessory" },
-          { exerciseId: "narrow-pushup", sets: 2, reps: "6-10", targetRpe: 8, priority: 3, role: "accessory" },
-          { exerciseId: "pallof-press", sets: 3, reps: "8/side", targetRpe: 8, priority: 3, role: "accessory" },
-        ],
-      },
-      {
-        id: "pole-lower",
-        name: "Posterior chain + lines",
-        focus: "Glutes, hinges, hips",
-        kind: "mixed",
-        estimatedMinutes: 65,
-        exercises: [
-          { exerciseId: "hip-90-90", sets: 1, reps: "3 min", targetRpe: 3, priority: 5, role: "prehab" },
-          { exerciseId: "rdl", sets: 3, reps: "6-8", targetRpe: 7.5, priority: 1, role: "main" },
-          { exerciseId: "bulgarian-split-squat", sets: 3, reps: "8/leg", targetRpe: 8, priority: 2, role: "secondary" },
-          { exerciseId: "hip-thrust", sets: 3, reps: "8-10", targetRpe: 8, priority: 2, role: "secondary" },
-          { exerciseId: "single-leg-rdl", sets: 2, reps: "8/leg", targetRpe: 7, priority: 3, role: "accessory" },
-          { exerciseId: "side-plank", sets: 3, reps: "20-40s/side", targetRpe: 8, priority: 4, role: "accessory" },
-        ],
-      },
-      {
-        id: "pole-stage",
-        name: "Set endurance + mobility",
-        focus: "Last the song",
-        kind: "mixed",
-        estimatedMinutes: 50,
-        exercises: [
-          { exerciseId: "thoracic-opener", sets: 1, reps: "3 min", targetRpe: 3, priority: 5, role: "prehab" },
-          { exerciseId: "stage-circuit", sets: 4, reps: "4 min rounds", targetRpe: 7, priority: 1, role: "conditioning", notes: "40s on / 20s transition: squat, push-up, hollow, farmer carry." },
-          { exerciseId: "farmer-carry", sets: 4, reps: "30-40 m", targetRpe: 7, priority: 2, role: "accessory" },
-          { exerciseId: "hanging-knee-raise", sets: 3, reps: "6-10", targetRpe: 8, priority: 3, role: "accessory" },
-          { exerciseId: "zone2-walk", sets: 1, reps: "15-25 min", targetRpe: 4, priority: 3, role: "conditioning", optional: true },
-        ],
-      },
-    ],
-  },
+  ...MOVEMENT_PROGRAMS,
   {
     id: "big_ass",
     name: "Big Ass Program",

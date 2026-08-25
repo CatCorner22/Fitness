@@ -3,12 +3,13 @@
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth";
+import { getProfile, getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { bodyweightLogs, dailyCheckins, profiles, users } from "@/lib/db/schema";
 import { todayISO } from "@/lib/utils";
 import { programForGoal } from "@/lib/copy";
 import { getProgram } from "@/lib/programs/catalog";
+import { getDiet } from "@/lib/nutrition/diets";
 import { setPrefCookies } from "@/lib/prefs";
 
 async function requireUser() {
@@ -41,7 +42,7 @@ export async function saveOnboardingAction(formData: FormData) {
       age: Number(formData.get("age")) || null,
       heightCm,
       weightKg,
-      onboarded: 1,
+      onboarded: 0,
       activeProgramId: program?.id ?? "upper_lower",
       programStartDate: todayISO(),
       currentWeek: 1,
@@ -66,7 +67,7 @@ export async function saveOnboardingAction(formData: FormData) {
   }
 
   revalidatePath("/");
-  redirect("/");
+  redirect("/onboarding/assess");
 }
 
 export async function saveSettingsAction(formData: FormData) {
@@ -78,6 +79,11 @@ export async function saveSettingsAction(formData: FormData) {
   const heightCm = Number.isFinite(height) && height > 0 ? (units === "lb" ? height * 2.54 : height) : null;
   const programId = String(formData.get("programId") || "");
   const existing = db.select().from(profiles).where(eq(profiles.userId, user.id)).get();
+  const dietField = formData.get("dietId");
+  const nextDietId =
+    dietField === null ? existing?.activeDietId ?? null : String(dietField) || null;
+  const dietChanged = nextDietId !== (existing?.activeDietId ?? null);
+  const validDiet = nextDietId && getDiet(nextDietId) ? nextDietId : null;
 
   db.update(profiles)
     .set({
@@ -96,6 +102,9 @@ export async function saveSettingsAction(formData: FormData) {
       programStartDate:
         programId && programId !== existing?.activeProgramId ? todayISO() : existing?.programStartDate,
       currentWeek: programId && programId !== existing?.activeProgramId ? 1 : existing?.currentWeek ?? 1,
+      activeDietId: validDiet,
+      dietStartDate: dietChanged ? (validDiet ? todayISO() : null) : existing?.dietStartDate ?? null,
+      dietWeek: dietChanged ? 1 : existing?.dietWeek ?? 1,
       equipment: JSON.stringify(
         formData.getAll("equipment").length
           ? formData.getAll("equipment")
@@ -118,6 +127,7 @@ export async function saveSettingsAction(formData: FormData) {
   revalidatePath("/");
   revalidatePath("/settings");
   revalidatePath("/nutrition");
+  revalidatePath("/diets");
   redirect("/settings?toast=settings");
 }
 
@@ -139,12 +149,14 @@ export async function enrollProgramAction(programId: string) {
   const user = await requireUser();
   const program = getProgram(programId);
   if (!program) return;
+  const existing = getProfile(user.id);
+  const keepGoal = existing && program.recommendedFor.includes(existing.goal);
   db.update(profiles)
     .set({
       activeProgramId: program.id,
       programStartDate: todayISO(),
       currentWeek: 1,
-      goal: program.recommendedFor[0] ?? "general",
+      goal: keepGoal ? existing.goal : (program.recommendedFor[0] ?? "general"),
     })
     .where(eq(profiles.userId, user.id))
     .run();

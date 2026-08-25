@@ -1,4 +1,6 @@
 import type { Injury, PlannedExercise, PlannedSession, Program, ProgramDay, TemplateExercise, WeekPhase } from "@/lib/types";
+import type { FitnessPlanAdjust } from "@/lib/assessment/types";
+import { remapExerciseId, emptyAdjust } from "@/lib/assessment/plan-adjust";
 import { allowedSubstitutes, getExercise, isExerciseAllowed } from "@/lib/exercises/registry";
 import { getProgram } from "./catalog";
 
@@ -26,10 +28,16 @@ export function estimateSessionMinutes(exercises: TemplateExercise[]) {
   return Math.round(warmup + time / 60);
 }
 
-function applyPhase(item: TemplateExercise, phase: WeekPhase): TemplateExercise {
-  const sets = Math.max(1, item.sets + phase.setAdjust);
-  const targetRpe = Math.min(10, Math.max(5, item.targetRpe + phase.rpeAdjust));
-  return { ...item, sets, targetRpe };
+function applyPhase(item: TemplateExercise, phase: WeekPhase, fitness?: FitnessPlanAdjust | null): TemplateExercise {
+  const accessoryBump = fitness && item.priority >= 3 ? fitness.accessorySetAdjust : 0;
+  const sets = Math.max(1, item.sets + phase.setAdjust + accessoryBump);
+  const targetRpe = Math.min(10, Math.max(5, item.targetRpe + phase.rpeAdjust + (fitness?.rpeAdjust ?? 0)));
+  const rest = item.restSeconds;
+  const restSeconds =
+    rest != null && fitness && fitness.restMultiplier !== 1
+      ? Math.round(rest * fitness.restMultiplier)
+      : rest;
+  return { ...item, sets, targetRpe, restSeconds };
 }
 
 function rotateConjugate(day: ProgramDay, week: number): ProgramDay {
@@ -100,6 +108,7 @@ export function buildPlannedSession(options: {
   equipment: string[];
   lastSets?: Record<string, { weightKg: number; reps: number; rpe: number | null }>;
   suggested?: Record<string, number | null>;
+  fitness?: FitnessPlanAdjust | null;
 }): PlannedSession | null {
   const program = getProgram(options.programId);
   if (!program) return null;
@@ -108,9 +117,13 @@ export function buildPlannedSession(options: {
     (options.dayId && program.days.find((d) => d.id === options.dayId)) ||
     program.days[options.dayIndex ?? 0];
   if (!rawDay) return null;
+  const fitness = options.fitness ?? null;
 
   const day = rotateConjugate(rawDay, options.week);
-  const phased = day.exercises.map((e) => applyPhase(e, phase));
+  const phased = day.exercises.map((e) => {
+    const remapped = remapExerciseId(e.exerciseId, fitness ?? emptyAdjust(), options.equipment);
+    return applyPhase({ ...e, exerciseId: remapped }, phase, fitness);
+  });
   const resolved: TemplateExercise[] = [];
   const usedIds = new Set<string>();
 
@@ -137,6 +150,33 @@ export function buildPlannedSession(options: {
     if (existing) existing.sets += item.sets;
   }
 
+  if (fitness?.addPlank && !usedIds.has("plank")) {
+    usedIds.add("plank");
+    resolved.push({
+      exerciseId: "plank",
+      sets: 2,
+      reps: "30-45s",
+      targetRpe: 7,
+      restSeconds: 45,
+      priority: 3,
+      role: "prehab",
+      notes: "From your fitness check — trunk endurance, not sit-ups.",
+    });
+  }
+  if (fitness?.addWalk && !resolved.some((r) => getExercise(r.exerciseId)?.isCardio)) {
+    usedIds.add("zone2-walk");
+    resolved.push({
+      exerciseId: "zone2-walk",
+      sets: 1,
+      reps: "8-12 min",
+      targetRpe: 6,
+      restSeconds: 0,
+      priority: 4,
+      role: "conditioning",
+      notes: "Easy talk-test pace. From your aerobic screen.",
+    });
+  }
+
   const trimmed = trimForDuration(resolved, options.sessionMinutes);
   const exercises: PlannedExercise[] = [];
   for (const item of trimmed.exercises) {
@@ -160,6 +200,7 @@ export function buildPlannedSession(options: {
     estimatedMinutes: trimmed.estimate,
     trimmed: trimmed.dropped.length > 0,
     droppedExerciseIds: trimmed.dropped,
+    fitnessNotes: fitness?.notes?.length ? fitness.notes : undefined,
   };
 }
 

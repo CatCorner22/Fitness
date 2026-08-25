@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { getProfile, getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { foods, nutritionLogs } from "@/lib/db/schema";
-import { suggestedPlans } from "@/lib/nutrition/meal-plans";
+import { getMealPlanTemplate, scalePlanToTargets } from "@/lib/nutrition/meal-plans";
 import { adaptiveCalories } from "@/lib/nutrition/targets";
 import { todayNutrition } from "@/lib/today";
 import { todayISO } from "@/lib/utils";
@@ -78,10 +78,9 @@ export async function applyMealPlanAction(formData: FormData) {
   if (!profile) redirect("/onboarding");
 
   const targets = adaptiveCalories(user.id, profile);
-  const match = suggestedPlans(profile.goal, targets.calories, targets.protein).find(
-    (p) => p.template.id === planId,
-  );
-  if (!match) redirect("/nutrition?toast=plan-missing");
+  const template = getMealPlanTemplate(planId);
+  if (!template) redirect("/nutrition?toast=plan-missing");
+  const items = scalePlanToTargets(template, targets.calories, targets.protein);
 
   const date = todayISO();
   const existing = todayNutrition(user.id);
@@ -95,7 +94,7 @@ export async function applyMealPlanAction(formData: FormData) {
         .run();
     }
 
-    for (const item of match.items) {
+    for (const item of items) {
       if (!replace && filledMeals.has(item.meal)) continue;
       tx.insert(nutritionLogs)
         .values({

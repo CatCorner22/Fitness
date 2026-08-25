@@ -56,6 +56,11 @@ export function scoreArticle(article: KnowledgeArticle, ctx: SearchContext) {
       }
       if (ctx.programId === "big_ass" && article.id === "glute-science") score += 8;
       if (ctx.programId === "pole_stage" && article.id === "pole-prep") score += 8;
+      if (ctx.programId === "pole_amateur_night" && article.id === "pole-prep") score += 8;
+      if (ctx.programId === "smart_stretch" && article.id === "stretching-ergonomics") score += 8;
+      if (ctx.programId === "home_yoga" && article.id === "stretching-ergonomics") score += 6;
+      if (ctx.programId === "rucking" && article.id === "rucking-load") score += 8;
+      if ((ctx.programId === "barre" || ctx.programId === "ballet_basics") && article.id === "turnout-alignment") score += 8;
       if (ctx.programId === "conjugate" && article.id === "conjugate-overview") score += 8;
       if (ctx.programId === "strength_endurance" && article.id === "concurrent-training") score += 8;
     }
@@ -73,5 +78,32 @@ export function scoreArticle(article: KnowledgeArticle, ctx: SearchContext) {
   }
   if (ctx.query?.toLowerCase().includes("rest") && article.id === "rest-periods") score += 6;
   if (ctx.query?.toLowerCase().includes("rpe") && article.id === "rpe-rir") score += 6;
+  if (
+    (ctx.query?.toLowerCase().includes("assess") ||
+      ctx.query?.toLowerCase().includes("baseline") ||
+      ctx.query?.toLowerCase().includes("push-up") ||
+      ctx.query?.toLowerCase().includes("6-minute")) &&
+    article.id === "fitness-assessment"
+  ) {
+    score += 8;
+  }
+  if (ctx.query?.toLowerCase().includes("fast") && article.id === "time-restricted-eating") score += 8;
+  if (
+    (ctx.query?.toLowerCase().includes("cut") ||
+      ctx.query?.toLowerCase().includes("bulk") ||
+      ctx.query?.toLowerCase().includes("reverse") ||
+      ctx.query?.toLowerCase().includes("diet")) &&
+    article.id === "diet-periodization"
+  ) {
+    score += 8;
+  }
+  if (
+    (ctx.query?.toLowerCase().includes("6%") ||
+      ctx.query?.toLowerCase().includes("peak") ||
+      ctx.query?.toLowerCase().includes("beach")) &&
+    article.id === "peak-lean"
+  ) {
+    score += 8;
+  }
   return score;
 }

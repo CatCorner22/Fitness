@@ -122,6 +122,18 @@ function answerQuestion(
   if (q.includes("swap") || q.includes("substitute") || q.includes("instead")) {
     return "I can only swap from the safety registry. Open the workout and tap Swap — you will only see recommended alternatives that respect your injuries.";
   }
+  if (q.includes("assess") || q.includes("fitness check") || q.includes("baseline") || q.includes("push-up") || q.includes("plank") || q.includes("6-minute")) {
+    return "You → Fitness check. Six field tests (6-minute walk or 2-minute step, CSEP push-ups, 30s chair stand, plank, single-leg stance, overhead squat + back-scratch). We scale RPE and swaps from that. No 1RM on day one. Sit-ups are not the core test.";
+  }
+  if (q.includes("fast") || q.includes("16:8") || q.includes("16/8") || q.includes("eating window")) {
+    return "Open Eat. Start a fast, then change the start time, the target, or the eat-at time whenever you need to — including after you already ended it. TRE is a timer. Matched-calorie studies do not show a magic metabolism bonus.";
+  }
+  if (q.includes("6%") || q.includes("sub-6") || q.includes("body fat") || q.includes("peak week") || q.includes("beach")) {
+    return "Sub-6% is male contest-day leanness, already-lean only, and short. Women: essential fat is roughly 10–13% — Beach week or Steady cut, not 6%. No water cuts. After a peak, Reverse.";
+  }
+  if (q.includes("reverse") || q.includes("mini-cut") || q.includes("mini cut") || q.includes("diet block") || q.includes("lean bulk")) {
+    return "Eat → Diet blocks. Cut slowly (0.5–1% bodyweight/week). Mini-cut is four weeks if you are already lean. Reverse is how you leave a deficit. Lean bulk is a small surplus.";
+  }
   if (q.includes("protein") || q.includes("eat") || q.includes("calorie")) {
     return `Protein target is about 1.6–2.2 g/kg. Yours is based on ${profile.weightKg ?? "your"} kg bodyweight. Eat enough to train. This app will not praise a crash diet.`;
   }
@@ -131,8 +143,17 @@ function answerQuestion(
   if (q.includes("glute") || q.includes("butt") || q.includes("ass")) {
     return "Hip thrust, squat or split squat, RDL, abduction, 45° extension. Variety. Plotkin 2023: thrust ≈ squat for glute size. Kassiano 2024: adding thrusts on top of hinges and presses grew more glute. Do the work.";
   }
-  if (q.includes("pole") || q.includes("strip") || q.includes("invert")) {
-    return "Grip, strict pull-ups, hollow body, hanging tucks, push balance, hip mobility. No kipping. Studio time is still required — this is prep, not a trick list.";
+  if (q.includes("pole") || q.includes("strip") || q.includes("invert") || q.includes("amateur")) {
+    return "Two plans: Pole class prep (walk, fireman, sit, climb, invert prep, both sides) and Couch to amateur night (walk, floor, spins, a short set — no new inverts in the show). Off-pole: hangs, strict pulls, hollow, push balance. Shoulders and wrists take most pole injuries. Crash mat. Studio for inverts. No kipping.";
+  }
+  if (q.includes("ruck") || q.includes("rucking") || q.includes("pack")) {
+    return "Start around 10–15% bodyweight, talking pace. Add distance or load, not both, in the same week. Stay under ~30% bodyweight unless you have a real event and a base.";
+  }
+  if (q.includes("stretch") || q.includes("split") || q.includes("flexib")) {
+    return "Warm first. Hinge at the hip. 30–45 second holds. No bounce. No behind-the-neck stretches. Do not sit in long static stretches right before a heavy lift.";
+  }
+  if (q.includes("barre") || q.includes("ballet") || q.includes("turnout") || q.includes("plie")) {
+    return "Turnout from the hips. Knees track toes. About 45 degrees is honest. A chair is a barre. This is balance and a smoother walk, not vocational ballet.";
   }
   return persona === "garanimal"
     ? "Stop looking for a magic question. Open Today. Start the session. Log the RPE. That is the whole religion."

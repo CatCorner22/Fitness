@@ -2,6 +2,7 @@ import { and, eq, gte } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { nutritionLogs, workouts } from "@/lib/db/schema";
 import type { ProfileRow } from "@/lib/auth";
+import { planAdjustFromAssessment } from "@/lib/assessment/plan-adjust";
 import { getProgram } from "@/lib/programs/catalog";
 import { buildPlannedSession } from "@/lib/programs/plan";
 import { todayISO } from "@/lib/utils";
@@ -44,6 +45,7 @@ export function todaysPlan(userId: string, profile: ProfileRow) {
     sessionMinutes: profile.sessionMinutes,
     injuries: profile.injuries,
     equipment: profile.equipment,
+    fitness: planAdjustFromAssessment(profile.assessment),
   });
 
   const open = db
