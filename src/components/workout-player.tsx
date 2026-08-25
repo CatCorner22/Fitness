@@ -193,6 +193,7 @@ export function WorkoutPlayer({
             res = await fetch("/api/workout/log-set", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
+              redirect: "manual",
               body: JSON.stringify({
                 setId: set.id,
                 weight,
@@ -208,6 +209,8 @@ export function WorkoutPlayer({
           }
         }
         if (!res?.ok) throw new Error("log failed");
+        const contentType = res.headers.get("content-type") ?? "";
+        if (!contentType.includes("application/json")) throw new Error("log failed");
         setLastExerciseId(set.exerciseId);
         try {
           const data = (await res.json()) as {

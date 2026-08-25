@@ -21,12 +21,18 @@ export async function middleware(request: NextRequest) {
 
   const token = request.cookies.get("garanimal_session")?.value;
   if (!token) {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     return NextResponse.redirect(new URL("/login", request.url));
   }
   try {
     await jwtVerify(token, secret());
     return NextResponse.next();
   } catch {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     return NextResponse.redirect(new URL("/login", request.url));
   }
 }
