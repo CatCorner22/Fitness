@@ -272,7 +272,7 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "We go to the floor like we have time. Hand down if you need it. One knee. Other knee. Pads, please. Pause tall. Then reverse — one foot, the other, stand. If you drop, we do it again until you do not.",
     diagram: "floor",
-    photo: NYX.photos.walk,
+    photo: NYX.photos.floor,
     plate: NYX.plates.floor,
   }),
   skill({
@@ -296,7 +296,7 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Tabletop. Hands under shoulders — fists or forearms if the wrists talk. Knees under hips, on pads. Long spine. This is home base. You will leave it. You will come back. Do not sink into your shoulders.",
     diagram: "tabletop",
-    photo: NYX.photos.walk,
+    photo: NYX.photos.floor,
     plate: NYX.plates.floor,
   }),
   skill({
@@ -320,7 +320,7 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Pads. I mean it. Walk the knees in a slow circle. Hips over the knees. Other way. If the knee is sharp, we skip this and keep the walk on your feet. Hero knees do not make a better set.",
     diagram: "knee",
-    photo: NYX.photos.walk,
+    photo: NYX.photos.floor,
     plate: NYX.plates.floor,
   }),
   skill({
@@ -344,7 +344,7 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "On the pads. Circle the hips. Both ways. If you add a roll, the neck does not load. No bridges. Come back to tabletop. That is a verse. Leave the circus for someone else's amateur night.",
     diagram: "floor",
-    photo: NYX.photos.walk,
+    photo: NYX.photos.floor,
     plate: NYX.plates.floor,
   }),
   skill({
@@ -565,8 +565,8 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Clamp. Stand. Reach. That is a climb. Three controlled ones off the floor is the class target — not the ceiling. Climb down. If you slide, we lost the point. Mat stays. Both sides if your studio uses a dominant climb.",
     diagram: "climb",
-    photo: NYX.photos.sit,
-    plate: NYX.plates.sit,
+    photo: NYX.photos.climb,
+    plate: NYX.plates.climb,
   }),
   skill({
     id: "descent-pole",
@@ -590,8 +590,8 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Down is a skill. Hand over hand, or a short slide you chose. Mat. If you torch your skin or dump the shoulder, we are not advancing. Other side. Intact is the aesthetic.",
     diagram: "climb",
-    photo: NYX.photos.sit,
-    plate: NYX.plates.sit,
+    photo: NYX.photos.climb,
+    plate: NYX.plates.climb,
   }),
   skill({
     id: "tuck",
@@ -676,6 +676,23 @@ export function skillById(id: string) {
 
 export function skillByExerciseId(exerciseId: string) {
   return SKILLS.filter((s) => s.exerciseId === exerciseId);
+}
+
+export function lessonForExercise(
+  exerciseId: string,
+  preferred?: { courseId?: string; skillIds?: string[] },
+) {
+  const lessons = skillByExerciseId(exerciseId);
+  if (!lessons.length) return undefined;
+  const inPreferred = preferred?.skillIds?.length
+    ? lessons.find((s) => preferred.skillIds!.includes(s.id))
+    : preferred?.courseId
+      ? lessons.find((s) => s.courseId === preferred.courseId)
+      : undefined;
+  const skill = inPreferred ?? lessons[0];
+  const hrefCourse =
+    preferred?.courseId && preferred.skillIds?.includes(skill.id) ? preferred.courseId : skill.courseId;
+  return { skill, href: `/course/${hrefCourse}/${skill.id}` };
 }
 
 export function skillsForCourse(courseId: CourseId) {

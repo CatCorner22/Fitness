@@ -95,10 +95,30 @@ class_cover = [
     "pole-tuck-prep",
     "class-capacity-circuit",
     "back-to-pole-pose",
+    "outside-leg-hang",
+    "carousel-spin",
+    "climb-to-sit",
+    "back-hook-spin",
 ]
 for eid in class_cover:
     if eid not in skill_by_ex:
         errors.append(f"intermediate class drill {eid} has no Nyx lesson")
+    if eid in ("outside-leg-hang", "carousel-spin", "climb-to-sit", "back-hook-spin") and eid not in programmed:
+        errors.append(f"intermediate class drill {eid} is not programmed")
+
+nyx_cover = [
+    "ankle-prep",
+    "table-edge",
+    "fan-kick",
+    "jacket-peel",
+    "pirouette",
+    "tip-tray",
+]
+for eid in nyx_cover:
+    if eid not in skill_by_ex:
+        errors.append(f"Nyx course drill {eid} has no lesson")
+    if eid not in programmed:
+        errors.append(f"Nyx course drill {eid} is not programmed")
 
 stills = [
     ROOT / "public/instructor/nyx-portrait.webp",
@@ -108,6 +128,8 @@ stills = [
     ROOT / "public/instructor/nyx-sit.webp",
     ROOT / "public/instructor/nyx-pole.webp",
     ROOT / "public/instructor/nyx-hang.webp",
+    ROOT / "public/instructor/nyx-floor.webp",
+    ROOT / "public/instructor/nyx-climb.webp",
 ]
 for still in stills:
     if not still.exists() or still.stat().st_size < 40_000:
@@ -135,6 +157,16 @@ if risky_programmed:
     errors.append(f"risky movement ids programmed: {risky_programmed}")
 if 'original.safety === "banned") continue' not in plan and "original.safety === 'banned') continue" not in plan:
     errors.append("planner must refuse to keep a banned lift")
+if "existing.sets +=" in plan:
+    errors.append("planner must not merge colliding substitutes into one lift")
+
+calendar_core = read(SRC / "lib/calendar-core.ts")
+if 'CALENDAR_EPOCH = "2026-08-23"' not in calendar_core:
+    errors.append("calendar epoch must stay 2026-08-23")
+if 'if (compareISO(date, today) > 0) return "gray"' not in calendar_core:
+    errors.append("future calendar days must stay gray")
+if 'if (compareISO(date, CALENDAR_EPOCH) < 0) return "gray"' not in calendar_core:
+    errors.append("days before the epoch must stay gray")
 
 if errors:
     print("FAIL")

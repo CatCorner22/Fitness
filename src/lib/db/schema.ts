@@ -170,3 +170,13 @@ export const fastAdjustments = sqliteTable("fast_adjustments", {
   summary: text("summary").notNull(),
   payload: text("payload").notNull().default("{}"),
 });
+
+export const calendarMarks = sqliteTable("calendar_marks", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id),
+  date: text("date").notNull(),
+  fill: text("fill").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});

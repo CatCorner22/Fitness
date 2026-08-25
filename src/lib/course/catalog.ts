@@ -9,9 +9,9 @@ export const COURSES: Course[] = [
     tagline: "Walk, body, floor, chair/lap stand-in, costume, pole-as-prop, and a two-song map you can finish.",
     adult: true,
     description:
-      "A training course for an adult amateur-night / club-style set. This is actual exotic skill — walk, heels, hands, stage map, commercial hips, floor crawls, chair phrases trained on furniture, costume peels, rail visits, and a close — not a pole-fitness trick list. Nyx teaches each skill several ways: a short cue, one step at a time, a diagram, a photoreal photo or editorial plate, and a sultry spoken pass you can pause and replay. Pick the channel that lands. Skip the rest. Chair work is a stand-in, not a person. Inverts stay out of the show until they are boring in class.",
+      "A training course for an adult amateur-night / club-style set. This is actual exotic skill — walk, heels, hands, stage map, commercial hips, fan kick, pirouette, floor crawls, table/podium, chair phrases trained on furniture, costume peels including a jacket, rail and tip-tray visits, and a close — not a pole-fitness trick list. Nyx teaches each skill several ways: a short cue, one step at a time, a diagram, a photoreal photo or editorial plate, and a sultry spoken pass you can pause and replay. Pick the channel that lands. Skip the rest. Chair work is a stand-in, not a person. Inverts stay out of the show until they are boring in class.",
     howToLearn: [
-      "Watch Nyx (photo, plate, or clip).",
+      "Watch Nyx (photo, plate, or a slow still-clip with her voice — not a filmed demo).",
       "Read the short cue, then do one numbered step at a time.",
       "Play the spoken pass. Pause whenever you want. Replay freely. The words stay on screen.",
       "Your turn: the practice block. Rest. Repeat.",
@@ -24,21 +24,21 @@ export const COURSES: Course[] = [
         title: "1. Presence",
         weeks: "Weeks 1–3",
         intent: "Own the walk, the eyes, the hands, and the box before any trick.",
-        skillIds: ["walk", "eyeline", "arms", "hands", "stage-map", "heels"],
+        skillIds: ["walk", "eyeline", "arms", "hands", "stage-map", "ankle-prep", "heels"],
       },
       {
         id: "body",
         title: "2. Body",
         weeks: "Weeks 1–4",
         intent: "Waves, figure-eights, pulses, shimmy, and a standing grind that read as commercial.",
-        skillIds: ["wave", "hip8", "pulse", "chest", "shimmy", "grind"],
+        skillIds: ["wave", "hip8", "pulse", "chest", "shimmy", "grind", "fan-kick", "pirouette"],
       },
       {
         id: "floor",
         title: "3. Floor",
         weeks: "Weeks 3–7",
         intent: "Get down, crawl, sit, grind, and get up without a thud.",
-        skillIds: ["descent", "tabletop", "knee-circle", "crawl", "floor-roll", "floor-grind", "mermaid", "ladder"],
+        skillIds: ["descent", "tabletop", "knee-circle", "crawl", "floor-roll", "floor-grind", "mermaid", "ladder", "table-edge"],
       },
       {
         id: "chair",
@@ -52,7 +52,7 @@ export const COURSES: Course[] = [
         title: "5. Costume",
         weeks: "Weeks 6–10",
         intent: "Layers, skirt, peel, and a heel plan — counted, not panicked.",
-        skillIds: ["layers", "skirt", "peel", "heel-floor"],
+        skillIds: ["layers", "skirt", "peel", "jacket-peel", "heel-floor"],
       },
       {
         id: "pole-prop",
@@ -66,7 +66,7 @@ export const COURSES: Course[] = [
         title: "7. Club set craft",
         weeks: "Weeks 9–12",
         intent: "8-counts, rail, two-song map, close, recovery. Then stop.",
-        skillIds: ["eight-count", "rail", "two-song", "show-run", "close", "recovery"],
+        skillIds: ["eight-count", "rail", "tip-tray", "two-song", "show-run", "close", "recovery"],
       },
     ],
   },
@@ -77,7 +77,7 @@ export const COURSES: Course[] = [
     tagline: "Grip, both-side spins, sit, climb, invert prep, and class-length lungs.",
     adult: false,
     description:
-      "Show up to an intermediate pole-fitness class with the strength, grip, and cardio to last the hour. Off-pole engine (repeat hangs, strict pull-ups, inverted rows) plus on-pole skills both sides: walk, squat hold, fireman, hook, sit, climb, controlled down, hanging tuck then on-pole tuck. No kipping. A spotted invert is studio-only. Same multi-channel lessons: cue, steps, diagram, photoreal photo, editorial plate, voice, clip.",
+      "Show up to an intermediate pole-fitness class with the strength, grip, and cardio to last the hour. Off-pole engine (repeat hangs, strict pull-ups, inverted rows) plus on-pole skills both sides: walk, squat hold, fireman, front hook, back hook, carousel, sit, climb, climb-to-sit, outside-leg hang, controlled down, hanging tuck then on-pole tuck. No kipping. A spotted invert is studio-only. Same multi-channel lessons: cue, steps, diagram, photoreal photo, editorial plate, voice, slow still-clip.",
     howToLearn: [
       "Start with hangs and pulls. Grip fails first in class.",
       "Train every spin both directions. No bonus sets for the pretty side.",
@@ -98,14 +98,14 @@ export const COURSES: Course[] = [
         title: "2. Spins both sides",
         weeks: "Weeks 2–7",
         intent: "Walk, squat hold, fireman, hook — equal volume, static pole first.",
-        skillIds: ["pole-walk", "pole-squat", "fireman", "hook"],
+        skillIds: ["pole-walk", "pole-squat", "fireman", "hook", "back-hook", "carousel"],
       },
       {
         id: "climb-mod",
         title: "3. Sit, climb, down",
         weeks: "Weeks 4–8",
         intent: "Three controlled climbs. Sits you do not drop into. Down is a skill.",
-        skillIds: ["sit", "climb", "descent-pole"],
+        skillIds: ["sit", "climb", "climb-to-sit", "olh", "descent-pole"],
       },
       {
         id: "invert-mod",

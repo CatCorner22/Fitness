@@ -30,6 +30,6 @@ export function makeSkill(input: {
     photo: input.photo ?? NYX.photos.portrait,
     plate: input.plate ?? NYX.plates.portrait,
     audio: input.audio ?? `/instructor/audio/${input.id}.mp3`,
-    video: input.video ?? `/instructor/video/${input.id}.mp4?v=3`,
+    video: input.video ?? `/instructor/video/${input.id}.mp4?v=5`,
   };
 }

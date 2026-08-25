@@ -48,6 +48,7 @@ export default async function SettingsPage() {
           ["/assess", "Fitness check", "Scale from a baseline"],
           ["/diets", "Diet", "Cut, bulk, reverse, peak"],
           ["/course", "Nyx course", "Amateur night and pole class"],
+          ["/progress", "Calendar", "Green trained, red rest"],
           ["/coach", "Coach", "Ask why a lift is banned"],
           ["/knowledge", "Guide", "The research notes"],
         ].map(([href, label, hint]) => (

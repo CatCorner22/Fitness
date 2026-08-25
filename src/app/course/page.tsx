@@ -12,8 +12,8 @@ export default async function CourseIndexPage() {
       <p className="text-xs uppercase tracking-[0.16em] text-copper">{NYX.role}</p>
       <h1 className="display text-4xl">Nyx courses</h1>
       <p className="mt-3 max-w-2xl text-muted">
-        Multiple ways in: Watch me, With Nyx, or Your turn — cue, one step at a time, diagram, photo, editorial
-        plate, sultry voice with the words on screen, video. Pick the channel that lands. Skip the rest. Nothing in a
+        Multiple ways in: Watch me, With Nyx, or Your turn — cue, one step at a time, diagram, smoky photoreal
+        photo, editorial plate, sultry voice with the words on screen, video. Pick the channel that lands. Skip the rest. Nothing in a
         module is hidden.
       </p>
       <figure className="mt-6 overflow-hidden rounded-3xl border border-line">

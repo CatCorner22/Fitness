@@ -58,6 +58,10 @@ function rotateConjugate(day: ProgramDay, week: number): ProgramDay {
   return day;
 }
 
+function equippedFor(exercise: NonNullable<ReturnType<typeof getExercise>>, equipment: string[]) {
+  return exercise.equipment.some((eq) => equipment.includes(eq) || eq === "bodyweight");
+}
+
 export function pickSubstitute(
   exerciseId: string,
   injuries: Injury[],
@@ -66,22 +70,20 @@ export function pickSubstitute(
   const original = getExercise(exerciseId);
   if (!original || original.safety === "banned") {
     const safe = allowedSubstitutes(exerciseId, injuries).filter(
-      (ex) =>
-        ex.safety !== "banned" &&
-        (ex.equipment.some((eq) => equipment.includes(eq) || eq === "bodyweight") ||
-          ex.equipment.includes("bodyweight")),
+      (ex) => ex.safety !== "banned" && equippedFor(ex, equipment),
     );
     return safe[0] ?? allowedSubstitutes(exerciseId, injuries).find((ex) => ex.safety !== "banned");
   }
-  if (isExerciseAllowed(original, injuries) && original.equipment.some((eq) => equipment.includes(eq) || eq === "bodyweight")) {
+  if (isExerciseAllowed(original, injuries) && equippedFor(original, equipment)) {
     return original;
   }
   const options = allowedSubstitutes(exerciseId, injuries).filter(
-    (ex) =>
-      ex.safety !== "banned" &&
-      ex.equipment.some((eq) => equipment.includes(eq) || eq === "bodyweight"),
+    (ex) => ex.safety !== "banned" && equippedFor(ex, equipment),
   );
-  return options[0] ?? allowedSubstitutes(exerciseId, injuries).find((ex) => ex.safety !== "banned");
+  if (options[0]) return options[0];
+  // Keep the listed drill instead of collapsing to whatever leftover is in the registry.
+  if (isExerciseAllowed(original, injuries)) return original;
+  return allowedSubstitutes(exerciseId, injuries).find((ex) => ex.safety !== "banned");
 }
 
 /** Keep every programmed lift. Time budget never deletes work. */
@@ -141,16 +143,31 @@ export function buildPlannedSession(options: {
     const alt = allowedSubstitutes(item.exerciseId, options.injuries).find(
       (ex) =>
         !usedIds.has(ex.id) &&
-        (ex.equipment.some((eq) => options.equipment.includes(eq) || eq === "bodyweight") ||
-          ex.equipment.includes("bodyweight")),
+        ex.safety !== "banned" &&
+        equippedFor(ex, options.equipment),
     );
     if (alt) {
       usedIds.add(alt.id);
       resolved.push({ ...item, exerciseId: alt.id });
       continue;
     }
-    const existing = resolved.find((r) => r.exerciseId === chosen.id);
-    if (existing) existing.sets += item.sets;
+    // Distinct programmed slot. Never fold two listed drills into one lift.
+    if (!usedIds.has(item.exerciseId)) {
+      usedIds.add(item.exerciseId);
+      resolved.push({
+        ...item,
+        notes: [item.notes, "Keep this listed drill. Do it as written or at the studio — we do not merge it into another lift."]
+          .filter(Boolean)
+          .join(" "),
+      });
+      continue;
+    }
+    resolved.push({
+      ...item,
+      notes: [item.notes, "Second block of this listed drill. Not a merge."]
+        .filter(Boolean)
+        .join(" "),
+    });
   }
 
   if (fitness?.addPlank && !usedIds.has("plank")) {

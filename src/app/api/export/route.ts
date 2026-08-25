@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { bodyweightLogs, fasts, nutritionLogs, setLogs, workouts } from "@/lib/db/schema";
+import { bodyweightLogs, calendarMarks, fasts, nutritionLogs, setLogs, workouts } from "@/lib/db/schema";
 
 export async function GET() {
   const user = await getSession();
@@ -14,6 +14,7 @@ export async function GET() {
   const foods = db.select().from(nutritionLogs).where(eq(nutritionLogs.userId, user.id)).all();
   const weights = db.select().from(bodyweightLogs).where(eq(bodyweightLogs.userId, user.id)).all();
   const fastRows = db.select().from(fasts).where(eq(fasts.userId, user.id)).all();
+  const marks = db.select().from(calendarMarks).where(eq(calendarMarks.userId, user.id)).all();
 
   const lines = [
     "type,date,workout,exercise,set,weight_kg,reps,rpe,session_rpe,calories,protein,notes",
@@ -35,6 +36,7 @@ export async function GET() {
       (f) =>
         `fast,${f.startedAt.slice(0, 10)},${csv(f.protocol)},,,,${f.targetMinutes},,${f.status},${csv(f.notes ?? "")}`,
     ),
+    ...marks.map((m) => `calendar,${m.date},,,,,,,${csv(m.fill)},,`),
   ];
 
   return new Response(lines.join("\n"), {
