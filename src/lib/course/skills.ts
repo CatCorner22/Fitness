@@ -1,37 +1,9 @@
+import { EXOTIC_CLUB_SKILLS } from "./exotic-club-skills";
 import { NYX } from "./instructor";
-import type { CourseId, DiagramKind, Skill } from "./types";
+import { makeSkill as skill } from "./skill-factory";
+import type { CourseId, Skill } from "./types";
 
-function skill(input: {
-  id: string;
-  exerciseId: string;
-  name: string;
-  module: string;
-  courseId: CourseId;
-  level: Skill["level"];
-  durationLabel: string;
-  why: string;
-  safety: string;
-  bothSides?: boolean;
-  cue: string;
-  steps: string[];
-  watchFor: string[];
-  voiceScript: string;
-  diagram: DiagramKind;
-  photo?: string;
-  plate?: string;
-  video?: string;
-  audio?: string;
-}): Skill {
-  return {
-    ...input,
-    photo: input.photo ?? NYX.photos.portrait,
-    plate: input.plate ?? NYX.plates.portrait,
-    audio: input.audio ?? `/instructor/audio/${input.id}.mp3`,
-    video: input.video ?? `/instructor/video/${input.id}.mp4`,
-  };
-}
-
-export const SKILLS: Skill[] = [
+const SKILLS_CORE: Skill[] = [
   skill({
     id: "walk",
     exerciseId: "performance-walk",
@@ -694,6 +666,8 @@ export const SKILLS: Skill[] = [
     plate: NYX.plates.walk,
   }),
 ];
+
+export const SKILLS: Skill[] = [...SKILLS_CORE, ...EXOTIC_CLUB_SKILLS];
 
 export function skillById(id: string) {
   return SKILLS.find((s) => s.id === id);

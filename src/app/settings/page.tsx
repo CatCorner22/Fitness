@@ -156,7 +156,7 @@ export default async function SettingsPage() {
             </label>
             <fieldset className="space-y-2">
               <legend className="text-sm text-muted">Sore joints (not a medical screen)</legend>
-              {["shoulder", "knee", "low_back", "wrist", "elbow", "hip"].map((i) => (
+              {["shoulder", "knee", "low_back", "wrist", "elbow", "hip", "ankle"].map((i) => (
                 <label key={i} className="flex min-h-11 items-center gap-2 capitalize">
                   <input
                     type="checkbox"

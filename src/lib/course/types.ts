@@ -13,7 +13,13 @@ export type DiagramKind =
   | "hang"
   | "layer"
   | "phrase"
-  | "circuit";
+  | "circuit"
+  | "heels"
+  | "hands"
+  | "crawl"
+  | "grind"
+  | "song"
+  | "exit";
 
 export type CourseId = "exotic_amateur_night" | "pole_class_intermediate";
 
@@ -37,6 +43,9 @@ export interface Skill {
   plate: string;
   video?: string;
   audio?: string;
+  practice?: string;
+  passWhen?: string;
+  firstThen?: { first: string; then: string };
 }
 
 export interface CourseModule {

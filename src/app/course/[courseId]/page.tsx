@@ -59,8 +59,11 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
                       <span className="font-semibold">{skill.name}</span>
                       <span className="mt-1 block text-sm text-copper-2">{skill.cue}</span>
                       <span className="mt-1 block text-xs text-muted">
-                        {skill.durationLabel} · {skill.steps.length} steps · cue, diagram, photo, plate, voice, video
+                        {skill.durationLabel} · {skill.steps.length} steps · Watch / With Nyx / Your turn
                       </span>
+                      {skill.passWhen ? (
+                        <span className="mt-2 block text-xs text-muted">Move on when: {skill.passWhen}</span>
+                      ) : null}
                     </Link>
                   </li>
                 );

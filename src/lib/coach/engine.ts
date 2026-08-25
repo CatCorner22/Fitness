@@ -131,8 +131,8 @@ function answerQuestion(
   if (q.includes("glute") || q.includes("butt") || q.includes("ass")) {
     return "Hip thrust, squat or split squat, RDL, abduction, 45° extension. Variety. Plotkin 2023: thrust ≈ squat for glute size. Kassiano 2024: adding thrusts on top of hinges and presses grew more glute. Do the work.";
   }
-  if (q.includes("pole") || q.includes("strip") || q.includes("invert") || q.includes("amateur") || q.includes("exotic") || q.includes("nyx")) {
-    return "Two courses: Intermediate pole class prep (hangs, both-side fireman and hook, sit, climb, invert prep, class-capacity circuit) and Amateur night (walk, body, floor, chair, pole as prop, 8-counts, a song you can finish). Nyx teaches each skill with a cue, steps, diagram, photo, illustrated plate, and spoken pass. Crash mat. Studio for inverts. No kipping. Both sides. Open Course from You.";
+  if (q.includes("pole") || q.includes("strip") || q.includes("invert") || q.includes("amateur") || q.includes("exotic") || q.includes("nyx") || q.includes("lap") || q.includes("heel")) {
+    return "Nyx’s amateur-night course is actual exotic skill in training-course format: walk, heels, hands, stage map, commercial hips, floor crawls, chair phrases on furniture (approach, body, close — not on a person), costume peels, rail visits, two-song map, and a close. Pair it with Couch to amateur night (5 days). Intermediate pole class is the other course — hangs, both-side spins, sit, climb, invert prep. Crash mat. Studio for inverts. No kipping. Open Course from You.";
   }
   if (q.includes("ruck") || q.includes("rucking") || q.includes("pack")) {
     return "Start around 10–15% bodyweight, talking pace. Add distance or load, not both, in the same week. Stay under ~30% bodyweight unless you have a real event and a base.";

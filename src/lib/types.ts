@@ -60,7 +60,7 @@ export type Equipment =
   | "pole"
   | "backpack";
 
-export type Injury = "shoulder" | "knee" | "low_back" | "wrist" | "elbow" | "hip";
+export type Injury = "shoulder" | "knee" | "low_back" | "wrist" | "elbow" | "hip" | "ankle";
 
 export type Goal =
   | "powerlifting"

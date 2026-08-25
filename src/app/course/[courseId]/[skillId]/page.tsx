@@ -18,6 +18,7 @@ export default async function SkillPage({
   if (!course || !skill) notFound();
   const courseModule = course.modules.find((m) => m.skillIds.includes(skill.id));
   const index = courseModule ? courseModule.skillIds.indexOf(skill.id) : -1;
+  const prevId = courseModule && index > 0 ? courseModule.skillIds[index - 1] : undefined;
   const nextId = courseModule && index >= 0 ? courseModule.skillIds[index + 1] : undefined;
 
   return (
@@ -33,15 +34,18 @@ export default async function SkillPage({
       <div className="mt-8">
         <SkillLesson skill={skill} />
       </div>
-      {nextId ? (
-        <Link href={`/course/${course.id}/${nextId}`} className="mt-8 inline-block text-sm text-copper-2">
-          Next skill →
-        </Link>
-      ) : (
-        <Link href={`/course/${course.id}`} className="mt-8 inline-block text-sm text-copper-2">
-          Back to course
-        </Link>
-      )}
+      <div className="mt-8 flex flex-wrap justify-between gap-3 text-sm text-copper-2">
+        {prevId ? (
+          <Link href={`/course/${course.id}/${prevId}`}>← Previous</Link>
+        ) : (
+          <Link href={`/course/${course.id}`}>← Module list</Link>
+        )}
+        {nextId ? (
+          <Link href={`/course/${course.id}/${nextId}`}>Next skill →</Link>
+        ) : (
+          <Link href={`/course/${course.id}`}>Back to course</Link>
+        )}
+      </div>
     </AppShell>
   );
 }

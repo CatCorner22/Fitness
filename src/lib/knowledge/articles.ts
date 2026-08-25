@@ -72,9 +72,9 @@ Off-pole: dead hangs, assisted→strict pull-ups, inverted rows, hollow body, ha
 
 Invert readiness: hanging tuck → controlled on-pole tuck with a spot → studio invert. Never kip. Crash mat. Do not learn inverts from a phone on carpet.
 
-Amateur night: walk, eye-line, arms, body wave, figure-8, hip pulse, floor descent, tabletop, knee circle, floor roll, chair approach/straddle/roll, layer change, 8-counts, song-length run-through. Pole as prop: walk, back-to-pole, fireman, sit, climb, controlled descent. Heels later. No new tricks in the show set.
+Amateur night / club-style exotic: walk, eye-line, arms, hand styling, stage map (rail and corners), heel walk after the trainer walk is quiet, body wave, figure-8, hip pulse, rib isolation, shoulder shimmy, standing grind on a chair back, floor descent, tabletop, cat crawl, knee circle, floor roll, floor hip work, mermaid sit both sides, level ladder, chair approach/straddle/roll, reverse chair sit, three-part chair set (approach, body, close on furniture — not on a person), skirt work, top peel, heels-on-floor plan, rail approach, 8-counts, two-song map, song-length run-through, closing walk-off, slip recovery. Pole as prop: walk, back-to-pole, fireman, sit, climb, controlled descent. Heels later. No new tricks in the show set.
 
-Nyx course: every skill is taught five-plus ways (short cue, numbered steps, diagram, photo, illustrated plate, sultry spoken pass, video). Pick a channel. Replay freely. We never drop a listed drill to fake a shorter clock.`,
+Nyx course: Watch me / With Nyx / Your turn. Each skill is a short cue, one step at a time, a diagram, a photo, an illustrated plate, a sultry spoken pass with the words on screen, and a clip. Pick a channel. Replay freely. Move on when the pass line is true. We never drop a listed drill to fake a shorter clock.`,
     citations: ["Lee et al. 2022 MPPA", "Nawrocka et al. amateur pole injury surveys", "Szopa et al. 2021 Sci Rep"],
   },
   {
@@ -85,11 +85,13 @@ Nyx course: every skill is taught five-plus ways (short cue, numbered steps, dia
       "Each skill ships as a short cue, numbered steps, a diagram, a photo, an illustrated plate, a spoken pass, and a clip. Pick any channel. Nothing is hidden. We do not infer a diagnosis from how you move.",
     body: `This copies the Universal Design for Learning idea of multiple means of representation (CAST; InPACT-at-Home / InPACT for Everyone, Hasson et al. 2024): detailed instructions, short cues, and visuals — plus audio and video.
 
-Three C’s: consistency, conciseness, clarity. Simple words. One step at a time. Count out loud if it helps.
+Studio modes: Watch me (photo, plate, clip, diagram), With Nyx (cue, one step at a time, spoken pass with the transcript on screen), Your turn (practice block). First/Then strips sit on skills that have a prerequisite.
+
+Three C’s: consistency, conciseness, clarity. Simple words. One step at a time. Count out loud if it helps. No auto-advance. No countdown on the lesson.
 
 From the user’s P2C review doctrine we also keep: autonomy (pause, replay, skip a channel, take a break); no speed-demand “cognitive load” tricks; we do not infer disability, anxiety, or skill from style. Pain is a stop.
 
-Nyx is a fictional adult instructor. Illustrated plates are topless in yoga pants. Studio photos of the same character use a sports bra because the photo pipeline blocks nudity. Voice is a slow, low female pass you can replay.`,
+Nyx is a fictional adult instructor. Illustrated plates are topless in yoga pants. Studio photos of the same character use a sports bra because the photo pipeline blocks nudity. Voice is a slow, low female pass you can replay. Instructional clips mux that same voice over a slow still.`,
     citations: [
       "CAST Universal Design for Learning",
       "Hasson et al. 2024 InPACT for Everyone / Frontiers in Physiology",

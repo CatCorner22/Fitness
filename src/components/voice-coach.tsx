@@ -96,6 +96,7 @@ export function VoiceCoach({
       {mode === "speech" ? (
         <p className="mt-2 text-xs text-muted">Using this device’s female voice. Turn volume up.</p>
       ) : null}
+      <p className="mt-3 text-sm leading-relaxed text-muted">{text}</p>
     </div>
   );
 }
