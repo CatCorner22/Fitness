@@ -88,6 +88,9 @@ export type ProfileRow = {
   assessment: AssessmentResult | null;
   fitnessTier: FitnessTier | null;
   assessedAt: string | null;
+  activeDietId: string | null;
+  dietStartDate: string | null;
+  dietWeek: number;
 };
 
 function parseStringList(raw: string | null | undefined): string[] {
@@ -124,5 +127,8 @@ export function getProfile(userId: string): ProfileRow | null {
     assessment: parseAssessment(row.assessmentJson),
     fitnessTier: (row.fitnessTier as FitnessTier | null) ?? null,
     assessedAt: row.assessedAt ?? null,
+    activeDietId: row.activeDietId ?? null,
+    dietStartDate: row.dietStartDate ?? null,
+    dietWeek: row.dietWeek ?? 1,
   };
 }

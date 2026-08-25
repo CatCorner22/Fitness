@@ -95,7 +95,46 @@ Rotate ME lifts to avoid accommodation. This household template skips specialty-
     summary:
       "Protein ~1.6–2.2 g/kg/day. Calories from Mifflin-St Jeor × activity, adjusted weekly from scale trend if logging intake.",
     body: `Prioritize protein across meals. Aggressive deficits impair performance and recovery. Adaptive TDEE uses logged intake + weigh-ins — transparent math, not a black box.
-Glute/pole/strength goals still need fuel. The app will not praise crash dieting.`,
+Glute/pole/strength goals still need fuel. Enroll a diet block (cut, bulk, reverse, beach week) under Eat if you want periodized calories. The app will not praise crash dieting.`,
+  },
+  {
+    id: "diet-periodization",
+    title: "Diet periodization — cut, bulk, reverse, peak",
+    tags: ["diet", "cut", "bulk", "reverse", "periodization", "calories", "peak", "beach"],
+    summary:
+      "Pick a time-capped calorie block. Lose ~0.5–1% bodyweight/week. Reverse after a hard cut. Peak weeks are for people who are already lean.",
+    body: `Training periodization (volume → intensity → deload) has a food twin. A 12-week cut with a diet break beats an endless 1200-kcal grind. A lean bulk is a small surplus, not a dirty bulk. Reverse is how you leave a deficit.
+
+Helms 2014: slower contest-prep losses kept more lean mass. Garthe 2011: athletes losing ~0.7% BW/week retained more LBM than faster cuts. Morton 2018: ~1.6 g/kg protein is enough for most; leaner cuts go higher.
+
+Peak week is not a fat-loss phase. It is a short appearance window. Beach/photo week in this app is 14 days. Stage lean is 21 days and then Reverse — sub-6% is a weekend for already-lean men, not a lifestyle, and not a female target (essential fat ~10–13%).`,
+    citations: ["Helms et al. 2014", "Garthe et al. 2011", "Morton et al. 2018", "Trexler et al. 2014"],
+  },
+  {
+    id: "peak-lean",
+    title: "Sub-6% and short peaks — honest limits",
+    tags: ["peak", "body fat", "stage", "beach", "contest", "6%", "water cut"],
+    summary:
+      "Sub-6% is male contest-day leanness. It is short-term, already-lean only, and not a female goal. No water cuts or diuretics here.",
+    body: `Body-fat estimates (DEXA, calipers, scales) routinely miss by a couple of percent. '6%' on a bathroom scale is not lab truth.
+
+Male stage condition is often reported around 5–8% and is associated with low energy availability, poor sleep, and hormonal suppression. Female essential fat is roughly 10–13%; chasing 6% is a medical problem.
+
+This app's Stage lean block is 21 days, calorie-floored, no water cut. Beach week is 14 days of a modest extra deficit with consistent sodium. If you cannot see abs in indoor light, use Steady cut. After either peak: Reverse.`,
+    citations: ["Helms et al. 2014", "Chappell contest-prep reviews"],
+  },
+  {
+    id: "time-restricted-eating",
+    title: "Fasting windows are a timer, not a metabolism hack",
+    tags: ["fasting", "TRE", "16:8", "intermittent fasting", "eating window"],
+    summary:
+      "Time-restricted eating can make a deficit easier to follow. When calories are matched, it does not reliably beat a normal meal pattern for fat loss.",
+    body: `Liu et al. 2022 (NEJM) and similar trials: 8-hour eating windows without a prescribed calorie gap did not outperform calorie-matched regular eating for weight. TRE is optional structure.
+
+8–16 hours overnight is ordinary. 16:8 is common. 24 h is occasional, not a weekly personality. Edit the start or the eat-at time if you woke late, ate early, or remembered wrong — the log should match reality, not the original alarm.
+
+Do not stack a long fast on top of Stage lean to 'finish' a peak. Eat the assigned meals.`,
+    citations: ["Liu et al. 2022 NEJM"],
   },
   {
     id: "fitness-assessment",

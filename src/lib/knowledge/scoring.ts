@@ -82,5 +82,23 @@ export function scoreArticle(article: KnowledgeArticle, ctx: SearchContext) {
   ) {
     score += 8;
   }
+  if (ctx.query?.toLowerCase().includes("fast") && article.id === "time-restricted-eating") score += 8;
+  if (
+    (ctx.query?.toLowerCase().includes("cut") ||
+      ctx.query?.toLowerCase().includes("bulk") ||
+      ctx.query?.toLowerCase().includes("reverse") ||
+      ctx.query?.toLowerCase().includes("diet")) &&
+    article.id === "diet-periodization"
+  ) {
+    score += 8;
+  }
+  if (
+    (ctx.query?.toLowerCase().includes("6%") ||
+      ctx.query?.toLowerCase().includes("peak") ||
+      ctx.query?.toLowerCase().includes("beach")) &&
+    article.id === "peak-lean"
+  ) {
+    score += 8;
+  }
   return score;
 }

@@ -78,6 +78,15 @@ export type ProgramId =
   | "pole_stage"
   | "big_ass";
 
+export type DietId =
+  | "steady_cut"
+  | "mini_cut"
+  | "lean_bulk"
+  | "recomp"
+  | "reverse"
+  | "beach_week"
+  | "stage_lean";
+
 export interface Exercise {
   id: string;
   name: string;

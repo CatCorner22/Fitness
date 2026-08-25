@@ -14,6 +14,14 @@ const MESSAGES: Record<string, string> = {
   "plan-full": "Today already has food — tap Replace if you want a new menu.",
   "plan-missing": "That meal plan is no longer available.",
   assess: "Fitness check saved. Sessions will follow it.",
+  diet: "Diet block on.",
+  "diet-off": "Using training-goal calories again.",
+  "fast-on": "Fast started.",
+  "fast-off": "Fast ended.",
+  "fast-edit": "Fast times updated.",
+  "fast-open": "End or edit the open fast first.",
+  "fast-order": "End has to be after start.",
+  "fast-abort": "Fast discarded.",
 };
 
 export function SaveToast() {
