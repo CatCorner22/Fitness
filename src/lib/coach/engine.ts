@@ -122,6 +122,15 @@ function answerQuestion(
   if (q.includes("swap") || q.includes("substitute") || q.includes("instead")) {
     return "I can only swap from the safety registry. Open the workout and tap Swap — you will only see recommended alternatives that respect your injuries.";
   }
+  if (q.includes("fast") || q.includes("16:8") || q.includes("16/8") || q.includes("eating window")) {
+    return "Open Eat. Start a fast, then change the start time, the target, or the eat-at time whenever you need to — including after you already ended it. TRE is a timer. Matched-calorie studies do not show a magic metabolism bonus.";
+  }
+  if (q.includes("6%") || q.includes("sub-6") || q.includes("body fat") || q.includes("peak week") || q.includes("beach")) {
+    return "Sub-6% is male contest-day leanness, already-lean only, and short. Women: essential fat is roughly 10–13% — Beach week or Steady cut, not 6%. No water cuts. After a peak, Reverse.";
+  }
+  if (q.includes("reverse") || q.includes("mini-cut") || q.includes("mini cut") || q.includes("diet block") || q.includes("lean bulk")) {
+    return "Eat → Diet blocks. Cut slowly (0.5–1% bodyweight/week). Mini-cut is four weeks if you are already lean. Reverse is how you leave a deficit. Lean bulk is a small surplus.";
+  }
   if (q.includes("protein") || q.includes("eat") || q.includes("calorie")) {
     return `Protein target is about 1.6–2.2 g/kg. Yours is based on ${profile.weightKg ?? "your"} kg bodyweight. Eat enough to train. This app will not praise a crash diet.`;
   }

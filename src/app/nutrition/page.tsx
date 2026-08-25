@@ -1,10 +1,15 @@
+import Link from "next/link";
 import { eq, isNull, or } from "drizzle-orm";
+import { clearDietAction, setDietStartAction } from "@/app/actions/diet";
 import { addCustomFoodAction, deleteFoodLogAction } from "@/app/actions/nutrition";
 import { AppShell } from "@/components/app-shell";
+import { FastingTimer } from "@/components/fasting-timer";
 import { MealFoodForm } from "@/components/meal-food-form";
 import { MealPlanCard } from "@/components/meal-plan-card";
 import { db } from "@/lib/db";
 import { foods } from "@/lib/db/schema";
+import { isoToLocalInput } from "@/lib/fasting/protocols";
+import { adjustmentsForFast, recentFasts, runningFast } from "@/lib/fasting/queries";
 import { suggestedPlans } from "@/lib/nutrition/meal-plans";
 import { adaptiveCalories } from "@/lib/nutrition/targets";
 import { requireAuthed } from "@/lib/session-page";
@@ -27,9 +32,13 @@ export default async function NutritionPage() {
     calories: f.calories,
     protein: f.protein,
   }));
-  const plans = suggestedPlans(profile.goal, targets.calories, targets.protein);
+  const plans = suggestedPlans(profile.goal, targets.calories, targets.protein, profile.activeDietId);
   const featured = plans[0];
   const extras = plans.slice(1);
+  const openFast = runningFast(user.id);
+  const fasts = recentFasts(user.id);
+  const adjustments = openFast ? adjustmentsForFast(openFast.id) : [];
+  const diet = targets.diet;
 
   return (
     <AppShell user={user} profile={profile}>
@@ -37,7 +46,10 @@ export default async function NutritionPage() {
       <p className="mt-2 text-muted">{user.displayName}&apos;s food today</p>
 
       <section className="mt-6 rounded-3xl border border-line bg-surface p-5">
-        <p className="text-sm text-muted">Calories</p>
+        <p className="text-sm text-muted">
+          {targets.goalTitle}
+          {targets.goalLabel !== targets.goalTitle ? ` · ${targets.goalLabel}` : ""}
+        </p>
         <p className="display text-4xl">
           {Math.round(day.calories)}
           <span className="text-lg text-muted"> / {targets.calories}</span>
@@ -45,7 +57,65 @@ export default async function NutritionPage() {
         <p className="mt-2 text-sm text-muted">
           Protein {Math.round(day.protein)} / {targets.protein} g
         </p>
+        <p className="mt-2 text-xs text-muted">{targets.note}</p>
+        {diet ? (
+          <div className="mt-4 rounded-2xl bg-bg-2 p-4 text-sm">
+            <p>
+              Day {diet.day} of {diet.program.durationDays}
+              {diet.finished ? " — block finished" : ` · ${diet.daysLeft} day${diet.daysLeft === 1 ? "" : "s"} left`}
+            </p>
+            <p className="mt-1 text-muted">{diet.phase.trainingNote}</p>
+            {diet.finished ? (
+              <p className="mt-2 text-copper-2">
+                Enroll Reverse (after a peak/cut) or Recomp so this deficit does not become your personality.
+              </p>
+            ) : null}
+            <div className="mt-3 flex flex-wrap gap-3 text-sm">
+              <Link href={`/diets/${diet.program.id}`} className="text-copper-2">
+                Diet details
+              </Link>
+              <Link href="/diets" className="text-muted">
+                Switch diet
+              </Link>
+              <form action={clearDietAction}>
+                <button className="text-muted" type="submit">
+                  Use training-goal calories
+                </button>
+              </form>
+            </div>
+            <form action={setDietStartAction} className="mt-3 flex flex-wrap items-end gap-2">
+              <label className="block text-xs text-muted">
+                Block started
+                <input
+                  type="date"
+                  name="dietStartDate"
+                  defaultValue={profile.dietStartDate ?? ""}
+                  className="mt-1"
+                />
+              </label>
+              <button className="btn-quiet" type="submit">
+                Shift days
+              </button>
+            </form>
+          </div>
+        ) : (
+          <p className="mt-3 text-sm">
+            <Link href="/diets" className="text-copper-2">
+              Choose a diet block
+            </Link>{" "}
+            <span className="text-muted">for a cut, bulk, reverse, or a short peak week.</span>
+          </p>
+        )}
       </section>
+
+      <div className="mt-6">
+        <FastingTimer
+          running={openFast ?? null}
+          recent={fasts}
+          adjustments={adjustments}
+          defaultStart={isoToLocalInput(new Date().toISOString())}
+        />
+      </div>
 
       {featured ? (
         <section className="mt-6">

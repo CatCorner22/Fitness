@@ -4,7 +4,7 @@ import { AppShell } from "@/components/app-shell";
 import { Spark } from "@/components/spark";
 import { bestSets, VOLUME_LANDMARKS, weeklyVolume } from "@/lib/autoregulation";
 import { db } from "@/lib/db";
-import { bodyweightLogs, workouts } from "@/lib/db/schema";
+import { bodyweightLogs, fasts, workouts } from "@/lib/db/schema";
 import { getExercise } from "@/lib/exercises/registry";
 import { requireAuthed } from "@/lib/session-page";
 import { formatWeight, todayISO } from "@/lib/utils";
@@ -29,6 +29,13 @@ export default async function ProgressPage() {
     .where(eq(bodyweightLogs.userId, user.id))
     .orderBy(asc(bodyweightLogs.date))
     .all();
+  const fastRows = db
+    .select()
+    .from(fasts)
+    .where(eq(fasts.userId, user.id))
+    .orderBy(desc(fasts.startedAt))
+    .limit(12)
+    .all();
   const volume = weeklyVolume(user.id, weekAgo());
   const best = bestSets(user.id);
   const mainLifts = ["back-squat", "bench-press", "conventional-deadlift", "hip-thrust", "ohp", "pullup"];
@@ -51,6 +58,31 @@ export default async function ProgressPage() {
           ))}
         </ul>
       </section>
+
+      <details className="mt-4 rounded-3xl border border-line bg-surface p-5">
+        <summary className="cursor-pointer font-semibold">Fasts</summary>
+        <ul className="mt-4 space-y-2 text-sm">
+          {fastRows.length === 0 && <li className="text-muted">No fasts yet. Start one under Eat.</li>}
+          {fastRows.map((f) => {
+            const end = f.endedAt ?? f.plannedEndAt;
+            const hours = Math.round(((Date.parse(end) - Date.parse(f.startedAt)) / 3_600_000) * 10) / 10;
+            return (
+              <li key={f.id} className="flex justify-between gap-3 border-b border-line/50 py-2 last:border-0">
+                <span>
+                  {f.startedAt.slice(0, 10)} · {f.protocol}
+                  <span className="block text-xs text-muted">{f.status}</span>
+                </span>
+                <span className="text-muted">{hours} h</span>
+              </li>
+            );
+          })}
+        </ul>
+        <p className="mt-3 text-sm">
+          <Link href="/nutrition" className="text-copper-2">
+            Edit times on Eat
+          </Link>
+        </p>
+      </details>
 
       <details className="mt-4 rounded-3xl border border-line bg-surface p-5">
         <summary className="cursor-pointer font-semibold">Best lifts</summary>

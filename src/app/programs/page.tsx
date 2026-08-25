@@ -10,7 +10,13 @@ export default async function ProgramsPage() {
   return (
     <AppShell user={user} profile={profile}>
       <h1 className="display text-4xl">Plans</h1>
-      <p className="mt-2 max-w-2xl text-muted">Pick one. You can switch later under You.</p>
+      <p className="mt-2 max-w-2xl text-muted">
+        Training first. Food blocks live under{" "}
+        <Link href="/diets" className="text-copper-2">
+          Diet
+        </Link>
+        .
+      </p>
       <div className="mt-8 grid gap-4">
         {PROGRAMS.map((program) => (
           <article key={program.id} className="rounded-3xl border border-line bg-surface p-6">

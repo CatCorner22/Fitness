@@ -9,7 +9,7 @@ export function buildCoachContextSummary(userId: string, profile: ProfileRow) {
   return `Program: ${ctx.program?.name ?? "none"}, week ${profile.currentWeek}, ${profile.sessionMinutes} min sessions.
 Last 14 days: ${ctx.completed.length} completed, ${ctx.missed.length} skipped.
 Deload: ${ctx.deload.deload ? "yes — " + ctx.deload.reason : ctx.deload.reason}
-Goal: ${profile.goal} (${food.goalTitle}: ${food.calories} kcal, ${food.protein} g protein, ${food.carbs} g carbs, ${food.fat} g fat; TDEE ${food.tdee ?? "unknown"} ${food.surplus >= 0 ? "+" : ""}${food.surplus} kcal). Injuries: ${profile.injuries.join(", ") || "none"}.
+Goal: ${profile.goal} (${food.goalTitle}: ${food.calories} kcal, ${food.protein} g protein, ${food.carbs} g carbs, ${food.fat} g fat; TDEE ${food.tdee ?? "unknown"} ${food.surplus >= 0 ? "+" : ""}${food.surplus} kcal). Diet block: ${food.diet ? `${food.diet.program.name} day ${food.diet.day}/${food.diet.program.durationDays} (${food.diet.phase.name})` : "none"}. Injuries: ${profile.injuries.join(", ") || "none"}.
 Today's fatigue check-in: ${ctx.checkin?.fatigue ?? "not logged"}/5.
 Sleep logged today: ${ctx.checkin?.sleepHours ?? "not logged"} hours.`;
 }

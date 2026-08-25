@@ -83,6 +83,9 @@ export type ProfileRow = {
   activeProgramId: string | null;
   programStartDate: string | null;
   currentWeek: number;
+  activeDietId: string | null;
+  dietStartDate: string | null;
+  dietWeek: number;
 };
 
 function parseStringList(raw: string | null | undefined): string[] {
@@ -116,5 +119,8 @@ export function getProfile(userId: string): ProfileRow | null {
     activeProgramId: row.activeProgramId,
     programStartDate: row.programStartDate,
     currentWeek: row.currentWeek,
+    activeDietId: row.activeDietId ?? null,
+    dietStartDate: row.dietStartDate ?? null,
+    dietWeek: row.dietWeek ?? 1,
   };
 }
