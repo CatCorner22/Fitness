@@ -7,6 +7,8 @@ import { getProgram } from "@/lib/programs/catalog";
 import { buildPlannedSession } from "@/lib/programs/plan";
 import { todayISO } from "@/lib/utils";
 
+export { yesterdayISO } from "@/lib/utils";
+
 function startOfWeekISO() {
   const d = new Date();
   const day = d.getDay();
@@ -77,12 +79,6 @@ export function todayNutrition(userId: string) {
     carbs: logs.reduce((s, l) => s + l.carbs, 0),
     fat: logs.reduce((s, l) => s + l.fat, 0),
   };
-}
-
-export function yesterdayISO(date = new Date()) {
-  const d = new Date(date);
-  d.setDate(d.getDate() - 1);
-  return todayISO(d);
 }
 
 export function todayCheckin(userId: string) {

@@ -1,14 +1,6 @@
 import { logCheckinAction } from "@/app/actions/profile";
 
 export function EnergyCheck({ fatigue }: { fatigue: number | null }) {
-  if (fatigue != null) {
-    return (
-      <p className="text-sm text-muted">
-        Energy today: {fatigue}/5
-      </p>
-    );
-  }
-
   return (
     <form action={logCheckinAction} className="rounded-3xl border border-line bg-surface p-5">
       <p className="text-xs uppercase tracking-[0.16em] text-copper">Energy</p>
@@ -20,7 +12,12 @@ export function EnergyCheck({ fatigue }: { fatigue: number | null }) {
             type="submit"
             name="fatigue"
             value={n}
-            className="min-h-12 rounded-2xl border border-line bg-bg-2 text-sm font-semibold hover:border-copper/50 hover:text-copper-2"
+            aria-pressed={fatigue === n}
+            className={`min-h-12 rounded-2xl border text-sm font-semibold ${
+              fatigue === n
+                ? "border-copper bg-copper/15 text-copper-2"
+                : "border-line bg-bg-2 hover:border-copper/50 hover:text-copper-2"
+            }`}
           >
             {n}
           </button>

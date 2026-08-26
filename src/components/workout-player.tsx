@@ -7,6 +7,7 @@ import { PlateCalc } from "@/components/plate-calc";
 import { SpiritAdvisor, type SpiritAdvicePanel } from "@/components/spirit-advisor";
 import { hardnessToRpe, parseRepTarget } from "@/lib/copy";
 import { lessonForExercise } from "@/lib/course/skills";
+import { restAfterLoggedSet } from "@/lib/rest";
 import type { Exercise } from "@/lib/types";
 import { kgToDisplay } from "@/lib/utils";
 
@@ -228,14 +229,14 @@ export function WorkoutPlayer({
         const contentType = res.headers.get("content-type") ?? "";
         if (!contentType.includes("application/json")) throw new Error("log failed");
         setLastExerciseId(set.exerciseId);
-        let rest = exercises[set.exerciseId]?.restSeconds ?? 90;
+        let adviceRest: number | null = null;
         try {
           const data = (await res.json()) as {
             advice?: { weightDeltaKg?: number | null; restSeconds?: number } & SpiritAdvicePanel;
           };
           if (data.advice) {
             if (aiOptIn) setSpiritAdvice(data.advice);
-            if (aiOptIn && data.advice.restSeconds) rest = data.advice.restSeconds;
+            if (data.advice.restSeconds != null) adviceRest = data.advice.restSeconds;
             const nextSet = sets.find(
               (s) => s.exerciseId === set.exerciseId && s.setIndex === set.setIndex + 1,
             );
@@ -249,7 +250,13 @@ export function WorkoutPlayer({
           /* set is saved; advice is optional */
         }
         const moreSets = sets.some((s) => s.id !== set.id && !s.completed);
-        if (moreSets && rest > 0) startRest(rest);
+        const rest = restAfterLoggedSet({
+          catalogRestSeconds: exercises[set.exerciseId]?.restSeconds ?? 90,
+          moreSetsRemain: moreSets,
+          adviceRestSeconds: adviceRest,
+          useAdvice: aiOptIn,
+        });
+        if (rest > 0) startRest(rest);
       } catch {
         setLogError("Could not save that set. Check the numbers and tap Log again.");
         setSets((prev) => prev.map((s) => (s.id === set.id ? { ...s, completed: 0 } : s)));

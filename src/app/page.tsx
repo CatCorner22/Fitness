@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { EnergyCheck } from "@/components/energy-check";
-import { ExerciseCalendarBlock } from "@/components/exercise-calendar-block";
 import { FastingStrip } from "@/components/fasting-timer";
 import { SkipWorkoutButton } from "@/components/skip-workout-button";
 import { SpiritTodayBriefing } from "@/components/spirit-today-briefing";
@@ -12,6 +11,7 @@ import { shouldDeload } from "@/lib/autoregulation";
 import { courseForProgram } from "@/lib/course/catalog";
 import { lessonForExercise } from "@/lib/course/skills";
 import { runningFast } from "@/lib/fasting/queries";
+import { getProgram } from "@/lib/programs/catalog";
 import { getAiOptIn } from "@/lib/prefs";
 import { requireAuthed } from "@/lib/session-page";
 import { aiEnabled } from "@/lib/spirit/config";
@@ -35,6 +35,9 @@ export default async function TodayPage() {
   const fast = runningFast(user.id);
   const checkin = todayCheckin(user.id);
   const optIn = await getAiOptIn();
+  const openMismatch = Boolean(
+    open && planned && (open.dayId !== planned.day.id || open.programId !== planned.program.id),
+  );
   const weekDays = plan
     ? plan.program.days.map((day) => {
         const logged = plan.weekWorkouts.find((w) => w.dayId === day.id);
@@ -69,7 +72,7 @@ export default async function TodayPage() {
             </Link>
           </p>
         </section>
-      ) : plan?.allDone ? (
+      ) : plan?.allDone && !open ? (
         <section className="rounded-3xl border border-line bg-surface p-6">
           <h1 className="display text-4xl">Week done</h1>
           <p className="mt-3 text-muted">Rest, then start the next week when you want.</p>
@@ -83,19 +86,27 @@ export default async function TodayPage() {
         <section className="rounded-3xl border border-line bg-surface p-6">
           {deload.deload ? <p className="mb-3 text-sm text-muted">Easy week — keep the weights a little lighter.</p> : null}
           <p className="text-xs uppercase tracking-[0.16em] text-copper">
-            {plan?.program.name} · week {profile.currentWeek}
+            {openMismatch
+              ? `${getProgram(open?.programId ?? "")?.name ?? "Open session"} · resume`
+              : `${plan?.program.name} · week ${profile.currentWeek}`}
           </p>
-          <h1 className="display mt-1 text-[2.6rem] leading-none">{open ? "Workout open" : planned?.day.name}</h1>
-          <p className="mt-3 text-muted">
-            {planned ? `About ${planned.estimatedMinutes} minutes` : "No session yet."}
-            {planned?.overTimeBudget
-              ? ` — longer than your ${profile.sessionMinutes}-minute cap. We still keep every drill.`
-              : ""}
-          </p>
-          {planned && planned.fitnessNotes?.length ? (
+          <h1 className="display mt-1 text-[2.6rem] leading-none">{open ? open.dayName : planned?.day.name}</h1>
+          {openMismatch ? (
+            <p className="mt-3 text-sm text-muted">
+              This session is still open. Resume it before starting {planned?.day.name}.
+            </p>
+          ) : (
+            <p className="mt-3 text-muted">
+              {planned ? `About ${planned.estimatedMinutes} minutes` : "No session yet."}
+              {planned?.overTimeBudget
+                ? ` — longer than your ${profile.sessionMinutes}-minute cap. We still keep every drill.`
+                : ""}
+            </p>
+          )}
+          {!openMismatch && planned && planned.fitnessNotes?.length ? (
             <p className="mt-3 text-sm text-muted">{planned.fitnessNotes[0]}</p>
           ) : null}
-          {planned && planned.exercises.length > 0 ? (
+          {!openMismatch && planned && planned.exercises.length > 0 ? (
             <ul className="mt-4 space-y-1 text-sm">
               {planned.exercises.map((ex) => {
                 const lesson = lessonForExercise(ex.exerciseId, lessonCtx);
@@ -116,7 +127,7 @@ export default async function TodayPage() {
               })}
             </ul>
           ) : null}
-          {course ? (
+          {!openMismatch && course ? (
             <Link
               href={`/course/${course.id}`}
               className="mt-4 inline-block text-sm text-copper-2"
@@ -170,7 +181,11 @@ export default async function TodayPage() {
         </Link>
       </section>
       {fast ? <div className="mt-4"><FastingStrip running={fast} /></div> : null}
-      <ExerciseCalendarBlock userId={user.id} />
+      <p className="mt-6 text-sm">
+        <Link href="/progress" className="text-copper-2">
+          Training calendar on History →
+        </Link>
+      </p>
     </AppShell>
   );
 }

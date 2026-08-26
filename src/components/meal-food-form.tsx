@@ -6,6 +6,14 @@ import { addFoodLogAction } from "@/app/actions/nutrition";
 type Food = { id: string; name: string; calories: number; protein: number; favorite?: number };
 
 const RECENTS_EVENT = "garanimal-recents";
+const STAPLE_IDS = [
+  "food-eggs",
+  "food-whey",
+  "food-chicken",
+  "food-greek-yogurt",
+  "food-banana",
+  "food-coffee",
+];
 
 function recentsKey(userId: string) {
   return `garanimal-recent-foods-${userId}`;
@@ -67,10 +75,12 @@ export function MealFoodForm({
 
   const recentFoods = recents.map((id) => foods.find((f) => f.id === id)).filter(Boolean) as Food[];
   const favoriteFoods = foods.filter((f) => f.favorite === 1).slice(0, 8);
-  const chips = [...favoriteFoods, ...recentFoods.filter((f) => !favoriteFoods.some((fav) => fav.id === f.id))].slice(
-    0,
-    8,
-  );
+  const stapleFoods = STAPLE_IDS.map((id) => foods.find((f) => f.id === id)).filter(Boolean) as Food[];
+  const chips = (
+    favoriteFoods.length || recentFoods.length
+      ? [...favoriteFoods, ...recentFoods.filter((f) => !favoriteFoods.some((fav) => fav.id === f.id))]
+      : stapleFoods
+  ).slice(0, 8);
 
   return (
     <div className="mt-4 space-y-2">

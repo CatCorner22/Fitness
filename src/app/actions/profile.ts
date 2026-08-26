@@ -9,6 +9,7 @@ import { bodyweightLogs, dailyCheckins, profiles, users } from "@/lib/db/schema"
 import { clampInt, pickEnum, todayISO } from "@/lib/utils";
 import { programForGoal } from "@/lib/copy";
 import { getProgram } from "@/lib/programs/catalog";
+import { listedEquipment } from "@/lib/equipment";
 import { getDiet } from "@/lib/nutrition/diets";
 import { getTheme, setPrefCookies } from "@/lib/prefs";
 import type { Experience, Goal, Injury, Persona, Units } from "@/lib/types";
@@ -48,6 +49,24 @@ async function requireUser() {
   return user;
 }
 
+function upsertBodyweight(userId: string, weightKg: number, date = todayISO()) {
+  const existingBw = db
+    .select()
+    .from(bodyweightLogs)
+    .where(and(eq(bodyweightLogs.userId, userId), eq(bodyweightLogs.date, date)))
+    .get();
+  if (existingBw) {
+    db.update(bodyweightLogs)
+      .set({ weightKg })
+      .where(and(eq(bodyweightLogs.id, existingBw.id), eq(bodyweightLogs.userId, userId)))
+      .run();
+  } else {
+    db.insert(bodyweightLogs)
+      .values({ id: crypto.randomUUID(), userId, date, weightKg })
+      .run();
+  }
+}
+
 export async function saveOnboardingAction(formData: FormData) {
   const user = await requireUser();
   const goal = pickEnum(formData.get("goal"), GOALS, "general");
@@ -74,11 +93,7 @@ export async function saveOnboardingAction(formData: FormData) {
     activeProgramId: program?.id ?? "upper_lower",
     programStartDate: todayISO(),
     currentWeek: 1,
-    equipment: JSON.stringify(
-      formData.getAll("equipment").length
-        ? formData.getAll("equipment").map(String).slice(0, 24)
-        : ["bodyweight", "dumbbell"],
-    ),
+    equipment: listedEquipment(formData, ["bodyweight", "dumbbell"]),
   };
 
   const existing = db.select().from(profiles).where(eq(profiles.userId, user.id)).get();
@@ -94,14 +109,7 @@ export async function saveOnboardingAction(formData: FormData) {
     .run();
 
   if (weightKg) {
-    db.insert(bodyweightLogs)
-      .values({
-        id: crypto.randomUUID(),
-        userId: user.id,
-        date: todayISO(),
-        weightKg,
-      })
-      .run();
+    upsertBodyweight(user.id, weightKg);
   }
 
   revalidatePath("/");
@@ -147,11 +155,7 @@ export async function saveSettingsAction(formData: FormData) {
       activeDietId: validDiet,
       dietStartDate: dietChanged ? (validDiet ? todayISO() : null) : existing?.dietStartDate ?? null,
       dietWeek: dietChanged ? 1 : existing?.dietWeek ?? 1,
-      equipment: JSON.stringify(
-        formData.getAll("equipment").length
-          ? formData.getAll("equipment").map(String).slice(0, 24)
-          : ["bodyweight"],
-      ),
+      equipment: listedEquipment(formData, ["bodyweight"]),
     })
     .where(eq(profiles.userId, user.id))
     .run();
@@ -210,9 +214,8 @@ export async function logBodyweightAction(formData: FormData) {
   const raw = Number(formData.get("weight"));
   if (!Number.isFinite(raw) || raw <= 0) return;
   const weightKg = units === "lb" ? raw / 2.20462 : raw;
-  db.insert(bodyweightLogs)
-    .values({ id: crypto.randomUUID(), userId: user.id, date: todayISO(), weightKg })
-    .run();
+  const date = todayISO();
+  upsertBodyweight(user.id, weightKg, date);
   db.update(profiles).set({ weightKg }).where(eq(profiles.userId, user.id)).run();
   revalidatePath("/");
   revalidatePath("/nutrition");
@@ -235,17 +238,20 @@ export async function logCheckinAction(formData: FormData) {
   const payload = {
     sleepHours:
       sleepField === "" || sleepField == null
-        ? null
+        ? (existing?.sleepHours ?? null)
         : Number.isFinite(Number(sleepField))
           ? clampInt(sleepField, 0, 0, 16)
           : null,
     fatigue:
       fatigueField === "" || fatigueField == null
-        ? null
+        ? (existing?.fatigue ?? null)
         : Number.isFinite(Number(fatigueField))
           ? clampInt(fatigueField, 1, 1, 5)
           : null,
-    notes: String(formData.get("notes") || "").slice(0, 500) || null,
+    notes:
+      formData.get("notes") == null
+        ? (existing?.notes ?? null)
+        : String(formData.get("notes") || "").slice(0, 500) || null,
   };
   if (existing) {
     db.update(dailyCheckins)

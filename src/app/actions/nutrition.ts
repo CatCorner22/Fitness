@@ -8,8 +8,9 @@ import { db } from "@/lib/db";
 import { foods, nutritionLogs } from "@/lib/db/schema";
 import { getMealPlanTemplate, scalePlanToTargets } from "@/lib/nutrition/meal-plans";
 import { adaptiveCalories } from "@/lib/nutrition/targets";
-import { todayNutrition, yesterdayISO } from "@/lib/today";
-import { clamp, todayISO } from "@/lib/utils";
+import { todayNutrition } from "@/lib/today";
+import { itemsForEmptyMeals } from "@/lib/nutrition/copy-meals";
+import { clamp, todayISO, yesterdayISO } from "@/lib/utils";
 
 const MEALS = new Set(["breakfast", "lunch", "dinner", "snack"]);
 
@@ -106,8 +107,7 @@ export async function applyMealPlanAction(formData: FormData) {
         .run();
     }
 
-    for (const item of items) {
-      if (!replace && filledMeals.has(item.meal)) continue;
+    for (const item of replace ? items : itemsForEmptyMeals(items, filledMeals)) {
       tx.insert(nutritionLogs)
         .values({
           id: crypto.randomUUID(),
@@ -145,10 +145,12 @@ export async function copyYesterdayFoodAction() {
     .all();
   if (prior.length === 0) redirect("/nutrition?toast=yesterday-empty");
 
+  const toCopy = itemsForEmptyMeals(prior, filledMeals);
+  if (toCopy.length === 0) redirect("/nutrition?toast=yesterday-full");
+
   let inserted = 0;
   db.transaction((tx) => {
-    for (const item of prior) {
-      if (filledMeals.has(item.meal)) continue;
+    for (const item of toCopy) {
       tx.insert(nutritionLogs)
         .values({
           id: crypto.randomUUID(),
@@ -170,7 +172,7 @@ export async function copyYesterdayFoodAction() {
 
   revalidatePath("/nutrition");
   revalidatePath("/");
-  redirect(inserted > 0 ? "/nutrition?toast=food" : "/nutrition?toast=plan-full");
+  redirect(inserted > 0 ? "/nutrition?toast=copied" : "/nutrition?toast=yesterday-full");
 }
 
 export async function deleteFoodLogAction(id: string) {
