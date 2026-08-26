@@ -98,6 +98,15 @@ export function scoreArticle(article: KnowledgeArticle, ctx: SearchContext) {
     score += 8;
   }
   if (
+    (ctx.query?.toLowerCase().includes("histamine") ||
+      ctx.query?.toLowerCase().includes("leftover") ||
+      ctx.query?.toLowerCase().includes("dao") ||
+      ctx.query?.toLowerCase().includes("fermented")) &&
+    article.id === "low-histamine"
+  ) {
+    score += 10;
+  }
+  if (
     (ctx.query?.toLowerCase().includes("6%") ||
       ctx.query?.toLowerCase().includes("peak") ||
       ctx.query?.toLowerCase().includes("beach")) &&

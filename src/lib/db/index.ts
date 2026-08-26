@@ -3,7 +3,7 @@ import path from "node:path";
 import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import * as schema from "./schema";
-import { seedIfNeeded } from "./seed";
+import { seedIfNeeded, seedStarterFoods } from "./seed";
 
 const BUSY_MS = 8000;
 
@@ -272,4 +272,6 @@ export function ensureMigrated() {
 if (!globalForDb.seeded) {
   seedIfNeeded(db);
   globalForDb.seeded = true;
+} else {
+  seedStarterFoods(db);
 }

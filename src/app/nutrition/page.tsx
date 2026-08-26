@@ -10,6 +10,8 @@ import { db } from "@/lib/db";
 import { foods } from "@/lib/db/schema";
 import { isoToLocalInput } from "@/lib/fasting/protocols";
 import { adjustmentsForFast, recentFasts, runningFast } from "@/lib/fasting/queries";
+import { HISTAMINE_LABEL, histamineLoad } from "@/lib/nutrition/foods";
+import { isLowHistamineDiet } from "@/lib/nutrition/diets";
 import { suggestedPlans } from "@/lib/nutrition/meal-plans";
 import { adaptiveCalories } from "@/lib/nutrition/targets";
 import { requireAuthed } from "@/lib/session-page";
@@ -31,6 +33,7 @@ export default async function NutritionPage() {
     name: f.name,
     calories: f.calories,
     protein: f.protein,
+    histamine: histamineLoad(f.id),
   }));
   const plans = suggestedPlans(profile.goal, targets.calories, targets.protein, profile.activeDietId);
   const featured = plans[0];
@@ -39,6 +42,7 @@ export default async function NutritionPage() {
   const fasts = recentFasts(user.id);
   const adjustments = openFast ? adjustmentsForFast(openFast.id, user.id) : [];
   const diet = targets.diet;
+  const lowHistamine = isLowHistamineDiet(profile.activeDietId);
 
   return (
     <AppShell user={user} profile={profile}>
@@ -67,7 +71,14 @@ export default async function NutritionPage() {
             <p className="mt-1 text-muted">{diet.phase.trainingNote}</p>
             {diet.finished ? (
               <p className="mt-2 text-copper-2">
-                Enroll Reverse (after a peak/cut) or Recomp so this deficit does not become your personality.
+                {diet.program.afterNote ??
+                  "Enroll Reverse (after a peak/cut) or Recomp so this deficit does not become your personality."}
+              </p>
+            ) : null}
+            {lowHistamine && !diet.finished ? (
+              <p className="mt-2 text-xs text-muted">
+                Fresh-cook rule: eat the same day or freeze in meal-size packs. Fermented dairy, aged cheese,
+                spinach, avocado, and leftover fish stay off the default plates. This is not an allergy diagnosis.
               </p>
             ) : null}
             <div className="mt-3 flex flex-wrap gap-3 text-sm">
@@ -103,7 +114,7 @@ export default async function NutritionPage() {
             <Link href="/diets" className="text-copper-2">
               Choose a diet block
             </Link>{" "}
-            <span className="text-muted">for a cut, bulk, reverse, or a short peak week.</span>
+            <span className="text-muted">for a cut, bulk, reverse, peak week, or low-histamine plates.</span>
           </p>
         )}
       </section>
@@ -173,6 +184,11 @@ export default async function NutritionPage() {
                       {item.foodName}
                       <span className="block text-sm text-muted">
                         {Math.round(item.calories)} kcal · {Math.round(item.protein)} g protein
+                        {lowHistamine && histamineLoad(item.foodId) === "high"
+                          ? ` · ${HISTAMINE_LABEL.high}`
+                          : lowHistamine && histamineLoad(item.foodId) === "caution"
+                            ? ` · ${HISTAMINE_LABEL.caution}`
+                            : ""}
                       </span>
                     </span>
                     <form action={deleteFoodLogAction.bind(null, item.id)}>
@@ -183,7 +199,7 @@ export default async function NutritionPage() {
                   </li>
                 ))}
               </ul>
-              <MealFoodForm foods={foodList} meal={meal} userId={user.id} />
+              <MealFoodForm foods={foodList} meal={meal} userId={user.id} preferLowHistamine={lowHistamine} />
             </section>
           );
         })}

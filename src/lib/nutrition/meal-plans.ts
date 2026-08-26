@@ -211,6 +211,77 @@ export const MEAL_PLAN_TEMPLATES: MealPlanTemplate[] = [
       line("food-apple", 1, "snack"),
     ],
   },
+  {
+    id: "low-histamine-plate",
+    name: "Fresh-cook plate",
+    description:
+      "Eggs, chicken, turkey, rice, potato, broccoli, zucchini, apple. Cook and eat the same day, or freeze. No yogurt, cheddar, spinach, or leftover fish.",
+    goals: ["general", "pole_stage", "exotic_stage", "bodybuilding"],
+    items: [
+      line("food-oats", 1, "breakfast"),
+      line("food-eggs", 1, "breakfast"),
+      line("food-apple", 1, "breakfast"),
+      line("food-chicken", 2, "lunch"),
+      line("food-rice", 2, "lunch"),
+      line("food-broccoli", 1.5, "lunch"),
+      line("food-carrot", 1, "lunch"),
+      line("food-olive-oil", 1, "lunch"),
+      line("food-turkey", 2, "dinner"),
+      line("food-potato", 2, "dinner"),
+      line("food-zucchini", 1.5, "dinner"),
+      line("food-cucumber", 1, "dinner"),
+      line("food-olive-oil", 0.5, "dinner"),
+      line("food-blueberries", 1, "snack"),
+      line("food-pear", 1, "snack"),
+    ],
+  },
+  {
+    id: "low-histamine-oats",
+    name: "Fresh-cook training day",
+    description:
+      "More oats and rice around lifting. Still fresh chicken and turkey — no fermented dairy to 'hit protein.'",
+    goals: ["powerlifting", "strength_endurance", "bodybuilding", "general"],
+    items: [
+      line("food-oats", 1.5, "breakfast"),
+      line("food-eggs", 1.5, "breakfast"),
+      line("food-blueberries", 1, "breakfast"),
+      line("food-chicken", 2, "lunch"),
+      line("food-rice", 2.5, "lunch"),
+      line("food-broccoli", 1, "lunch"),
+      line("food-zucchini", 1, "lunch"),
+      line("food-olive-oil", 1, "lunch"),
+      line("food-turkey", 1.5, "dinner"),
+      line("food-potato", 2, "dinner"),
+      line("food-carrot", 1, "dinner"),
+      line("food-olive-oil", 0.5, "dinner"),
+      line("food-apple", 1, "snack"),
+      line("food-rice", 1, "snack"),
+    ],
+  },
+  {
+    id: "low-histamine-lighter",
+    name: "Fresh-cook lighter plate",
+    description:
+      "Same low-histamine foods, less starch. Built for the histamine cut, or a quieter day on the maintenance block.",
+    goals: ["bodybuilding", "general", "glute_specialization", "pole_stage"],
+    items: [
+      line("food-eggs", 1, "breakfast"),
+      line("food-oats", 0.5, "breakfast"),
+      line("food-pear", 1, "breakfast"),
+      line("food-chicken", 2, "lunch"),
+      line("food-rice", 1, "lunch"),
+      line("food-broccoli", 2, "lunch"),
+      line("food-zucchini", 1.5, "lunch"),
+      line("food-carrot", 1, "lunch"),
+      line("food-olive-oil", 0.5, "lunch"),
+      line("food-turkey", 2, "dinner"),
+      line("food-potato", 1, "dinner"),
+      line("food-cucumber", 1.5, "dinner"),
+      line("food-broccoli", 1, "dinner"),
+      line("food-apple", 1, "snack"),
+      line("food-blueberries", 1, "snack"),
+    ],
+  },
 ];
 
 export function macrosForLines(items: PlanLine[]) {
@@ -282,15 +353,23 @@ export function scalePlanToTargets(template: MealPlanTemplate, calories: number,
   const calorieGap = calories - current.calories;
   const rice = items.find((i) => i.foodId === "food-rice");
   const oil = items.find((i) => i.foodId === "food-olive-oil");
-  const whey = items.find((i) => i.foodId === "food-whey");
+  const proteinFiller =
+    items.find((i) => i.foodId === "food-whey") ??
+    items.find((i) => i.foodId === "food-chicken") ??
+    items.find((i) => i.foodId === "food-turkey") ??
+    items.find((i) => {
+      const food = foodById(i.foodId);
+      return food ? isProteinFood(food) : false;
+    });
+  const fillerProtein = proteinFiller ? (foodById(proteinFiller.foodId)?.protein ?? 24) : 24;
   if (rice && Math.abs(calorieGap) > 80) {
     rice.servings = snap(rice.servings + calorieGap / 130);
   } else if (oil && calorieGap > 80) {
     oil.servings = snap(oil.servings + calorieGap / 119);
   }
   current = macrosForLines(items);
-  if (whey && current.protein < protein - 8) {
-    whey.servings = snap(whey.servings + (protein - current.protein) / 24);
+  if (proteinFiller && current.protein < protein - 8) {
+    proteinFiller.servings = snap(proteinFiller.servings + (protein - current.protein) / Math.max(1, fillerProtein));
   }
 
   current = macrosForLines(items);

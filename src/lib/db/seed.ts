@@ -28,6 +28,25 @@ const DEFAULT_EQUIPMENT = JSON.stringify([
   "backpack",
 ]);
 
+export function seedStarterFoods(db: Db) {
+  for (const food of STARTER_FOODS) {
+    db.insert(foods)
+      .values({
+        id: food.id,
+        userId: null,
+        name: food.name,
+        calories: food.calories,
+        protein: food.protein,
+        carbs: food.carbs,
+        fat: food.fat,
+        serving: food.serving,
+        favorite: 0,
+      })
+      .onConflictDoNothing()
+      .run();
+  }
+}
+
 export function seedIfNeeded(db: Db) {
   const now = new Date().toISOString();
   for (const person of HOUSEHOLD) {
@@ -52,22 +71,7 @@ export function seedIfNeeded(db: Db) {
       .run();
   }
 
-  for (const food of STARTER_FOODS) {
-    db.insert(foods)
-      .values({
-        id: food.id,
-        userId: null,
-        name: food.name,
-        calories: food.calories,
-        protein: food.protein,
-        carbs: food.carbs,
-        fat: food.fat,
-        serving: food.serving,
-        favorite: 0,
-      })
-      .onConflictDoNothing()
-      .run();
-  }
+  seedStarterFoods(db);
 
   for (const person of HOUSEHOLD) {
     const profile = db.select().from(profiles).where(eq(profiles.userId, person.id)).get();

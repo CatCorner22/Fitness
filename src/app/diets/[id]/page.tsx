@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { clearDietAction, enrollDietAction } from "@/app/actions/diet";
 import { AppShell } from "@/components/app-shell";
-import { getDiet } from "@/lib/nutrition/diets";
+import { getDiet, isLowHistamineDiet } from "@/lib/nutrition/diets";
 import { requireAuthed } from "@/lib/session-page";
 
 export default async function DietDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -23,6 +23,12 @@ export default async function DietDetailPage({ params }: { params: Promise<{ id:
         <p className="mt-4 rounded-2xl border border-danger/40 bg-bg-2 p-4 text-sm">
           Sub-6% is not a target for female physiology. Beach week or Steady cut is the honest block. This peak
           still floors calories higher if you enroll it anyway.
+        </p>
+      ) : null}
+      {diet.category === "Pattern" || isLowHistamineDiet(diet.id) ? (
+        <p className="mt-4 rounded-2xl border border-line bg-bg-2 p-4 text-sm">
+          Food-pattern block, not a diagnosis. Freeze leftovers the day you cook. Allergic swelling, wheeze, or
+          hives is emergency care — not a reason to tighten the menu further.
         </p>
       ) : null}
 
