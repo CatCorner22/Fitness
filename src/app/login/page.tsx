@@ -26,11 +26,11 @@ export default async function LoginPage({
       <form action={loginAction} className="mt-10 space-y-4 rounded-3xl border border-line bg-surface p-6">
         <label className="block text-sm text-muted">
           Username
-          <input name="username" autoComplete="username" required className="mt-1" />
+          <input id="username" name="username" autoComplete="username" required className="mt-1" />
         </label>
         <label className="block text-sm text-muted">
           Password
-          <input name="password" type="password" autoComplete="current-password" required className="mt-1" />
+          <input id="password" name="password" type="password" autoComplete="current-password" required className="mt-1" />
         </label>
         {params.error ? <p className="text-sm text-danger">Wrong username or password.</p> : null}
         <button type="submit" className="btn-primary">

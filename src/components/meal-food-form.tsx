@@ -15,10 +15,19 @@ type Food = {
   name: string;
   calories: number;
   protein: number;
+  favorite?: number;
   histamine?: HistamineLoad | null;
 };
 
 const RECENTS_EVENT = "garanimal-recents";
+const STAPLE_IDS = [
+  "food-eggs",
+  "food-whey",
+  "food-chicken",
+  "food-greek-yogurt",
+  "food-banana",
+  "food-coffee",
+];
 
 function recentsKey(userId: string) {
   return `garanimal-recent-foods-${userId}`;
@@ -88,83 +97,87 @@ export function MealFoodForm({
   }, [foods, query, preferLowHistamine]);
 
   const recentFoods = recents.map((id) => foods.find((f) => f.id === id)).filter(Boolean) as Food[];
-  const stapleFoods = preferLowHistamine
-    ? LOW_HISTAMINE_STAPLES.map((id) => foods.find((f) => f.id === id)).filter(Boolean) as Food[]
+  const favoriteFoods = foods.filter((f) => f.favorite === 1).slice(0, 8);
+  const stapleFoods = STAPLE_IDS.map((id) => foods.find((f) => f.id === id)).filter(Boolean) as Food[];
+  const lowHistamineStaples = preferLowHistamine
+    ? (LOW_HISTAMINE_STAPLES.map((id) => foods.find((f) => f.id === id)).filter(Boolean) as Food[])
     : [];
-  const chips = !query ? (stapleFoods.length ? stapleFoods : recentFoods) : [];
-  const extraRecents =
-    stapleFoods.length && !query
-      ? recentFoods.filter((food) => !stapleFoods.some((s) => s.id === food.id)).slice(0, 4)
-      : [];
+  const chips = (
+    preferLowHistamine && lowHistamineStaples.length
+      ? lowHistamineStaples
+      : favoriteFoods.length || recentFoods.length
+        ? [...favoriteFoods, ...recentFoods.filter((f) => !favoriteFoods.some((fav) => fav.id === f.id))]
+        : stapleFoods
+  ).slice(0, 8);
 
   return (
-    <form
-      action={async (formData) => {
-        const id = String(formData.get("foodId") || "");
-        if (id) rememberFood(userId, id);
-        await addFoodLogAction(formData);
-      }}
-      className="mt-4 space-y-2"
-    >
-      <input type="hidden" name="meal" value={meal} />
-      <input
-        type="search"
-        placeholder="Search foods or Chick-fil-A..."
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        className="py-2 text-sm"
-      />
-      {chips.length > 0 ? (
+    <div className="mt-4 space-y-2">
+      {chips.length > 0 && !query ? (
         <div className="flex flex-wrap gap-1.5">
           {chips.map((food) => (
-            <button
+            <form
               key={food.id}
-              type="button"
-              onClick={() => setFoodId(food.id)}
-              className={`rounded-full border px-2.5 py-1 text-xs ${
-                foodId === food.id ? "border-copper bg-copper/10 text-copper-2" : "border-line text-muted"
-              }`}
+              action={async (formData) => {
+                rememberFood(userId, food.id);
+                await addFoodLogAction(formData);
+              }}
             >
-              {food.name.length > 18 ? `${food.name.slice(0, 16)}…` : food.name}
-            </button>
-          ))}
-          {extraRecents.map((food) => (
-            <button
-              key={food.id}
-              type="button"
-              onClick={() => setFoodId(food.id)}
-              className={`rounded-full border px-2.5 py-1 text-xs ${
-                foodId === food.id ? "border-copper bg-copper/10 text-copper-2" : "border-line text-muted"
-              }`}
-            >
-              {food.name.length > 18 ? `${food.name.slice(0, 16)}…` : food.name}
-            </button>
+              <input type="hidden" name="meal" value={meal} />
+              <input type="hidden" name="foodId" value={food.id} />
+              <input type="hidden" name="servings" value="1" />
+              <button
+                type="submit"
+                className="rounded-full border border-line px-2.5 py-1 text-xs text-muted hover:border-copper hover:text-copper-2"
+              >
+                + {food.name.length > 18 ? `${food.name.slice(0, 16)}…` : food.name}
+              </button>
+            </form>
           ))}
         </div>
       ) : null}
-      <select
-        name="foodId"
-        required
-        value={foodId}
-        onChange={(e) => setFoodId(e.target.value)}
-        className="text-sm"
+      <form
+        action={async (formData) => {
+          const id = String(formData.get("foodId") || "");
+          if (id) rememberFood(userId, id);
+          await addFoodLogAction(formData);
+        }}
+        className="space-y-2"
       >
-        <option value="" disabled>
-          Pick a food
-        </option>
-        {filtered.slice(0, 40).map((food) => (
-          <option key={food.id} value={food.id}>
-            {food.name} — {Math.round(food.calories)} kcal · {Math.round(food.protein)}g P
-            {histamineHint(food, preferLowHistamine)}
+        <input type="hidden" name="meal" value={meal} />
+        <input
+          type="search"
+          id={`${meal}-food-search`}
+          name={`${meal}-food-search`}
+          placeholder="Search foods or Chick-fil-A..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="py-2 text-sm"
+          autoComplete="off"
+        />
+        <select
+          name="foodId"
+          required
+          value={foodId}
+          onChange={(e) => setFoodId(e.target.value)}
+          className="text-sm"
+        >
+          <option value="" disabled>
+            Pick a food
           </option>
-        ))}
-      </select>
-      <div className="flex gap-2">
-        <input name="servings" type="number" step="0.5" defaultValue={1} />
-        <button className="min-h-12 rounded-xl bg-copper px-4 text-sm font-semibold text-[color:var(--on-copper)]" type="submit">
-          Add
-        </button>
-      </div>
-    </form>
+          {filtered.slice(0, 40).map((food) => (
+            <option key={food.id} value={food.id}>
+              {food.name} — {Math.round(food.calories)} kcal · {Math.round(food.protein)}g P
+              {histamineHint(food, preferLowHistamine)}
+            </option>
+          ))}
+        </select>
+        <div className="flex gap-2">
+          <input name="servings" type="number" step="0.5" defaultValue={1} />
+          <button className="min-h-12 rounded-xl bg-copper px-4 text-sm font-semibold text-[color:var(--on-copper)]" type="submit">
+            Add
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }

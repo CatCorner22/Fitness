@@ -26,6 +26,15 @@ PLATES: list[tuple[str, str, str]] = [
     ("nyx-sit.webp", "nyx-plate-sit.webp", "Pole sit"),
     ("nyx-pole.webp", "nyx-plate-pole.webp", "On the pole"),
     ("nyx-hang.webp", "nyx-plate-hang.webp", "Hang"),
+    ("nyx-heels.webp", "nyx-plate-heels.webp", "Heel walk"),
+    ("nyx-hands.webp", "nyx-plate-hands.webp", "Hands"),
+    ("nyx-mermaid.webp", "nyx-plate-mermaid.webp", "Mermaid sit"),
+    ("nyx-fireman.webp", "nyx-plate-fireman.webp", "High arm"),
+    ("nyx-kick.webp", "nyx-plate-kick.webp", "Fan kick"),
+    ("nyx-grind.webp", "nyx-plate-grind.webp", "Hip phrase"),
+    ("nyx-crawl.webp", "nyx-plate-crawl.webp", "Floor crawl"),
+    ("nyx-peel.webp", "nyx-plate-peel.webp", "Costume layer"),
+    ("nyx-turn.webp", "nyx-plate-turn.webp", "Balance turn"),
 ]
 
 

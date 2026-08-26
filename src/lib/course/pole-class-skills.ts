@@ -1,4 +1,3 @@
-import { NYX } from "./instructor";
 import { makeSkill as skill } from "./skill-factory";
 import type { Skill } from "./types";
 
@@ -26,8 +25,6 @@ export const POLE_CLASS_SKILLS: Skill[] = [
     voiceScript:
       "Strict pull-up. Pack the shoulders. Pull the elbows down. Chin over. Pause. Down slow. No kip. If you need a band, you need a band. Intermediate class does not grade your ego. It grades whether you can pull and then hang again.",
     diagram: "hang",
-    photo: NYX.photos.hang,
-    plate: NYX.plates.hang,
     practice: "Five quality reps or five assisted reps. Full rest. Repeat for the programmed sets.",
     passWhen: "Every rep starts from a packed hang and finishes with the chin clearly over.",
     firstThen: { first: "Active hang you own", then: "Same hang into a pull" },
@@ -54,8 +51,6 @@ export const POLE_CLASS_SKILLS: Skill[] = [
     voiceScript:
       "Inverted row. Long body. Hips stay. Chest to the bar — not just the chin. Pause. Lower. This is invert-prep you can do at home. If the bar can roll, pick a different bar. We do not practice on junk.",
     diagram: "hang",
-    photo: NYX.photos.hang,
-    plate: NYX.plates.hang,
     practice: "Two sets of six to ten clean reps. Rest. One more set if the shoulders are quiet.",
     passWhen: "The body stays a line and the chest actually arrives.",
     firstThen: { first: "Packed hang", then: "Same pack, pull the chest through" },
@@ -81,8 +76,6 @@ export const POLE_CLASS_SKILLS: Skill[] = [
     voiceScript:
       "Short hang. Full rest. Again. Intermediate class will ask you to hang, spin, and hang. One hero hang that fries the tendon helps no one. Pack the shoulders. Stop while it is still pretty. If the elbow talks, we carry instead.",
     diagram: "hang",
-    photo: NYX.photos.hang,
-    plate: NYX.plates.hang,
     practice: "Four short hangs with full rest. Same packed shape every time.",
     passWhen: "You can repeat a hang without the last one turning into a dump.",
     firstThen: { first: "One packed hang", then: "The same hang, four times, with rest" },
@@ -108,8 +101,6 @@ export const POLE_CLASS_SKILLS: Skill[] = [
     voiceScript:
       "Hanging tuck. Pack first. Knees to chest. Tailbone under. Breathe. No kip. Ever. If you need to swing to get the knees up, the hold is not yours yet. We do not learn inverts from a phone on a carpet. Own this boring tuck.",
     diagram: "hang",
-    photo: NYX.photos.hang,
-    plate: NYX.plates.hang,
     practice: "Four holds. Full rest. Same packed hang every time.",
     passWhen: "You can hold a quiet tuck without a swing to get there.",
     firstThen: { first: "Packed dead hang", then: "Knees to chest in that hang" },
@@ -136,8 +127,6 @@ export const POLE_CLASS_SKILLS: Skill[] = [
     voiceScript:
       "Pole squat. Hips back. Elbows down. The pole stays in front of you. This is invert-prep that never leaves the floor, which is why we like it. Breathe in the hold. If the shoulder pinches, we stop. Both offsets. Class will use this shape whether you like it or not.",
     diagram: "sit",
-    photo: NYX.photos.pole,
-    plate: NYX.plates.pole,
     practice: "Three holds of twenty to forty seconds. Rest. Other offset.",
     passWhen: "You can breathe in the bottom and stand without yanking the shoulders.",
     firstThen: { first: "Around-the-pole walk", then: "Same hands, sit the hips back" },
@@ -164,8 +153,6 @@ export const POLE_CLASS_SKILLS: Skill[] = [
     voiceScript:
       "Outside-leg hang. Low. Mat. Thigh on the pole. Breathe. Down under control. Other side. I do not care which side photographs. Height is vanity. Intact is class-ready.",
     diagram: "hang",
-    photo: NYX.photos.hang,
-    plate: NYX.plates.hang,
     practice: "Four low hangs each side. Full rest. Same height.",
     passWhen: "You can breathe in the shape and come down without a slide.",
     firstThen: { first: "Pole sit you own", then: "Same height into an outside-leg hang" },
@@ -192,8 +179,6 @@ export const POLE_CLASS_SKILLS: Skill[] = [
     voiceScript:
       "Carousel. Static. Hands you were taught. Hips around. Land. Other side. Same number. If you kip, we are done. Spin pole is a later privilege. Class will use both directions whether you like it or not.",
     diagram: "fireman",
-    photo: NYX.photos.pole,
-    plate: NYX.plates.pole,
     practice: "Five each side static. Rest. Do not add spin pole today unless the static one is quiet.",
     passWhen: "Equal sides. Quiet landings. No kip.",
     firstThen: { first: "Fireman both sides", then: "Same circle into carousel" },
@@ -220,8 +205,6 @@ export const POLE_CLASS_SKILLS: Skill[] = [
     voiceScript:
       "Climb. Sit. Down. That is the combo. Mat. The sit is one you already own — we do not find it by falling. Down under control. Other side. Linking is the skill. Height is not.",
     diagram: "climb",
-    photo: NYX.photos.climb,
-    plate: NYX.plates.climb,
     practice: "Five links. Full rest. Same height.",
     passWhen: "The sit arrives from a climb, not from a drop, and the down is quiet.",
     firstThen: { first: "Climb and sit as separate drills", then: "One climb into that sit" },
@@ -248,8 +231,6 @@ export const POLE_CLASS_SKILLS: Skill[] = [
     voiceScript:
       "Back hook. Mid-thigh, not the joint. Static. Spin. Land. Other side. Same number. Front hook does not count as this. If the knee yells, we stop. Class will ask for both.",
     diagram: "fireman",
-    photo: NYX.photos.sit,
-    plate: NYX.plates.sit,
     practice: "Five each side. Rest. Do not skip the ugly side.",
     passWhen: "Equal sides. The hook stays at mid-thigh.",
     firstThen: { first: "Front hook / chair spin", then: "Same mid-thigh, behind you" },

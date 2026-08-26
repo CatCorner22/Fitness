@@ -25,6 +25,15 @@ SOURCES = {
     "nyx-hang.webp": ("nyx-hang-sexy.png", "nyx-hang-smoke.png"),
     "nyx-floor.webp": ("nyx-floor-sexy.png", "nyx-floor-smoke.png"),
     "nyx-climb.webp": ("nyx-climb-sexy.png", "nyx-climb-smoke.png"),
+    "nyx-heels.webp": ("nyx-heels-sexy.png", "nyx-heels.png"),
+    "nyx-hands.webp": ("nyx-hands-sexy.png", "nyx-hands.png"),
+    "nyx-mermaid.webp": ("nyx-mermaid-sexy.png", "nyx-hipsits.png"),
+    "nyx-fireman.webp": ("nyx-fireman-sexy.png", "nyx-fireman.png"),
+    "nyx-kick.webp": ("nyx-kick-sexy.png", "nyx-sidekick.png"),
+    "nyx-grind.webp": ("nyx-grind-sexy.png", "nyx-contrapposto.png"),
+    "nyx-crawl.webp": ("nyx-crawl-sexy.png", "nyx-yogatable.png"),
+    "nyx-peel.webp": ("nyx-peel-sexy.png", "nyx-jacket.png"),
+    "nyx-turn.webp": ("nyx-turn-sexy.png", "nyx-balance.png"),
 }
 
 

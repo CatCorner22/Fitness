@@ -55,15 +55,25 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
                 if (!skill) return null;
                 return (
                   <li key={id}>
-                    <Link href={`/course/${course.id}/${skill.id}`} className="block rounded-2xl bg-bg-2 p-4">
-                      <span className="font-semibold">{skill.name}</span>
-                      <span className="mt-1 block text-sm text-copper-2">{skill.cue}</span>
-                      <span className="mt-1 block text-xs text-muted">
-                        {skill.durationLabel} · {skill.steps.length} steps · Watch / With Nyx / Your turn
+                    <Link href={`/course/${course.id}/${skill.id}`} className="flex gap-3 rounded-2xl bg-bg-2 p-4">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={skill.photo}
+                        alt=""
+                        className="h-16 w-11 shrink-0 rounded-xl object-cover"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <span className="min-w-0">
+                        <span className="font-semibold">{skill.name}</span>
+                        <span className="mt-1 block text-sm text-copper-2">{skill.cue}</span>
+                        <span className="mt-1 block text-xs text-muted">
+                          {skill.durationLabel} · {skill.steps.length} steps · Watch / With Nyx / Your turn
+                        </span>
+                        {skill.passWhen ? (
+                          <span className="mt-2 block text-xs text-muted">Move on when: {skill.passWhen}</span>
+                        ) : null}
                       </span>
-                      {skill.passWhen ? (
-                        <span className="mt-2 block text-xs text-muted">Move on when: {skill.passWhen}</span>
-                      ) : null}
                     </Link>
                   </li>
                 );
