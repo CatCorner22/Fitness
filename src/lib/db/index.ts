@@ -3,7 +3,7 @@ import path from "node:path";
 import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import * as schema from "./schema";
-import { seedIfNeeded } from "./seed";
+import { seedIfNeeded, seedStarterFoods } from "./seed";
 
 const BUSY_MS = 8000;
 
@@ -104,6 +104,16 @@ function migrate(sqlite: Database.Database) {
   for (const column of PROFILE_COLUMNS) {
     if (!names.has(column.name)) sqlite.exec(column.sql);
   }
+  sqlite.exec(`
+    DELETE FROM bodyweight_logs
+    WHERE rowid NOT IN (SELECT MAX(rowid) FROM bodyweight_logs GROUP BY user_id, date);
+    DROP INDEX IF EXISTS idx_bodyweight_user_date;
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_bodyweight_user_date ON bodyweight_logs(user_id, date);
+    DELETE FROM daily_checkins
+    WHERE rowid NOT IN (SELECT MAX(rowid) FROM daily_checkins GROUP BY user_id, date);
+    DROP INDEX IF EXISTS idx_checkins_user_date;
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_checkins_user_date ON daily_checkins(user_id, date);
+  `);
 }
 
 function createConnection() {
@@ -272,4 +282,6 @@ export function ensureMigrated() {
 if (!globalForDb.seeded) {
   seedIfNeeded(db);
   globalForDb.seeded = true;
+} else {
+  seedStarterFoods(db);
 }

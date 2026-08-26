@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { ExerciseCalendarBlock } from "@/components/exercise-calendar-block";
 import { Spark } from "@/components/spark";
+import { logBodyweightAction } from "@/app/actions/profile";
 import { bestSets, VOLUME_LANDMARKS, weeklyVolume } from "@/lib/autoregulation";
 import { db } from "@/lib/db";
 import { bodyweightLogs, fasts, workouts } from "@/lib/db/schema";
@@ -125,11 +126,26 @@ export default async function ProgressPage() {
         </ul>
       </details>
 
-      <details className="mt-4 rounded-3xl border border-line bg-surface p-5">
+      <details className="mt-4 rounded-3xl border border-line bg-surface p-5" open={weights.length === 0}>
         <summary className="cursor-pointer font-semibold">Bodyweight</summary>
         <div className="mt-4">
           <Spark values={weights.map((w) => w.weightKg)} />
           <p className="mt-2 text-sm text-muted">{weights.length} weigh-ins</p>
+          <form action={logBodyweightAction} className="mt-4 flex gap-2">
+            <input type="hidden" name="next" value="/progress" />
+            <input
+              name="weight"
+              type="number"
+              step="0.1"
+              inputMode="decimal"
+              placeholder={profile.units === "lb" ? "lb" : "kg"}
+              className="min-h-12"
+              required
+            />
+            <button className="btn-quiet" type="submit">
+              Log
+            </button>
+          </form>
         </div>
       </details>
     </AppShell>

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { eq, isNull, or } from "drizzle-orm";
 import { clearDietAction, setDietStartAction } from "@/app/actions/diet";
-import { addCustomFoodAction, deleteFoodLogAction } from "@/app/actions/nutrition";
+import { addCustomFoodAction, copyYesterdayFoodAction, deleteFoodLogAction } from "@/app/actions/nutrition";
 import { AppShell } from "@/components/app-shell";
 import { FastingTimer } from "@/components/fasting-timer";
 import { MealFoodForm } from "@/components/meal-food-form";
@@ -31,6 +31,7 @@ export default async function NutritionPage() {
     name: f.name,
     calories: f.calories,
     protein: f.protein,
+    favorite: f.favorite,
   }));
   const plans = suggestedPlans(profile.goal, targets.calories, targets.protein, profile.activeDietId);
   const featured = plans[0];
@@ -156,6 +157,11 @@ export default async function NutritionPage() {
       ) : null}
 
       <div className="mt-6 space-y-4">
+        <form action={copyYesterdayFoodAction}>
+          <button className="btn-quiet w-full" type="submit">
+            Copy yesterday&apos;s food
+          </button>
+        </form>
         {MEALS.map((meal) => {
           const items = day.logs.filter((l) => l.meal === meal);
           const mealCals = items.reduce((s, l) => s + l.calories, 0);

@@ -1,11 +1,13 @@
 import { and, eq, gte } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { nutritionLogs, workouts } from "@/lib/db/schema";
+import { dailyCheckins, nutritionLogs, workouts } from "@/lib/db/schema";
 import type { ProfileRow } from "@/lib/auth";
 import { planAdjustFromAssessment } from "@/lib/assessment/plan-adjust";
 import { getProgram } from "@/lib/programs/catalog";
 import { buildPlannedSession } from "@/lib/programs/plan";
 import { todayISO } from "@/lib/utils";
+
+export { yesterdayISO } from "@/lib/utils";
 
 function startOfWeekISO() {
   const d = new Date();
@@ -77,4 +79,12 @@ export function todayNutrition(userId: string) {
     carbs: logs.reduce((s, l) => s + l.carbs, 0),
     fat: logs.reduce((s, l) => s + l.fat, 0),
   };
+}
+
+export function todayCheckin(userId: string) {
+  return db
+    .select()
+    .from(dailyCheckins)
+    .where(and(eq(dailyCheckins.userId, userId), eq(dailyCheckins.date, todayISO())))
+    .get();
 }

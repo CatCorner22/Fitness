@@ -12,6 +12,12 @@ export function todayISO(date = new Date()) {
   return `${y}-${m}-${d}`;
 }
 
+export function yesterdayISO(date = new Date()) {
+  const d = new Date(date.getTime());
+  d.setDate(d.getDate() - 1);
+  return todayISO(d);
+}
+
 export function epley1RM(weight: number, reps: number) {
   if (reps <= 0) return 0;
   if (reps === 1) return weight;
