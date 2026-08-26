@@ -1,5 +1,4 @@
 import { EXOTIC_CLUB_SKILLS } from "./exotic-club-skills";
-import { NYX } from "./instructor";
 import { POLE_CLASS_SKILLS } from "./pole-class-skills";
 import { makeSkill as skill } from "./skill-factory";
 import type { CourseId, Skill } from "./types";
@@ -28,8 +27,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Come here. We start with the walk. Soften your knees. Find a spot on the far wall — that is your audience. Step. Heel, then toe. Stay tall. Ribs over your pelvis. Do not rush me. On four, pause. Hold a pose you can breathe in. Then turn, and walk back just as slow. If you only own one thing tonight, own this.",
     diagram: "walk",
-    photo: NYX.photos.walk,
-    plate: NYX.plates.walk,
   }),
   skill({
     id: "eyeline",
@@ -53,8 +50,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Look at me. Not the floor. Pick a still spot. Turn your chest first. Head follows. Hair follows last — soft, not a whip. Come back to that first spot and hold. Two counts. That is how a room believes you.",
     diagram: "walk",
-    photo: NYX.photos.portrait,
-    plate: NYX.plates.portrait,
   }),
   skill({
     id: "arms",
@@ -77,8 +72,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Arms next. Keep them in front of your body. Soft elbows. Lift without shrugging into your ears. Move as if the air is thick. Finish in a shape you can walk in. Pretty is optional. Quiet shoulders are not.",
     diagram: "walk",
-    photo: NYX.photos.portrait,
-    plate: NYX.plates.portrait,
   }),
   skill({
     id: "wave",
@@ -102,8 +95,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Body wave. Soften the knees. Hips first — forward, then back. Chest follows. Head stays long. Do not dump into your low back. Slow enough that I could count it. If it is ugly and controlled, we keep it. If it is pretty and painful, we throw it out.",
     diagram: "wave",
-    photo: NYX.photos.wave,
-    plate: NYX.plates.wave,
   }),
   skill({
     id: "hip8",
@@ -127,8 +118,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Hands on your waist. The belt draws a slow eight. Ribs stay quiet. One direction. Stop. Other direction. Small is expensive. Big and sloppy is free, and we are not doing free.",
     diagram: "hip8",
-    photo: NYX.photos.walk,
-    plate: NYX.plates.wave,
   }),
   skill({
     id: "pulse",
@@ -151,8 +140,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Tiny pulse. From the glutes, not the low back. Ribs down. Squeeze. Return. If you need a big backbend to feel it, you are in the wrong joint. Small. Musical. Stop while it is still pretty.",
     diagram: "hip8",
-    photo: NYX.photos.walk,
-    plate: NYX.plates.wave,
   }),
   skill({
     id: "chest",
@@ -175,8 +162,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Hands on your ribs. Pelvis stays. Slide the cage — left, right, a little forward, a little back. Your neck does not get to drive. This is a chorus you can do in heels later. Not today. Today we own the ribs.",
     diagram: "wave",
-    photo: NYX.photos.portrait,
-    plate: NYX.plates.portrait,
   }),
   skill({
     id: "seated-hips",
@@ -199,8 +184,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Sit on the front edge. Tall. The chair is furniture, not a person. Circle the pelvis. Slow. Both ways. Chest stays invited. If the chair wobbles, pick a heavier one. We do not perform on junk.",
     diagram: "chair",
-    photo: NYX.photos.chair,
-    plate: NYX.plates.chair,
   }),
   skill({
     id: "chair-approach",
@@ -224,8 +207,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Walk to the chair like it is a mark. Turn. Sit to the edge — do not drop. Open the knees only as far as you stay stacked. One breath. Close. Stand. Walk off on the same slow tempo. This is a verse. Treat it like one.",
     diagram: "chair",
-    photo: NYX.photos.chair,
-    plate: NYX.plates.chair,
   }),
   skill({
     id: "chair-roll",
@@ -248,8 +229,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Sit bones on the seat. Tuck. Roll through a small wave. Stack tall. Do not throw your head off the back of the chair. Four times. Then stand like you meant it.",
     diagram: "chair",
-    photo: NYX.photos.chair,
-    plate: NYX.plates.chair,
   }),
   skill({
     id: "descent",
@@ -272,8 +251,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "We go to the floor like we have time. Hand down if you need it. One knee. Other knee. Pads, please. Pause tall. Then reverse — one foot, the other, stand. If you drop, we do it again until you do not.",
     diagram: "floor",
-    photo: NYX.photos.floor,
-    plate: NYX.plates.floor,
   }),
   skill({
     id: "tabletop",
@@ -296,8 +273,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Tabletop. Hands under shoulders — fists or forearms if the wrists talk. Knees under hips, on pads. Long spine. This is home base. You will leave it. You will come back. Do not sink into your shoulders.",
     diagram: "tabletop",
-    photo: NYX.photos.floor,
-    plate: NYX.plates.floor,
   }),
   skill({
     id: "knee-circle",
@@ -320,8 +295,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Pads. I mean it. Walk the knees in a slow circle. Hips over the knees. Other way. If the knee is sharp, we skip this and keep the walk on your feet. Hero knees do not make a better set.",
     diagram: "knee",
-    photo: NYX.photos.floor,
-    plate: NYX.plates.floor,
   }),
   skill({
     id: "floor-roll",
@@ -344,8 +317,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "On the pads. Circle the hips. Both ways. If you add a roll, the neck does not load. No bridges. Come back to tabletop. That is a verse. Leave the circus for someone else's amateur night.",
     diagram: "floor",
-    photo: NYX.photos.floor,
-    plate: NYX.plates.floor,
   }),
   skill({
     id: "layers",
@@ -368,8 +339,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Phrase. Then one layer. Then phrase. Do not rush the garment. If it fights you, wear something simpler. Eyes up. This is set craft, not a tutorial in how to wrestle a zipper. Breathe through it.",
     diagram: "layer",
-    photo: NYX.photos.portrait,
-    plate: NYX.plates.portrait,
   }),
   skill({
     id: "eight-count",
@@ -392,8 +361,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Count out loud. Walk two. Wave two. Pose two. Turn two. That is your eight. Rest a full eight. If you stuff extra tricks in, you are not practicing a set. You are panicking. Own this phrase until it is boring. Boring is when we add.",
     diagram: "phrase",
-    photo: NYX.photos.walk,
-    plate: NYX.plates.walk,
   }),
   skill({
     id: "show-run",
@@ -416,8 +383,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "One song. Skills you already own. Walk on. One skill on the pole or the chair. Floor phrase. Walk off. If something fails, keep walking. Do not invent. Rest a full song. Amateur night is a show, not a test. Then we stop while it is still clean.",
     diagram: "phrase",
-    photo: NYX.photos.walk,
-    plate: NYX.plates.walk,
   }),
   skill({
     id: "pole-walk",
@@ -441,8 +406,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Inside hand high. Outside hand at your chest. Walk the circle. Both ways. Do not shrug. Do not run. The pole is a prop tonight, not a gymnastics bar. Equal work. That is how you stay in class and on stage.",
     diagram: "polewalk",
-    photo: NYX.photos.walk,
-    plate: NYX.plates.walk,
   }),
   skill({
     id: "back-to-pole",
@@ -465,8 +428,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Spine along the pole. Feet staggered. Hands at the chest. Soften. Breathe. This is a hold, not a backbend contest. Step out. Walk. Other offset. Pretty is the breath, not the arch.",
     diagram: "polewalk",
-    photo: NYX.photos.sit,
-    plate: NYX.plates.sit,
   }),
   skill({
     id: "fireman",
@@ -490,8 +451,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Fireman. Inside arm high. Knees on the pole — not the ankle. Land on your feet. Now the other side. Same number. I do not care which side is prettier. Intermediate class will use both. If you kip, we are done for the day.",
     diagram: "fireman",
-    photo: NYX.photos.sit,
-    plate: NYX.plates.sit,
   }),
   skill({
     id: "hook",
@@ -515,8 +474,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Hook at mid-thigh, not stuffed in the joint. Static pole. Spin. Land. Other side. Spin pole is a later privilege. If the knee yells, we stop. Class is not a dare.",
     diagram: "fireman",
-    photo: NYX.photos.sit,
-    plate: NYX.plates.sit,
   }),
   skill({
     id: "sit",
@@ -540,8 +497,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Mat. Squeeze the pole with your thighs. Lean back a little. Hands stay until you own it. Then climb down. We do not drop from height to find a sit. That is not bravery. That is a bruise with a story you will not like.",
     diagram: "sit",
-    photo: NYX.photos.sit,
-    plate: NYX.plates.sit,
   }),
   skill({
     id: "climb",
@@ -565,8 +520,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Clamp. Stand. Reach. That is a climb. Three controlled ones off the floor is the class target — not the ceiling. Climb down. If you slide, we lost the point. Mat stays. Both sides if your studio uses a dominant climb.",
     diagram: "climb",
-    photo: NYX.photos.climb,
-    plate: NYX.plates.climb,
   }),
   skill({
     id: "descent-pole",
@@ -590,8 +543,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Down is a skill. Hand over hand, or a short slide you chose. Mat. If you torch your skin or dump the shoulder, we are not advancing. Other side. Intact is the aesthetic.",
     diagram: "climb",
-    photo: NYX.photos.climb,
-    plate: NYX.plates.climb,
   }),
   skill({
     id: "tuck",
@@ -614,8 +565,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Tuck. Knees to chest. No kip. Ever. If you have a bar, own a ten second hanging tuck first. On the pole, hips stay behind. Pain in the shoulder or neck is a stop, not a badge. A spotted invert is studio-only. We do not learn that from a phone on a carpet.",
     diagram: "hang",
-    photo: NYX.photos.sit,
-    plate: NYX.plates.sit,
   }),
   skill({
     id: "hang",
@@ -638,8 +587,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Active hang. Shoulders packed — not a dead dump. Short hangs. Full rest. Repeat. Intermediate class will ask you to hang, spin, and hang again. One hero hang that cooks the tendon helps no one. If the elbow talks, we carry instead.",
     diagram: "hang",
-    photo: NYX.photos.hang,
-    plate: NYX.plates.hang,
   }),
   skill({
     id: "capacity",
@@ -663,8 +610,6 @@ const SKILLS_CORE: Skill[] = [
     voiceScript:
       "Forty seconds on, twenty to change. Squats. Push-ups. Hollow. Carry. Four to six rounds. This is class lungs, not a punishment. If you cannot hang tomorrow, it was too hard. We are here to keep up with intermediate — not to win a garage Games.",
     diagram: "circuit",
-    photo: NYX.photos.walk,
-    plate: NYX.plates.walk,
   }),
 ];
 
