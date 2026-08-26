@@ -1,16 +1,22 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
+import { EnergyCheck } from "@/components/energy-check";
 import { ExerciseCalendarBlock } from "@/components/exercise-calendar-block";
 import { FastingStrip } from "@/components/fasting-timer";
 import { SkipWorkoutButton } from "@/components/skip-workout-button";
+import { SpiritTodayBriefing } from "@/components/spirit-today-briefing";
+import { WeekProgressStrip } from "@/components/week-progress-strip";
 import { advanceWeekAction } from "@/app/actions/profile";
 import { skipWorkoutAction, startWorkoutAction } from "@/app/actions/workout";
 import { shouldDeload } from "@/lib/autoregulation";
 import { courseForProgram } from "@/lib/course/catalog";
 import { lessonForExercise } from "@/lib/course/skills";
 import { runningFast } from "@/lib/fasting/queries";
+import { getAiOptIn } from "@/lib/prefs";
 import { requireAuthed } from "@/lib/session-page";
-import { todayNutrition, todaysPlan } from "@/lib/today";
+import { aiEnabled } from "@/lib/spirit/config";
+import { offlineBriefing } from "@/lib/spirit/context";
+import { todayCheckin, todayNutrition, todaysPlan } from "@/lib/today";
 import { calorieTarget, macroTargets, nutritionSpec, proteinTargetG } from "@/lib/nutrition/targets";
 
 export default async function TodayPage() {
@@ -27,9 +33,29 @@ export default async function TodayPage() {
   const deload = shouldDeload(user.id);
   const open = plan?.open;
   const fast = runningFast(user.id);
+  const checkin = todayCheckin(user.id);
+  const optIn = await getAiOptIn();
+  const weekDays = plan
+    ? plan.program.days.map((day) => {
+        const logged = plan.weekWorkouts.find((w) => w.dayId === day.id);
+        const status =
+          logged?.status === "completed"
+            ? "done"
+            : logged?.status === "skipped"
+              ? "skipped"
+              : logged?.status === "in_progress"
+                ? "open"
+                : planned?.day.id === day.id
+                  ? "today"
+                  : "upcoming";
+        return { id: day.id, name: day.name, status } as const;
+      })
+    : [];
 
   return (
     <AppShell user={user} profile={profile}>
+      {weekDays.length ? <WeekProgressStrip days={[...weekDays]} /> : null}
+
       {!profile.activeProgramId ? (
         <section className="rounded-3xl border border-line bg-surface p-6">
           <h1 className="display text-4xl">Today</h1>
@@ -56,7 +82,10 @@ export default async function TodayPage() {
       ) : (
         <section className="rounded-3xl border border-line bg-surface p-6">
           {deload.deload ? <p className="mb-3 text-sm text-muted">Easy week — keep the weights a little lighter.</p> : null}
-          <h1 className="display text-[2.6rem] leading-none">{open ? "Workout open" : planned?.day.name}</h1>
+          <p className="text-xs uppercase tracking-[0.16em] text-copper">
+            {plan?.program.name} · week {profile.currentWeek}
+          </p>
+          <h1 className="display mt-1 text-[2.6rem] leading-none">{open ? "Workout open" : planned?.day.name}</h1>
           <p className="mt-3 text-muted">
             {planned ? `About ${planned.estimatedMinutes} minutes` : "No session yet."}
             {planned?.overTimeBudget
@@ -119,6 +148,14 @@ export default async function TodayPage() {
           </div>
         </section>
       )}
+
+      <div className="mt-6">
+        <EnergyCheck fatigue={checkin?.fatigue ?? null} />
+      </div>
+
+      <div className="mt-6">
+        <SpiritTodayBriefing aiAvailable={optIn && aiEnabled()} fallbackText={offlineBriefing(user.id, profile)} />
+      </div>
 
       <section className="mt-6 rounded-3xl border border-line bg-surface p-5">
         <Link href="/nutrition" className="block">

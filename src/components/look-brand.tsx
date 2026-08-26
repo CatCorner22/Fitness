@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { KawaiiAvatar } from "@/components/kawaii-avatar";
 import { LOOK_PREVIEW_EVENT } from "@/lib/look";
 
-export function LookBrand({ avatarId }: { avatarId: string }) {
+export function LookBrand({ avatarId, name }: { avatarId: string; name?: string }) {
   const [preview, setPreview] = useState<string | null>(null);
   const id = preview ?? avatarId;
 
@@ -21,7 +21,10 @@ export function LookBrand({ avatarId }: { avatarId: string }) {
   return (
     <Link href="/" className="flex items-center gap-2">
       <KawaiiAvatar id={id} size={40} />
-      <span className="display text-2xl text-copper-2">Garanimal</span>
+      <span className="leading-none">
+        <span className="display block text-2xl text-copper-2">Garanimal</span>
+        {name ? <span className="mt-0.5 block text-xs font-medium text-muted">{name}</span> : null}
+      </span>
     </Link>
   );
 }

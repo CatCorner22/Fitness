@@ -24,4 +24,10 @@ export const STARTER_FOODS = [
   { id: "food-pasta", name: "Pasta, cooked", calories: 131, protein: 5, carbs: 25, fat: 1.1, serving: "100 g" },
   { id: "food-beans", name: "Black beans, cooked", calories: 132, protein: 8.9, carbs: 24, fat: 0.5, serving: "100 g" },
   { id: "food-peanut-butter", name: "Peanut butter", calories: 188, protein: 8, carbs: 6, fat: 16, serving: "2 tbsp" },
+  { id: "food-coffee", name: "Black coffee", calories: 2, protein: 0.3, carbs: 0, fat: 0, serving: "240 ml" },
+  { id: "food-latte", name: "Caffe latte", calories: 150, protein: 8, carbs: 12, fat: 6, serving: "240 ml" },
+  { id: "food-bagel", name: "Bagel", calories: 277, protein: 11, carbs: 55, fat: 1.4, serving: "1 bagel" },
+  { id: "food-protein-bar", name: "Protein bar", calories: 200, protein: 20, carbs: 22, fat: 6, serving: "1 bar" },
+  { id: "food-pizza-slice", name: "Pizza slice", calories: 285, protein: 12, carbs: 36, fat: 10, serving: "1 slice" },
+  { id: "food-overnight-oats", name: "Overnight oats", calories: 320, protein: 18, carbs: 42, fat: 8, serving: "1 bowl" },
 ];

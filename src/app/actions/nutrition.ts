@@ -8,7 +8,7 @@ import { db } from "@/lib/db";
 import { foods, nutritionLogs } from "@/lib/db/schema";
 import { getMealPlanTemplate, scalePlanToTargets } from "@/lib/nutrition/meal-plans";
 import { adaptiveCalories } from "@/lib/nutrition/targets";
-import { todayNutrition } from "@/lib/today";
+import { todayNutrition, yesterdayISO } from "@/lib/today";
 import { clamp, todayISO } from "@/lib/utils";
 
 const MEALS = new Set(["breakfast", "lunch", "dinner", "snack"]);
@@ -113,6 +113,47 @@ export async function applyMealPlanAction(formData: FormData) {
           id: crypto.randomUUID(),
           userId: user.id,
           date,
+          meal: item.meal,
+          foodId: item.foodId,
+          foodName: item.foodName,
+          calories: item.calories,
+          protein: item.protein,
+          carbs: item.carbs,
+          fat: item.fat,
+          servings: item.servings,
+        })
+        .run();
+      inserted++;
+    }
+  });
+
+  revalidatePath("/nutrition");
+  revalidatePath("/");
+  redirect(inserted > 0 ? "/nutrition?toast=food" : "/nutrition?toast=plan-full");
+}
+
+export async function copyYesterdayFoodAction() {
+  const user = await requireUser();
+  const today = todayISO();
+  const yesterday = yesterdayISO();
+  const existing = todayNutrition(user.id);
+  const filledMeals = new Set(existing.logs.map((l) => l.meal));
+  const prior = db
+    .select()
+    .from(nutritionLogs)
+    .where(and(eq(nutritionLogs.userId, user.id), eq(nutritionLogs.date, yesterday)))
+    .all();
+  if (prior.length === 0) redirect("/nutrition?toast=yesterday-empty");
+
+  let inserted = 0;
+  db.transaction((tx) => {
+    for (const item of prior) {
+      if (filledMeals.has(item.meal)) continue;
+      tx.insert(nutritionLogs)
+        .values({
+          id: crypto.randomUUID(),
+          userId: user.id,
+          date: today,
           meal: item.meal,
           foodId: item.foodId,
           foodName: item.foodName,

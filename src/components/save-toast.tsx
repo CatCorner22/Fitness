@@ -13,7 +13,7 @@ const MESSAGES: Record<string, string> = {
   look: "Look saved.",
   skipped: "Rest is fine.",
   "plan-full": "Today already has food — tap Replace if you want a new menu.",
-  "plan-missing": "That meal plan is no longer available.",
+  "yesterday-empty": "Nothing logged yesterday to copy.",
   assess: "Fitness check saved. Sessions will follow it.",
   diet: "Diet block on.",
   "diet-off": "Using training-goal calories again.",

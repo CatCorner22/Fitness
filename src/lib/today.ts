@@ -1,6 +1,6 @@
 import { and, eq, gte } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { nutritionLogs, workouts } from "@/lib/db/schema";
+import { dailyCheckins, nutritionLogs, workouts } from "@/lib/db/schema";
 import type { ProfileRow } from "@/lib/auth";
 import { planAdjustFromAssessment } from "@/lib/assessment/plan-adjust";
 import { getProgram } from "@/lib/programs/catalog";
@@ -77,4 +77,18 @@ export function todayNutrition(userId: string) {
     carbs: logs.reduce((s, l) => s + l.carbs, 0),
     fat: logs.reduce((s, l) => s + l.fat, 0),
   };
+}
+
+export function yesterdayISO(date = new Date()) {
+  const d = new Date(date);
+  d.setDate(d.getDate() - 1);
+  return todayISO(d);
+}
+
+export function todayCheckin(userId: string) {
+  return db
+    .select()
+    .from(dailyCheckins)
+    .where(and(eq(dailyCheckins.userId, userId), eq(dailyCheckins.date, todayISO())))
+    .get();
 }

@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
 import { saveOnboardingAction } from "@/app/actions/profile";
+import { EQUIPMENT_OPTIONS } from "@/lib/equipment";
 import { requireAuthed } from "@/lib/session-page";
 
 export default async function OnboardingPage() {
   const { user, profile } = await requireAuthed({ allowOnboarding: true });
   if (profile?.activeProgramId && !profile.onboarded) redirect("/onboarding/assess");
+  const gear = profile?.equipment?.length ? profile.equipment : ["bodyweight", "dumbbell", "barbell", "bench"];
 
   return (
     <div className="mx-auto max-w-md px-4 py-10">
@@ -30,6 +32,7 @@ export default async function OnboardingPage() {
             </label>
           ))}
         </fieldset>
+        <p className="text-sm text-muted">We pick a plan from that goal. Switch it anytime under You → Plans.</p>
 
         <fieldset className="space-y-3">
           <legend className="text-lg font-semibold">When can you train?</legend>
@@ -60,6 +63,28 @@ export default async function OnboardingPage() {
               <option value="kg">Kilograms</option>
             </select>
           </label>
+        </fieldset>
+
+        <fieldset className="space-y-2">
+          <legend className="text-lg font-semibold">What gear do you have?</legend>
+          <p className="text-sm text-muted">Uncheck what you do not own. Swaps follow this list.</p>
+          <div className="grid gap-2">
+            {EQUIPMENT_OPTIONS.map((eq) => (
+              <label
+                key={eq.value}
+                className="flex min-h-12 items-center gap-3 rounded-2xl border border-line bg-surface px-4 text-sm"
+              >
+                <input
+                  type="checkbox"
+                  name="equipment"
+                  value={eq.value}
+                  defaultChecked={gear.includes(eq.value)}
+                  className="w-auto"
+                />
+                {eq.label}
+              </label>
+            ))}
+          </div>
         </fieldset>
 
         <fieldset className="space-y-3">

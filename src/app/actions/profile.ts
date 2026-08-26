@@ -74,6 +74,11 @@ export async function saveOnboardingAction(formData: FormData) {
     activeProgramId: program?.id ?? "upper_lower",
     programStartDate: todayISO(),
     currentWeek: 1,
+    equipment: JSON.stringify(
+      formData.getAll("equipment").length
+        ? formData.getAll("equipment").map(String).slice(0, 24)
+        : ["bodyweight", "dumbbell"],
+    ),
   };
 
   const existing = db.select().from(profiles).where(eq(profiles.userId, user.id)).get();
@@ -212,6 +217,8 @@ export async function logBodyweightAction(formData: FormData) {
   revalidatePath("/");
   revalidatePath("/nutrition");
   revalidatePath("/progress");
+  const next = String(formData.get("next") || "/");
+  if (next === "/progress") redirect("/progress?toast=weight");
   redirect("/?toast=weight");
 }
 

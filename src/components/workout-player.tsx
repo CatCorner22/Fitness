@@ -83,6 +83,8 @@ export function WorkoutPlayer({
   exercises,
   swaps,
   estimatedMinutes,
+  decisions,
+  aiAvailable,
   aiOptIn,
   ghostSets,
   courseId,
@@ -131,6 +133,14 @@ export function WorkoutPlayer({
 
   const completedCount = sets.filter((s) => s.completed).length;
   const current = grouped.find(([, rows]) => rows.some((s) => !s.completed)) ?? grouped[grouped.length - 1];
+  const catalogRest = current ? (exercises[current[0]]?.restSeconds ?? 90) : 90;
+  const why = current ? decisions.find((d) => d.exerciseId === current[0]) : undefined;
+
+  function formatRest(sec: number) {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return s ? `${m}:${String(s).padStart(2, "0")}` : `${m}:00`;
+  }
 
   useEffect(() => {
     if (!resting) return;
@@ -218,12 +228,14 @@ export function WorkoutPlayer({
         const contentType = res.headers.get("content-type") ?? "";
         if (!contentType.includes("application/json")) throw new Error("log failed");
         setLastExerciseId(set.exerciseId);
+        let rest = exercises[set.exerciseId]?.restSeconds ?? 90;
         try {
           const data = (await res.json()) as {
-            advice?: { weightDeltaKg?: number | null } & SpiritAdvicePanel;
+            advice?: { weightDeltaKg?: number | null; restSeconds?: number } & SpiritAdvicePanel;
           };
-          if (aiOptIn && data.advice) {
-            setSpiritAdvice(data.advice);
+          if (data.advice) {
+            if (aiOptIn) setSpiritAdvice(data.advice);
+            if (aiOptIn && data.advice.restSeconds) rest = data.advice.restSeconds;
             const nextSet = sets.find(
               (s) => s.exerciseId === set.exerciseId && s.setIndex === set.setIndex + 1,
             );
@@ -236,6 +248,8 @@ export function WorkoutPlayer({
         } catch {
           /* set is saved; advice is optional */
         }
+        const moreSets = sets.some((s) => s.id !== set.id && !s.completed);
+        if (moreSets && rest > 0) startRest(rest);
       } catch {
         setLogError("Could not save that set. Check the numbers and tap Log again.");
         setSets((prev) => prev.map((s) => (s.id === set.id ? { ...s, completed: 0 } : s)));
@@ -243,7 +257,7 @@ export function WorkoutPlayer({
         if (loggingRef.current === set.id) loggingRef.current = null;
       }
     },
-    [aiOptIn, grouped.length, hardness, sets, started, units],
+    [aiOptIn, exercises, grouped.length, hardness, sets, started, units],
   );
 
   return (
@@ -260,11 +274,16 @@ export function WorkoutPlayer({
           resting && seconds <= 10 ? "border-copper" : "border-line"
         }`}
       >
-        <p className="text-sm text-muted">Rest when you want it</p>
+        <p className="text-sm text-muted">{resting ? "Rest" : "Rest starts after you log a set"}</p>
         <p className={`display mt-1 text-5xl tabular-nums ${resting && seconds <= 10 ? "text-copper-2" : ""}`}>
           {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, "0")}
         </p>
         <div className="mt-3 flex justify-center gap-3">
+          {catalogRest > 0 && catalogRest !== 90 && catalogRest !== 180 ? (
+            <button type="button" onClick={() => startRest(catalogRest)} className="min-h-11 rounded-xl border border-line px-4">
+              {formatRest(catalogRest)}
+            </button>
+          ) : null}
           <button type="button" onClick={() => startRest(90)} className="min-h-11 rounded-xl border border-line px-4">
             1:30
           </button>
@@ -285,7 +304,7 @@ export function WorkoutPlayer({
         <SpiritAdvisor
           advice={spiritAdvice}
           loading={false}
-          aiAvailable
+          aiAvailable={aiAvailable}
           units={units}
           kgToDisplay={kgToDisplay}
           swapButton={
@@ -341,6 +360,7 @@ export function WorkoutPlayer({
                     Last time: {kgToDisplay(ghost.weightKg, units)} {units} × {ghost.reps}
                   </p>
                 ) : null}
+                {why?.reason ? <p className="mt-1 text-sm text-muted">{why.reason}</p> : null}
                 {ex?.safety === "caution" || ex?.safetyNote ? <p className="mt-1 text-sm text-muted">{ex.safetyNote}</p> : null}
                 {lesson ? (
                   <Link href={lesson.href} className="mt-1 inline-block text-sm text-copper-2">
