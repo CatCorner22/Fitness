@@ -94,7 +94,9 @@ export type DietId =
   | "recomp"
   | "reverse"
   | "beach_week"
-  | "stage_lean";
+  | "stage_lean"
+  | "low_histamine"
+  | "low_histamine_cut";
 
 export interface Exercise {
   id: string;

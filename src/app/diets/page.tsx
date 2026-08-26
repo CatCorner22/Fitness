@@ -4,7 +4,7 @@ import { AppShell } from "@/components/app-shell";
 import { DIET_PROGRAMS } from "@/lib/nutrition/diets";
 import { requireAuthed } from "@/lib/session-page";
 
-const CATEGORY_ORDER = ["Cut", "Peak", "Reverse", "Recomp", "Surplus"] as const;
+const CATEGORY_ORDER = ["Pattern", "Cut", "Peak", "Reverse", "Recomp", "Surplus"] as const;
 
 export default async function DietsPage() {
   const { user, profile } = await requireAuthed();
@@ -17,7 +17,7 @@ export default async function DietsPage() {
     <AppShell user={user} profile={profile}>
       <h1 className="display text-4xl">Diet blocks</h1>
       <p className="mt-2 max-w-2xl text-muted">
-        Periodized calories for a cut, bulk, reverse, or a short peak. Pick one. Training plans stay separate.
+        Periodized calories for a cut, bulk, reverse, or a short peak — plus low-histamine fresh-cook plates if fermented and leftover foods flare you. Pick one. Training plans stay separate.
       </p>
       <div className="mt-8 space-y-10">
         {grouped.map((group) => (

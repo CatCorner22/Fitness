@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { coachMessages, dailyCheckins, workouts } from "@/lib/db/schema";
 import type { ProfileRow } from "@/lib/auth";
 import { bannedExercises, getExercise } from "@/lib/exercises/registry";
+import { isLowEnergy } from "@/lib/assessment/session-adjust";
 import { shouldDeload, weeklyVolume } from "@/lib/autoregulation";
 import { getProgram } from "@/lib/programs/catalog";
 import { todayISO } from "@/lib/utils";
@@ -59,8 +60,8 @@ function scientistVoice(input: ReturnType<typeof coachContext>, profile: Profile
       }`,
     );
   }
-  if (input.checkin?.fatigue && input.checkin.fatigue >= 4) {
-    lines.push("Today's fatigue is high. Keep every listed drill. Cut RPE, not the list. Do not chase RPE 9.");
+  if (isLowEnergy(input.checkin?.fatigue)) {
+    lines.push("Today's energy is low. Keep every listed drill. Cut RPE, not the list. Do not chase RPE 9.");
   }
   if (question) {
     lines.push(answerQuestion(question, input, profile, "scientist"));
@@ -86,9 +87,9 @@ function garanimalVoice(input: ReturnType<typeof coachContext>, profile: Profile
       `${input.completed.length} sessions logged. Good. Stay stayin'. Today is ${input.program?.name ?? "your program"}, week ${profile.currentWeek}. Do the main lifts like they owe you money.`,
     );
   }
-  if (input.checkin?.fatigue && input.checkin.fatigue >= 4) {
+  if (isLowEnergy(input.checkin?.fatigue)) {
     lines.push(
-      "You marked fatigue high. We do not play hero with joints. Every listed drill still happens — lighter, slower, honest RPE. Calluses over excuses — not bone spurs over ego.",
+      "You marked energy low. We do not play hero with joints. Every listed drill still happens — lighter, slower, honest RPE. Calluses over excuses — not bone spurs over ego.",
     );
   }
   if (question) {

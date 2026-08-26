@@ -17,11 +17,13 @@ export type DietProgram = {
   id: DietId;
   name: string;
   tagline: string;
-  category: "Cut" | "Surplus" | "Recomp" | "Reverse" | "Peak";
+  category: "Cut" | "Surplus" | "Recomp" | "Reverse" | "Peak" | "Pattern";
   durationDays: number;
   description: string;
   evidenceNote: string;
   honestNote: string;
+  /** Shown when the block's calendar is done. Defaults to reverse/recomp copy. */
+  afterNote?: string;
   recommendedFor: Goal[];
   mealPlanIds: string[];
   /** Male contest-style peak. Still visible to everyone, with a hard warning. */
@@ -228,11 +230,121 @@ export const DIET_PROGRAMS: DietProgram[] = [
       ),
     ],
   },
+  {
+    id: "low_histamine",
+    name: "Low histamine",
+    tagline: "Fresh-cook plates. Freeze leftovers. Fermented and aged foods wait.",
+    category: "Pattern",
+    durationDays: 56,
+    description:
+      "Eight weeks of a low-histamine food pattern at maintenance calories. Weeks 1–4 stay strict: freshly cooked chicken or turkey, eggs, rice, potato, broccoli, zucchini, apple or pear. Freeze extras the day you cook. Weeks 5–6 reintroduce one avoided food every few days. Weeks 7–8 keep what you actually tolerate.",
+    evidenceNote:
+      "Histamine intolerance is a clinical pattern (Maintz & Novak 2007; Comas-Basté 2020 review), not a lab you can fake with a food list. Lists such as SIGHI are compatibility charts, not RCTs. Histamine rises in leftovers via bacterial decarboxylation; fermented dairy, aged cheese, spinach, avocado, and poorly stored fish are the usual eliminations. DAO enzyme talk is real biochemistry and still not a DIY diagnosis.",
+    honestNote:
+      "This is not a treatment for allergy, anaphylaxis, MCAS, or IBD. If you get hives, wheeze, or swelling, that is emergency medicine, not a menu. A two-month plate will not 'heal your gut.' If nothing changes, you were not histamine-limited — see a clinician instead of stacking more restrictions.",
+    afterNote:
+      "Keep the fresh-cook plates if they help. This was a food pattern, not a forever calorie prescription. Reintroduce foods one at a time rather than staying on elimination by habit.",
+    recommendedFor: ["general", "pole_stage", "exotic_stage", "bodybuilding", "glute_specialization", "strength_endurance", "powerlifting"],
+    mealPlanIds: ["low-histamine-plate", "low-histamine-oats", "low-histamine-lighter"],
+    extremeLean: false,
+    phases: [
+      phase(
+        1,
+        28,
+        "Strict plate",
+        0,
+        1.8,
+        0.45,
+        0.28,
+        "Maintenance calories. Cook fresh, eat the same day, or freeze in meal-size packs. No yogurt, cheddar, spinach, avocado, leftover fish, or sourdough in the default plates.",
+        "Train as written. A food pattern is not a reason to add extra cardio.",
+      ),
+      phase(
+        29,
+        42,
+        "Reintroduce",
+        0,
+        1.8,
+        0.45,
+        0.28,
+        "Add one previously avoided food every 3 days. Note sleep, gut, skin, and headache. Keep the rest of the plate boring so you can tell what changed.",
+        "Same training. Do not test a new food on a meet day or amateur night.",
+      ),
+      phase(
+        43,
+        56,
+        "Personal hold",
+        0,
+        1.8,
+        0.45,
+        0.28,
+        "Keep the foods you tolerate. Drop the ones that clearly flare you. Calories stay at maintenance unless you enroll a cut block.",
+        "This is still a training diet. Restriction is not a personality.",
+      ),
+    ],
+  },
+  {
+    id: "low_histamine_cut",
+    name: "Low histamine cut",
+    tagline: "The same fresh-cook rules, with a modest deficit.",
+    category: "Cut",
+    durationDays: 56,
+    description:
+      "Eight weeks: low-histamine plates plus a capped fat-loss deficit. Same leftover and fermented rules as Low histamine. Protein stays high. Week 8 is a diet break at maintenance so you do not live in elimination plus a crash.",
+    evidenceNote:
+      "Same HIT caveats as the maintenance block (Maintz & Novak 2007; Comas-Basté 2020). Helms 2014 still applies: ~0.5–1% BW/week is the honest fat-loss pace. Stacking a tiny food list with a huge deficit is how people under-eat and then binge on the first 'trigger' food.",
+    honestNote:
+      "If you are not sure histamine is the issue, use Steady cut with normal food. Do not run this from already-low calories. Not medical advice. Stop for allergic symptoms.",
+    afterNote:
+      "Enroll Reverse or Low histamine (maintenance) next. Do not chain another elimination cut.",
+    recommendedFor: ["bodybuilding", "general", "glute_specialization", "pole_stage"],
+    mealPlanIds: ["low-histamine-lighter", "low-histamine-plate", "low-histamine-oats"],
+    extremeLean: false,
+    phases: [
+      phase(
+        1,
+        21,
+        "Fresh-cook deficit",
+        -300,
+        2.0,
+        0.4,
+        0.28,
+        "About 300 kcal under TDEE. Fresh chicken or turkey, rice or potato, eggs, broccoli, zucchini, apple. Freeze extras immediately.",
+        "Keep main lifts. No extra HIIT to 'earn' the restriction.",
+      ),
+      phase(
+        22,
+        49,
+        "Working deficit",
+        -400,
+        2.1,
+        0.38,
+        0.28,
+        "A bit hungrier. Still a training diet. If you are dizzy or the lifts collapse, the deficit is too big — not a willpower test.",
+        "RPE on compounds stays honest. Optional isolation first if sessions feel cooked.",
+      ),
+      phase(
+        50,
+        56,
+        "Diet break",
+        0,
+        2.0,
+        0.45,
+        0.28,
+        "Maintenance for a week on the same fresh-cook foods. Glycogen and water come back. That is not a failed cut.",
+        "Train normally. Next: Reverse or Low histamine hold — not another mini-cut.",
+      ),
+    ],
+  },
 ];
 
 export function getDiet(id: string | null | undefined) {
   if (!id) return undefined;
   return DIET_PROGRAMS.find((d) => d.id === id);
+}
+
+export function isLowHistamineDiet(id: string | null | undefined) {
+  return id === "low_histamine" || id === "low_histamine_cut";
 }
 
 export function dietsForGoal(goal: Goal) {

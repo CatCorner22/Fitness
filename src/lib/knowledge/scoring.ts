@@ -87,7 +87,26 @@ export function scoreArticle(article: KnowledgeArticle, ctx: SearchContext) {
   ) {
     score += 8;
   }
-  if (ctx.query?.toLowerCase().includes("fast") && article.id === "time-restricted-eating") score += 8;
+  if (
+    (ctx.query?.toLowerCase().includes("fasting") ||
+      ctx.query?.toLowerCase().includes("16:8") ||
+      ctx.query?.toLowerCase().includes("tre") ||
+      ctx.query?.toLowerCase().includes("eating window")) &&
+    article.id === "time-restricted-eating"
+  ) {
+    score += 8;
+  }
+  if (
+    (ctx.query?.toLowerCase().includes("fast food") ||
+      ctx.query?.toLowerCase().includes("chick-fil") ||
+      ctx.query?.toLowerCase().includes("chickfila") ||
+      ctx.query?.toLowerCase().includes("chipotle") ||
+      ctx.query?.toLowerCase().includes("drive-thru") ||
+      ctx.query?.toLowerCase().includes("drive thru")) &&
+    article.id === "fast-food-orders"
+  ) {
+    score += 10;
+  }
   if (
     (ctx.query?.toLowerCase().includes("cut") ||
       ctx.query?.toLowerCase().includes("bulk") ||
@@ -96,6 +115,15 @@ export function scoreArticle(article: KnowledgeArticle, ctx: SearchContext) {
     article.id === "diet-periodization"
   ) {
     score += 8;
+  }
+  if (
+    (ctx.query?.toLowerCase().includes("histamine") ||
+      ctx.query?.toLowerCase().includes("leftover") ||
+      ctx.query?.toLowerCase().includes("dao") ||
+      ctx.query?.toLowerCase().includes("fermented")) &&
+    article.id === "low-histamine"
+  ) {
+    score += 10;
   }
   if (
     (ctx.query?.toLowerCase().includes("6%") ||

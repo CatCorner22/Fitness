@@ -2,8 +2,22 @@
 
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { addFoodLogAction } from "@/app/actions/nutrition";
+import {
+  HISTAMINE_LABEL,
+  LOW_HISTAMINE_STAPLES,
+  histamineRank,
+  type HistamineLoad,
+} from "@/lib/nutrition/foods";
+import { isFastFoodId } from "@/lib/nutrition/fast-food";
 
-type Food = { id: string; name: string; calories: number; protein: number; favorite?: number };
+type Food = {
+  id: string;
+  name: string;
+  calories: number;
+  protein: number;
+  favorite?: number;
+  histamine?: HistamineLoad | null;
+};
 
 const RECENTS_EVENT = "garanimal-recents";
 const STAPLE_IDS = [
@@ -49,14 +63,21 @@ function subscribeRecents(onChange: () => void) {
   };
 }
 
+function histamineHint(food: Food, preferLowHistamine: boolean) {
+  if (!preferLowHistamine || !food.histamine) return "";
+  return ` · ${HISTAMINE_LABEL[food.histamine]}`;
+}
+
 export function MealFoodForm({
   foods,
   meal,
   userId,
+  preferLowHistamine = false,
 }: {
   foods: Food[];
   meal: string;
   userId: string;
+  preferLowHistamine?: boolean;
 }) {
   const [query, setQuery] = useState("");
   const [foodId, setFoodId] = useState("");
@@ -69,17 +90,24 @@ export function MealFoodForm({
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return foods;
-    return foods.filter((f) => f.name.toLowerCase().includes(q));
-  }, [foods, query]);
+    const pool = q ? foods : foods.filter((f) => !isFastFoodId(f.id));
+    const matched = q ? pool.filter((f) => f.name.toLowerCase().includes(q)) : pool;
+    if (!preferLowHistamine) return matched;
+    return [...matched].sort((a, b) => histamineRank(a.histamine) - histamineRank(b.histamine));
+  }, [foods, query, preferLowHistamine]);
 
   const recentFoods = recents.map((id) => foods.find((f) => f.id === id)).filter(Boolean) as Food[];
   const favoriteFoods = foods.filter((f) => f.favorite === 1).slice(0, 8);
   const stapleFoods = STAPLE_IDS.map((id) => foods.find((f) => f.id === id)).filter(Boolean) as Food[];
+  const lowHistamineStaples = preferLowHistamine
+    ? (LOW_HISTAMINE_STAPLES.map((id) => foods.find((f) => f.id === id)).filter(Boolean) as Food[])
+    : [];
   const chips = (
-    favoriteFoods.length || recentFoods.length
-      ? [...favoriteFoods, ...recentFoods.filter((f) => !favoriteFoods.some((fav) => fav.id === f.id))]
-      : stapleFoods
+    preferLowHistamine && lowHistamineStaples.length
+      ? lowHistamineStaples
+      : favoriteFoods.length || recentFoods.length
+        ? [...favoriteFoods, ...recentFoods.filter((f) => !favoriteFoods.some((fav) => fav.id === f.id))]
+        : stapleFoods
   ).slice(0, 8);
 
   return (
@@ -119,7 +147,8 @@ export function MealFoodForm({
         <input
           type="search"
           id={`${meal}-food-search`}
-          placeholder="Search foods..."
+          name={`${meal}-food-search`}
+          placeholder="Search foods or Chick-fil-A..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="py-2 text-sm"
@@ -138,6 +167,7 @@ export function MealFoodForm({
           {filtered.slice(0, 40).map((food) => (
             <option key={food.id} value={food.id}>
               {food.name} — {Math.round(food.calories)} kcal · {Math.round(food.protein)}g P
+              {histamineHint(food, preferLowHistamine)}
             </option>
           ))}
         </select>

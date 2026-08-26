@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { foods, profiles, users } from "./schema";
 import { STARTER_FOODS } from "@/lib/nutrition/foods";
+import { fastFoodCatalogFoods } from "@/lib/nutrition/fast-food";
 import type { db as DbType } from "./index";
 
 type Db = typeof DbType;
@@ -29,7 +30,8 @@ const DEFAULT_EQUIPMENT = JSON.stringify([
 ]);
 
 export function seedStarterFoods(db: Db) {
-  for (const food of STARTER_FOODS) {
+  const catalog = [...STARTER_FOODS, ...fastFoodCatalogFoods()];
+  for (const food of catalog) {
     db.insert(foods)
       .values({
         id: food.id,

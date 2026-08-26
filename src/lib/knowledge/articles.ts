@@ -165,19 +165,21 @@ Rotate ME lifts to avoid accommodation. This household template skips specialty-
     summary:
       "Protein ~1.6–2.2 g/kg/day. Calories from Mifflin-St Jeor × activity, adjusted weekly from scale trend if logging intake.",
     body: `Prioritize protein across meals. Aggressive deficits impair performance and recovery. Adaptive TDEE uses logged intake + weigh-ins — transparent math, not a black box.
-Glute/pole/strength goals still need fuel. Enroll a diet block (cut, bulk, reverse, beach week) under Eat if you want periodized calories. The app will not praise crash dieting.`,
+Glute/pole/strength goals still need fuel. Enroll a diet block (cut, bulk, reverse, beach week, or low-histamine plates) under Eat if you want periodized calories or a fresh-cook food pattern. The app will not praise crash dieting.`,
   },
   {
     id: "diet-periodization",
     title: "Diet periodization — cut, bulk, reverse, peak",
-    tags: ["diet", "cut", "bulk", "reverse", "periodization", "calories", "peak", "beach"],
+    tags: ["diet", "cut", "bulk", "reverse", "periodization", "calories", "peak", "beach", "histamine"],
     summary:
-      "Pick a time-capped calorie block. Lose ~0.5–1% bodyweight/week. Reverse after a hard cut. Peak weeks are for people who are already lean.",
+      "Pick a time-capped calorie block. Lose ~0.5–1% bodyweight/week. Reverse after a hard cut. Peak weeks are for people who are already lean. Low-histamine plates are a food pattern, not a second crash diet.",
     body: `Training periodization (volume → intensity → deload) has a food twin. A 12-week cut with a diet break beats an endless 1200-kcal grind. A lean bulk is a small surplus, not a dirty bulk. Reverse is how you leave a deficit.
 
 Helms 2014: slower contest-prep losses kept more lean mass. Garthe 2011: athletes losing ~0.7% BW/week retained more LBM than faster cuts. Morton 2018: ~1.6 g/kg protein is enough for most; leaner cuts go higher.
 
-Peak week is not a fat-loss phase. It is a short appearance window. Beach/photo week in this app is 14 days. Stage lean is 21 days and then Reverse — sub-6% is a weekend for already-lean men, not a lifestyle, and not a female target (essential fat ~10–13%).`,
+Peak week is not a fat-loss phase. It is a short appearance window. Beach/photo week in this app is 14 days. Stage lean is 21 days and then Reverse — sub-6% is a weekend for already-lean men, not a lifestyle, and not a female target (essential fat ~10–13%).
+
+Low-histamine blocks keep the same calorie math and swap the plate: fresh chicken or turkey, eggs, rice, potato, freeze leftovers. They do not diagnose HIT.`,
     citations: ["Helms et al. 2014", "Garthe et al. 2011", "Morton et al. 2018", "Trexler et al. 2014"],
   },
   {
@@ -192,6 +194,45 @@ Male stage condition is often reported around 5–8% and is associated with low 
 
 This app's Stage lean block is 21 days, calorie-floored, no water cut. Beach week is 14 days of a modest extra deficit with consistent sodium. If you cannot see abs in indoor light, use Steady cut. After either peak: Reverse.`,
     citations: ["Helms et al. 2014", "Chappell contest-prep reviews"],
+  },
+  {
+    id: "low-histamine",
+    title: "Low-histamine eating — lists, leftovers, and honesty",
+    tags: ["histamine", "HIT", "DAO", "diet", "leftovers", "fermented", "SIGHI", "nutrition"],
+    summary:
+      "A low-histamine plate is freshly cooked food, not a gut-heal protocol. Freeze leftovers. Fermented dairy, aged cheese, spinach, avocado, and poorly stored fish are the usual eliminations. Not a diagnosis.",
+    body: `Histamine intolerance (HIT) is a clinical pattern: suspected when histamine-rich meals are followed by headache, flushing, hives, gut symptoms, or palpitations, and more obvious allergy has been ruled out (Maintz & Novak 2007). Reviews still call the evidence messy (Comas-Basté 2020). There is no single blood test this app can run.
+
+Food lists (including SIGHI-style charts) are compatibility guides, not randomized trials. Histamine content also changes with storage: bacterial histidine decarboxylase raises histamine in leftovers, canned fish, and anything that sat warm. That is why this app's low-histamine menus say cook fresh or freeze in meal-size packs the same day.
+
+Typical elimination foods here: fermented dairy (yogurt, cottage, cheddar), sourdough, spinach, avocado, almonds, beans, peanut butter, and fish that is not cooked from frozen the same day. Typical keepers: fresh chicken or turkey, eggs, white rice, potato, oats, broccoli, zucchini, carrot, cucumber, apple, pear, blueberries, olive oil.
+
+Do the strict plate for a few weeks, then reintroduce one food every few days. If nothing changes, histamine was not the limiter — stop stacking restrictions. Hives, wheeze, or swelling is emergency care, not a tighter menu. This is not treatment for IgE allergy, MCAS, or IBD.
+
+Calories still matter. Low histamine maintain holds TDEE. Low histamine cut uses a modest Helms-style deficit on the same foods, then a diet break. Do not pair a tiny food list with a crash cut.`,
+    citations: ["Maintz & Novak 2007", "Comas-Basté et al. 2020", "SIGHI food compatibility list (not an RCT)"],
+  },
+  {
+    id: "fast-food-orders",
+    title: "Drive-thru orders that still log",
+    tags: ["fast food", "chick-fil-a", "chipotle", "mcdonalds", "wendys", "taco bell", "subway", "protein", "nutrition"],
+    summary:
+      "If you are already in the drive-thru, pick grilled chicken and skip the combo fries. Chick-fil-A 12-count grilled nuggets are ~200 kcal and 38 g protein. Log it. This is not meal prep.",
+    body: `A training diet survives a Chick-fil-A run. It does not survive pretending the waffle fries were optional after you ate them.
+
+Chick-fil-A: 12 grilled nuggets (~200 kcal, 38 g protein) or the 8-count. Fruit cup, not fries. The grilled sandwich is the carb version. Cool Wrap is a cheese wrap — fine as a bulk meal, not a cut default.
+
+Chipotle: bowl, chicken, salsa, lettuce. Double chicken and skip rice on a cut. One rice scoop after lifting. Queso, sour cream, and chips are how a 400-kcal bowl becomes 1100.
+
+McDonald's: Egg McMuffin at breakfast. McDouble if that is the protein you can actually get. Not a large meal deal.
+
+Wendy's grilled chicken sandwich and a small chili beat a Baconator. Taco Bell: chicken + beans, hold creamy sauces. Subway: 6-inch turkey or grilled chicken, mustard, vegetables, no mayo. Panda: grilled teriyaki or string bean chicken with steamed rice, not orange chicken. In-N-Out: protein-style hamburger; a Double-Double is a meal.
+
+Published menu numbers assume standard scoops. Sauces, extra rice, and 'just a sip' sodas are still calories. Eat it, log it, go home. Fast food is high sodium and not a low-histamine protocol — if you are on that block, grilled chicken eaten immediately is the least-bad order, not a loophole.`,
+    citations: [
+      "Chick-fil-A nutrition guide (12 ct grilled nuggets)",
+      "Chipotle US nutrition facts (chicken 4 oz, cilantro-lime rice)",
+    ],
   },
   {
     id: "time-restricted-eating",

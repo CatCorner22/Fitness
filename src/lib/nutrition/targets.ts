@@ -33,7 +33,8 @@ export function nutritionSpec(profile: ProfileRow): GoalNutrition {
     title: diet.program.name,
     label: finished ? `${diet.program.name} (done)` : phase.name,
     blurb: finished
-      ? "This diet block is over. Enroll Reverse or Recomp so calories do not stay at peak-week forever."
+      ? (diet.program.afterNote ??
+        "This diet block is over. Enroll Reverse or Recomp so calories do not stay at peak-week forever.")
       : phase.note,
     delta: finished ? 0 : phase.delta,
     proteinPerKg: phase.proteinPerKg,

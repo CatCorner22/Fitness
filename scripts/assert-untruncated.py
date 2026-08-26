@@ -207,6 +207,45 @@ if 'original.safety === "banned") continue' not in plan and "original.safety ===
 if "existing.sets +=" in plan:
     errors.append("planner must not merge colliding substitutes into one lift")
 
+diet_src = read(SRC / "lib/nutrition/diets.ts")
+meal_src = read(SRC / "lib/nutrition/meal-plans.ts")
+foods_src = read(SRC / "lib/nutrition/foods.ts")
+diet_ids = set(re.findall(r'id:\s*"(steady_cut|mini_cut|lean_bulk|recomp|reverse|beach_week|stage_lean|low_histamine|low_histamine_cut)"', diet_src))
+if "low_histamine" not in diet_ids or "low_histamine_cut" not in diet_ids:
+    errors.append("low histamine diet blocks missing from DIET_PROGRAMS")
+plan_ids = set(re.findall(r'id:\s*"(low-histamine-[a-z-]+|[a-z-]+)"', meal_src))
+for diet_id, plans_blob in re.findall(r'id:\s*"([^"]+)"[\s\S]*?mealPlanIds:\s*\[([^\]]+)\]', diet_src):
+    for pid in re.findall(r'"([^"]+)"', plans_blob):
+        if f'id: "{pid}"' not in meal_src:
+            errors.append(f"diet {diet_id} references missing meal plan {pid}")
+lh_foods = set(re.findall(r'id:\s*"(food-[^"]+)"', foods_src))
+for pid in ("low-histamine-plate", "low-histamine-oats", "low-histamine-lighter"):
+    if f'id: "{pid}"' not in meal_src:
+        errors.append(f"missing low-histamine meal plan {pid}")
+for fid in re.findall(r'line\("(food-[^"]+)"', meal_src):
+    if fid not in lh_foods:
+        errors.append(f"meal plan references unknown starter food {fid}")
+high_on_lh = {"food-spinach", "food-salmon", "food-greek-yogurt", "food-cottage", "food-cheese", "food-avocado", "food-almonds", "food-beans", "food-peanut-butter", "food-bread"}
+lh_block = "\n".join(
+    part
+    for part in re.split(r'\n  \{', meal_src)
+    if 'id: "low-histamine-' in part
+)
+for fid in high_on_lh:
+    if f'"{fid}"' in lh_block:
+        errors.append(f"low-histamine menu still includes high-histamine food {fid}")
+if '"turkey"' not in foods_src and 'id: "food-turkey"' not in foods_src:
+    errors.append("low-histamine turkey food missing")
+
+ff_src = read(SRC / "lib/nutrition/fast-food.ts")
+if 'id: "cfa"' not in ff_src or "Grilled Nuggets (12)" not in ff_src:
+    errors.append("Chick-fil-A grilled nuggets recommendation missing")
+for chain in ("chipotle", "mcdonalds", "wendys", "tacobell", "subway", "panda", "innout"):
+    if f'id: "{chain}"' not in ff_src:
+        errors.append(f"fast-food restaurant missing: {chain}")
+if "200," not in ff_src or "38," not in ff_src:
+    errors.append("CFA 12-count grilled nuggets should stay ~200 kcal / 38 g protein")
+
 calendar_core = read(SRC / "lib/calendar-core.ts")
 if 'CALENDAR_EPOCH = "2026-08-23"' not in calendar_core:
     errors.append("calendar epoch must stay 2026-08-23")
