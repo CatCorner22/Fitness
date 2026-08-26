@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function FieldTimer({
   name,
@@ -13,26 +13,32 @@ export function FieldTimer({
 }) {
   const [running, setRunning] = useState(false);
   const [elapsed, setElapsed] = useState(0);
-  const [id, setId] = useState<number | null>(null);
+  const intervalRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current != null) window.clearInterval(intervalRef.current);
+    };
+  }, []);
 
   function start() {
-    if (id) window.clearInterval(id);
+    if (intervalRef.current != null) window.clearInterval(intervalRef.current);
     const started = Date.now() - elapsed * 1000;
-    const next = window.setInterval(() => {
+    intervalRef.current = window.setInterval(() => {
       const s = Math.floor((Date.now() - started) / 1000);
       setElapsed(Math.min(cap, s));
       if (s >= cap) {
-        window.clearInterval(next);
+        if (intervalRef.current != null) window.clearInterval(intervalRef.current);
+        intervalRef.current = null;
         setRunning(false);
       }
     }, 200);
-    setId(next);
     setRunning(true);
   }
 
   function stop() {
-    if (id) window.clearInterval(id);
-    setId(null);
+    if (intervalRef.current != null) window.clearInterval(intervalRef.current);
+    intervalRef.current = null;
     setRunning(false);
   }
 

@@ -34,11 +34,12 @@ yarn-error.log*
 .env*
 !.env.example
 
-# local household database
+# local household database and generated auth fallback
 /data/*.db
 /data/*.db-journal
 /data/*.db-wal
 /data/*.db-shm
+/data/garanimal.auth-secret
 
 # vercel
 .vercel
@@ -50,4 +51,3 @@ next-env.d.ts
 # python
 scripts/__pycache__/
 *.pyc
-

@@ -47,6 +47,10 @@ function subscribeNow(onStoreChange: () => void) {
   }
   return () => {
     nowListeners.delete(onStoreChange);
+    if (nowListeners.size === 0 && nowInterval != null) {
+      window.clearInterval(nowInterval);
+      nowInterval = undefined;
+    }
   };
 }
 

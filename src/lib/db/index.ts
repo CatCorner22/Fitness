@@ -5,8 +5,46 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import * as schema from "./schema";
 import { seedIfNeeded } from "./seed";
 
-const dataDir = path.join(process.cwd(), "data");
-const dbPath = path.join(dataDir, "garanimal.db");
+const BUSY_MS = 8000;
+
+function resolveDbPath() {
+  const explicit = process.env.DATABASE_PATH?.trim();
+  if (explicit) return path.resolve(explicit);
+  const dir = process.env.GARANIMAL_DATA_DIR?.trim() || path.join(process.cwd(), "data");
+  return path.join(dir, "garanimal.db");
+}
+
+const dbPath = resolveDbPath();
+const dataDir = path.dirname(dbPath);
+
+function sqliteOpenError(error: unknown): Error {
+  const message = error instanceof Error ? error.message : String(error);
+  if (/Could not locate the bindings|NODE_MODULE_VERSION|was compiled against a different Node\.js version/i.test(message)) {
+    return new Error(
+      "better-sqlite3 native bindings failed to load. Run `npm rebuild better-sqlite3` (Replit: install gcc/python via replit.nix, then rebuild).",
+    );
+  }
+  if (/SQLITE_CANTOPEN|EACCES|permission denied|readonly database|unable to open database file/i.test(message)) {
+    return new Error(
+      `Cannot open SQLite at ${dbPath}. Make sure the data directory is writable. On Replit Publish, use a Reserved VM so this file survives restarts.`,
+    );
+  }
+  return error instanceof Error ? error : new Error(message);
+}
+
+function applyJournalMode(sqlite: Database.Database) {
+  try {
+    const result = sqlite.pragma("journal_mode = WAL") as { journal_mode?: string }[];
+    const mode = String(result?.[0]?.journal_mode ?? "").toLowerCase();
+    if (mode !== "wal") sqlite.pragma("journal_mode = DELETE");
+  } catch {
+    try {
+      sqlite.pragma("journal_mode = DELETE");
+    } catch {
+      // Keep the engine default if this filesystem rejects journal pragmas.
+    }
+  }
+}
 
 const PROFILE_COLUMNS: { name: string; sql: string }[] = [
   { name: "assessment_json", sql: "ALTER TABLE profiles ADD COLUMN assessment_json TEXT" },
@@ -70,10 +108,17 @@ function migrate(sqlite: Database.Database) {
 
 function createConnection() {
   fs.mkdirSync(dataDir, { recursive: true });
-  const sqlite = globalForDb.sqlite ?? new Database(dbPath);
-  sqlite.pragma("journal_mode = WAL");
+  let sqlite = globalForDb.sqlite;
+  if (!sqlite) {
+    try {
+      sqlite = new Database(dbPath, { timeout: BUSY_MS });
+    } catch (error) {
+      throw sqliteOpenError(error);
+    }
+  }
+  applyJournalMode(sqlite);
   sqlite.pragma("foreign_keys = ON");
-  sqlite.pragma("busy_timeout = 5000");
+  sqlite.pragma(`busy_timeout = ${BUSY_MS}`);
   sqlite.pragma("synchronous = NORMAL");
   sqlite.exec(`
     CREATE TABLE IF NOT EXISTS users (

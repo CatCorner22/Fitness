@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { authSecretBytes } from "@/lib/auth-secret";
 import { db, ensureMigrated } from "@/lib/db";
+import { cookiePolicy } from "@/lib/runtime";
 import { profiles, users } from "@/lib/db/schema";
 import type { AssessmentResult, FitnessTier } from "@/lib/assessment/types";
 import { parseAssessment } from "@/lib/assessment/parse";
@@ -27,17 +28,25 @@ export async function createSession(user: SessionUser) {
     .setIssuedAt()
     .setExpirationTime("30d")
     .sign(secret());
+  const policy = cookiePolicy();
   (await cookies()).set(COOKIE, token, {
     httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    sameSite: policy.sameSite,
+    secure: policy.secure,
     path: "/",
     maxAge: 60 * 60 * 24 * 30,
   });
 }
 
 export async function destroySession() {
-  (await cookies()).delete(COOKIE);
+  const policy = cookiePolicy();
+  (await cookies()).set(COOKIE, "", {
+    httpOnly: true,
+    sameSite: policy.sameSite,
+    secure: policy.secure,
+    path: "/",
+    maxAge: 0,
+  });
 }
 
 export async function getSession(): Promise<SessionUser | null> {

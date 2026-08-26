@@ -1,0 +1,16 @@
+run = "npm run dev"
+modules = ["nodejs-22"]
+
+[nix]
+channel = "stable-24_11"
+
+# SQLite lives on the workspace disk. Do not set deploymentTarget = "cloudrun"
+# (Autoscale) — that filesystem is ephemeral and household logs would vanish.
+[deployment]
+run = ["sh", "-c", "npm run start"]
+
+[[ports]]
+localPort = 3000
+externalPort = 80
+
+hidden = [".next", "node_modules"]

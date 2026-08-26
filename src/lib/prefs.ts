@@ -1,16 +1,21 @@
 import { cache } from "react";
 import { cookies } from "next/headers";
 import { DEFAULT_LOOK, parseLook, type LookPrefs } from "@/lib/look";
+import { cookiePolicy } from "@/lib/runtime";
 
 const AI_COOKIE = "garanimal_ai";
 const THEME_COOKIE = "garanimal_theme";
 const LOOK_COOKIE = "garanimal_look";
 
-const COOKIE_OPTS = {
-  path: "/",
-  maxAge: 60 * 60 * 24 * 365,
-  sameSite: "lax" as const,
-};
+function prefCookieOpts() {
+  const policy = cookiePolicy();
+  return {
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+    sameSite: policy.sameSite,
+    secure: policy.secure,
+  };
+}
 
 export const getAiOptIn = cache(async () => {
   return (await cookies()).get(AI_COOKIE)?.value === "1";
@@ -30,11 +35,12 @@ export async function setPrefCookies(
   look?: LookPrefs,
 ) {
   const jar = await cookies();
+  const opts = prefCookieOpts();
   if (aiOptIn !== undefined) {
-    jar.set(AI_COOKIE, aiOptIn ? "1" : "0", COOKIE_OPTS);
+    jar.set(AI_COOKIE, aiOptIn ? "1" : "0", opts);
   }
-  jar.set(THEME_COOKIE, theme, COOKIE_OPTS);
+  jar.set(THEME_COOKIE, theme, opts);
   if (look) {
-    jar.set(LOOK_COOKIE, JSON.stringify(look), COOKIE_OPTS);
+    jar.set(LOOK_COOKIE, JSON.stringify(look), opts);
   }
 }
