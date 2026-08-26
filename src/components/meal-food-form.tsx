@@ -8,6 +8,7 @@ import {
   histamineRank,
   type HistamineLoad,
 } from "@/lib/nutrition/foods";
+import { isFastFoodId } from "@/lib/nutrition/fast-food";
 
 type Food = {
   id: string;
@@ -80,7 +81,8 @@ export function MealFoodForm({
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const matched = q ? foods.filter((f) => f.name.toLowerCase().includes(q)) : foods;
+    const pool = q ? foods : foods.filter((f) => !isFastFoodId(f.id));
+    const matched = q ? pool.filter((f) => f.name.toLowerCase().includes(q)) : pool;
     if (!preferLowHistamine) return matched;
     return [...matched].sort((a, b) => histamineRank(a.histamine) - histamineRank(b.histamine));
   }, [foods, query, preferLowHistamine]);
@@ -107,7 +109,7 @@ export function MealFoodForm({
       <input type="hidden" name="meal" value={meal} />
       <input
         type="search"
-        placeholder="Search foods..."
+        placeholder="Search foods or Chick-fil-A..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         className="py-2 text-sm"

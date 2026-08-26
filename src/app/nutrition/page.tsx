@@ -3,6 +3,7 @@ import { eq, isNull, or } from "drizzle-orm";
 import { clearDietAction, setDietStartAction } from "@/app/actions/diet";
 import { addCustomFoodAction, deleteFoodLogAction } from "@/app/actions/nutrition";
 import { AppShell } from "@/components/app-shell";
+import { FastFoodPicks } from "@/components/fast-food-picks";
 import { FastingTimer } from "@/components/fasting-timer";
 import { MealFoodForm } from "@/components/meal-food-form";
 import { MealPlanCard } from "@/components/meal-plan-card";
@@ -165,6 +166,8 @@ export default async function NutritionPage() {
           ) : null}
         </section>
       ) : null}
+
+      <FastFoodPicks dietId={profile.activeDietId} goal={profile.goal} lowHistamine={lowHistamine} />
 
       <div className="mt-6 space-y-4">
         {MEALS.map((meal) => {

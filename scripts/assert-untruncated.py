@@ -190,6 +190,15 @@ for fid in high_on_lh:
 if '"turkey"' not in foods_src and 'id: "food-turkey"' not in foods_src:
     errors.append("low-histamine turkey food missing")
 
+ff_src = read(SRC / "lib/nutrition/fast-food.ts")
+if 'id: "cfa"' not in ff_src or "Grilled Nuggets (12)" not in ff_src:
+    errors.append("Chick-fil-A grilled nuggets recommendation missing")
+for chain in ("chipotle", "mcdonalds", "wendys", "tacobell", "subway", "panda", "innout"):
+    if f'id: "{chain}"' not in ff_src:
+        errors.append(f"fast-food restaurant missing: {chain}")
+if "200," not in ff_src or "38," not in ff_src:
+    errors.append("CFA 12-count grilled nuggets should stay ~200 kcal / 38 g protein")
+
 calendar_core = read(SRC / "lib/calendar-core.ts")
 if 'CALENDAR_EPOCH = "2026-08-23"' not in calendar_core:
     errors.append("calendar epoch must stay 2026-08-23")

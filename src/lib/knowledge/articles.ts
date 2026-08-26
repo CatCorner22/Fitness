@@ -213,6 +213,28 @@ Calories still matter. Low histamine maintain holds TDEE. Low histamine cut uses
     citations: ["Maintz & Novak 2007", "Comas-Basté et al. 2020", "SIGHI food compatibility list (not an RCT)"],
   },
   {
+    id: "fast-food-orders",
+    title: "Drive-thru orders that still log",
+    tags: ["fast food", "chick-fil-a", "chipotle", "mcdonalds", "wendys", "taco bell", "subway", "protein", "nutrition"],
+    summary:
+      "If you are already in the drive-thru, pick grilled chicken and skip the combo fries. Chick-fil-A 12-count grilled nuggets are ~200 kcal and 38 g protein. Log it. This is not meal prep.",
+    body: `A training diet survives a Chick-fil-A run. It does not survive pretending the waffle fries were optional after you ate them.
+
+Chick-fil-A: 12 grilled nuggets (~200 kcal, 38 g protein) or the 8-count. Fruit cup, not fries. The grilled sandwich is the carb version. Cool Wrap is a cheese wrap — fine as a bulk meal, not a cut default.
+
+Chipotle: bowl, chicken, salsa, lettuce. Double chicken and skip rice on a cut. One rice scoop after lifting. Queso, sour cream, and chips are how a 400-kcal bowl becomes 1100.
+
+McDonald's: Egg McMuffin at breakfast. McDouble if that is the protein you can actually get. Not a large meal deal.
+
+Wendy's grilled chicken sandwich and a small chili beat a Baconator. Taco Bell: chicken + beans, hold creamy sauces. Subway: 6-inch turkey or grilled chicken, mustard, vegetables, no mayo. Panda: grilled teriyaki or string bean chicken with steamed rice, not orange chicken. In-N-Out: protein-style hamburger; a Double-Double is a meal.
+
+Published menu numbers assume standard scoops. Sauces, extra rice, and 'just a sip' sodas are still calories. Eat it, log it, go home. Fast food is high sodium and not a low-histamine protocol — if you are on that block, grilled chicken eaten immediately is the least-bad order, not a loophole.`,
+    citations: [
+      "Chick-fil-A nutrition guide (12 ct grilled nuggets)",
+      "Chipotle US nutrition facts (chicken 4 oz, cilantro-lime rice)",
+    ],
+  },
+  {
     id: "time-restricted-eating",
     title: "Fasting windows are a timer, not a metabolism hack",
     tags: ["fasting", "TRE", "16:8", "intermittent fasting", "eating window"],

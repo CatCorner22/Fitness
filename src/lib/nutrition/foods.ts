@@ -1,3 +1,5 @@
+import { FAST_FOOD_BY_ID } from "@/lib/nutrition/fast-food";
+
 export type HistamineLoad = "low" | "caution" | "high";
 
 export type StarterFood = {
@@ -65,7 +67,7 @@ const HISTAMINE_BY_ID = new Map(STARTER_FOODS.map((food) => [food.id, food.hista
 
 export function histamineLoad(foodId: string | null | undefined): HistamineLoad | null {
   if (!foodId) return null;
-  return HISTAMINE_BY_ID.get(foodId) ?? null;
+  return HISTAMINE_BY_ID.get(foodId) ?? FAST_FOOD_BY_ID.get(foodId)?.histamine ?? null;
 }
 
 export function histamineRank(load: HistamineLoad | null | undefined) {
