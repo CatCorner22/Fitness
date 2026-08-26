@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import {
   allowedPreviewOrigins,
   cookiePolicy,
@@ -84,9 +86,17 @@ try {
 }
 expect(threw, "placeholder AUTH_SECRET is rejected in generic production");
 
-const derived = resolveAuthSecret({ NODE_ENV: "production", REPL_ID: "repl-xyz" });
-const expected = createHash("sha256").update("garanimal-replit:repl-xyz").digest("hex");
-expect(derived === expected, "Replit production can boot without AUTH_SECRET");
-expect(derived.length === 64, "derived secret is 32+ characters");
+const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "garanimal-auth-"));
+try {
+  const replitEnv = { NODE_ENV: "production", REPL_ID: "repl-xyz", GARANIMAL_DATA_DIR: dataDir };
+  const generated = resolveAuthSecret(replitEnv);
+  const secretPath = path.join(dataDir, "garanimal.auth-secret");
+  expect(generated.length === 64, "generated secret is 32 random bytes encoded as hex");
+  expect(generated === resolveAuthSecret(replitEnv), "generated secret persists across restarts");
+  expect(fs.existsSync(secretPath), "generated secret is stored beside application data");
+  expect((fs.statSync(secretPath).mode & 0o777) === 0o600, "generated secret is owner-readable only");
+} finally {
+  fs.rmSync(dataDir, { recursive: true, force: true });
+}
 
 console.log("assert-runtime: ok");
