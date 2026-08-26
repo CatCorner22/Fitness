@@ -130,10 +130,57 @@ stills = [
     ROOT / "public/instructor/nyx-hang.webp",
     ROOT / "public/instructor/nyx-floor.webp",
     ROOT / "public/instructor/nyx-climb.webp",
+    ROOT / "public/instructor/nyx-heels.webp",
+    ROOT / "public/instructor/nyx-hands.webp",
+    ROOT / "public/instructor/nyx-mermaid.webp",
+    ROOT / "public/instructor/nyx-fireman.webp",
+    ROOT / "public/instructor/nyx-kick.webp",
+    ROOT / "public/instructor/nyx-grind.webp",
+    ROOT / "public/instructor/nyx-crawl.webp",
+    ROOT / "public/instructor/nyx-peel.webp",
+    ROOT / "public/instructor/nyx-turn.webp",
 ]
 for still in stills:
     if not still.exists() or still.stat().st_size < 40_000:
         errors.append(f"photoreal still missing or still tiny: {still.name}")
+    plate = ROOT / "public/instructor/plates" / still.name.replace("nyx-", "nyx-plate-")
+    if not plate.exists() or plate.stat().st_size < 40_000:
+        errors.append(f"editorial plate missing or still tiny: {plate.name}")
+
+still_map = read(SRC / "lib/course/skill-stills.ts")
+catalog = read(SRC / "lib/course/catalog.ts")
+catalog_ids: set[str] = set()
+for block in re.findall(r"skillIds:\s*\[([^\]]+)\]", catalog):
+    catalog_ids.update(re.findall(r'"([^"]+)"', block))
+mapped_ids = {
+    key
+    for key, _still in re.findall(
+        r'(?:^|\n)\s+"?([A-Za-z][\w-]*)"?:\s+"(portrait|walk|wave|floor|chair|sit|pole|hang|climb|heels|hands|mermaid|fireman|kick|grind|crawl|peel|turn)"',
+        still_map,
+    )
+}
+missing_map = sorted(catalog_ids - mapped_ids)
+if missing_map:
+    errors.append(f"catalog skills missing SKILL_STILL: {missing_map}")
+skill_file_ids = set(collect_ids(r'^\s+id:\s*"([^"]+)"', *(SRC / "lib/course").glob("*-skills.ts"), SRC / "lib/course/skills.ts"))
+orphan_map = sorted(mapped_ids - skill_file_ids)
+if orphan_map:
+    errors.append(f"SKILL_STILL keys that are not skills: {orphan_map}")
+
+for path in (*(SRC / "lib/course").glob("*-skills.ts"), SRC / "lib/course/skills.ts"):
+    blob = read(path)
+    if "NYX.photos" in blob or "NYX.plates" in blob:
+        errors.append(f"{path.name} still hardcodes stills instead of SKILL_STILL")
+
+instructor_src = read(SRC / "lib/course/instructor.ts")
+gallery_block = re.search(r"NYX_GALLERY: NyxStill\[\] = \[([^\]]+)\]", instructor_src)
+photos_block = re.search(r"photos:\s*\{([^}]+)\}", instructor_src)
+if gallery_block and photos_block:
+    shown = set(re.findall(r'"([^"]+)"', gallery_block.group(1)))
+    photo_keys = set(re.findall(r"^\s+([a-z]+):", photos_block.group(1), re.M))
+    missing_gallery = sorted(photo_keys - shown - {"portrait"})
+    if missing_gallery:
+        errors.append(f"NYX_GALLERY omits stills: {missing_gallery}")
 
 banned_ids = set()
 for path in exercise_files:

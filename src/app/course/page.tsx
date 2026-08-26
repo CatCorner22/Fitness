@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { COURSES } from "@/lib/course/catalog";
-import { NYX } from "@/lib/course/instructor";
+import { NYX, NYX_GALLERY } from "@/lib/course/instructor";
 import { SKILLS } from "@/lib/course/skills";
 import { requireAuthed } from "@/lib/session-page";
 
@@ -18,11 +18,25 @@ export default async function CourseIndexPage() {
       </p>
       <figure className="mt-6 overflow-hidden rounded-3xl border border-line">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={NYX.portrait} alt={NYX.fullName} className="w-full" />
+        <img src={NYX.portrait} alt={NYX.fullName} className="aspect-[2/3] w-full object-cover" />
         <figcaption className="bg-surface px-4 py-3 text-sm text-muted">
           {NYX.fullName}, {NYX.ageLabel}. {NYX.look}
         </figcaption>
       </figure>
+      <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+        {NYX_GALLERY.map((key) => (
+          <figure key={key} className="w-24 shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={NYX.photos[key]}
+              alt={`${NYX.name} ${key} still`}
+              className="aspect-[2/3] w-full rounded-2xl border border-line object-cover"
+              loading="lazy"
+              decoding="async"
+            />
+          </figure>
+        ))}
+      </div>
       <div className="mt-8 space-y-4">
         {COURSES.map((course) => (
           <article key={course.id} className="rounded-3xl border border-line bg-surface p-6">

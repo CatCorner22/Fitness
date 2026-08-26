@@ -162,7 +162,7 @@ export function SkillLesson({ skill, compact = false }: { skill: Skill; compact?
       {open.includes("photo") ? (
         <figure className="overflow-hidden rounded-3xl border border-line">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={skill.photo} alt={`${NYX.name} demonstrating ${skill.name}`} className="w-full" />
+          <img src={skill.photo} alt={`${NYX.name} demonstrating ${skill.name}`} className="aspect-[2/3] w-full object-cover" loading="eager" decoding="async" />
           <figcaption className="bg-surface px-4 py-2 text-xs text-muted">
             Studio photo of {NYX.name} — photoreal, same instructor as the plates.
           </figcaption>
@@ -172,7 +172,7 @@ export function SkillLesson({ skill, compact = false }: { skill: Skill; compact?
       {open.includes("plate") ? (
         <figure className="overflow-hidden rounded-3xl border border-line">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={skill.plate} alt={`Editorial plate: ${skill.name}`} className="w-full" />
+          <img src={skill.plate} alt={`Editorial plate: ${skill.name}`} className="aspect-[2/3] w-full object-cover" loading="lazy" decoding="async" />
           <figcaption className="bg-surface px-4 py-2 text-xs text-muted">
             Editorial plate of {NYX.name} — photoreal still with stage-lab type. Fictional adult instructor.
           </figcaption>

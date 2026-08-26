@@ -1,4 +1,3 @@
-import { NYX } from "./instructor";
 import { makeSkill as skill } from "./skill-factory";
 import type { Skill } from "./types";
 
@@ -26,8 +25,6 @@ export const EXOTIC_CLUB_SKILLS: Skill[] = [
     voiceScript:
       "Heels are a costume, not a personality. Shorter steps. Soft knees. The same slow walk you already own. Pause in a pose you can breathe in. If the ankle rolls, we go back to trainers. Nobody tips a limp. We stay intact.",
     diagram: "heels",
-    photo: NYX.photos.walk,
-    plate: NYX.plates.walk,
     practice: "Two lengths of the room in heels. Sit. Take them off. One length in trainers to remind the ankle.",
     passWhen: "You can walk eight steps, pause, and turn without looking at your feet.",
     firstThen: { first: "Quiet trainer walk", then: "Short heel walk" },
@@ -53,8 +50,6 @@ export const EXOTIC_CLUB_SKILLS: Skill[] = [
     voiceScript:
       "Hands next. Long fingers. Trace — thigh, waist, hair — then away. At the rail, an open palm. You are receiving, not snatching. Soft. If you do not know what to do with them, frame your face and walk. Floppy is free. We are not free.",
     diagram: "hands",
-    photo: NYX.photos.portrait,
-    plate: NYX.plates.portrait,
     practice: "One 8-count walk with a hand pathway. One 8-count with an open palm at the wall mark.",
     passWhen: "Hands have a job on every count. No dead fists.",
     firstThen: { first: "Walk you own", then: "Give the hands a path" },
@@ -81,8 +76,6 @@ export const EXOTIC_CLUB_SKILLS: Skill[] = [
     voiceScript:
       "Tape a box. The pole is home. The front edge is the rail. Walk front. Pause. Corner. Other corner. Home. Same slow walk. If you live on the pole all night, the room cannot see you. Make them wait while you travel.",
     diagram: "walk",
-    photo: NYX.photos.walk,
-    plate: NYX.plates.walk,
     practice: "Three maps. Rest. One map with a pose in each corner.",
     passWhen: "You can hit rail, both corners, and home without rushing.",
     firstThen: { first: "Walk on a line", then: "Walk the whole box" },
@@ -108,8 +101,6 @@ export const EXOTIC_CLUB_SKILLS: Skill[] = [
     voiceScript:
       "Shoulders only. Head stays. Tiny. Musical. If your neck joins in, we stopped being expensive. Eight counts. Rest eight. This is a chorus you can do in heels later — not a seizure.",
     diagram: "wave",
-    photo: NYX.photos.portrait,
-    plate: NYX.plates.portrait,
     practice: "Two phrases of eight. Water. One more if the neck is quiet.",
     passWhen: "Head stays. Shoulders read. You can talk while you do it.",
     firstThen: { first: "Still head", then: "Small shoulder tick" },
@@ -135,8 +126,6 @@ export const EXOTIC_CLUB_SKILLS: Skill[] = [
     voiceScript:
       "Hands on the chair back. Air between you and the furniture — this is a stand-in, not a person. Hips draw a slow circle. Ribs quiet. If you need a huge backbend, you are in the wrong joint. Walk off like you meant the last count.",
     diagram: "grind",
-    photo: NYX.photos.chair,
-    plate: NYX.plates.chair,
     practice: "One eight each direction. Walk away. Repeat once.",
     passWhen: "The circle is even both ways and you can breathe through it.",
     firstThen: { first: "Standing figure-8", then: "Same hips at a chair back" },
@@ -162,8 +151,6 @@ export const EXOTIC_CLUB_SKILLS: Skill[] = [
     voiceScript:
       "Tabletop. Opposite hand, opposite knee. Slow enough that I could count it. Eyes on the rail. If the wrists talk, fists or forearms. This is a verse. Treat it like one. No splits required.",
     diagram: "crawl",
-    photo: NYX.photos.floor,
-    plate: NYX.plates.floor,
     practice: "Four crawls down. Pause. Four back. Rest.",
     passWhen: "Hips stay level and you can pause without collapsing.",
     firstThen: { first: "Quiet tabletop", then: "Opposite crawl" },
@@ -190,8 +177,6 @@ export const EXOTIC_CLUB_SKILLS: Skill[] = [
     voiceScript:
       "Sit to the hip. Tall chest. Two breaths. Other side. Same time. I do not care which side photographs better. A mermaid is a rest that still looks like a set. If the knee yells, we stay kneeling.",
     diagram: "floor",
-    photo: NYX.photos.floor,
-    plate: NYX.plates.floor,
     practice: "Three sits each side. Stand. Shake the legs.",
     passWhen: "Equal time both hips. You can breathe in the pose.",
     firstThen: { first: "Tall kneeling", then: "Hip sit both sides" },
@@ -218,8 +203,6 @@ export const EXOTIC_CLUB_SKILLS: Skill[] = [
     voiceScript:
       "This is the ladder. Stand. Kneel. Sit. Maybe the back — no neck. Then up the same way. If you drop a level, we do it again. Getting up is how you leave the stage. Practice the up as much as the down.",
     diagram: "floor",
-    photo: NYX.photos.floor,
-    plate: NYX.plates.floor,
     practice: "Three full ladders. Rest between. No extra tricks inside.",
     passWhen: "Down and up take the same slow tempo. No thud.",
     firstThen: { first: "Floor descent you own", then: "Full ladder with a reverse" },
@@ -245,8 +228,6 @@ export const EXOTIC_CLUB_SKILLS: Skill[] = [
     voiceScript:
       "On the pads. Hips draw. Both ways. Neck stays free — no bridges. Eyes on the rail if you can. Come back to tabletop. That is a chorus. Leave the circus for someone else's night.",
     diagram: "grind",
-    photo: NYX.photos.floor,
-    plate: NYX.plates.floor,
     practice: "Two choruses each direction. Rest on your side.",
     passWhen: "You can reverse direction without losing the pads or the breath.",
     firstThen: { first: "Tabletop home base", then: "Hip circle on the floor" },
@@ -272,8 +253,6 @@ export const EXOTIC_CLUB_SKILLS: Skill[] = [
     voiceScript:
       "Turn. Sit facing away. The chair is still furniture. Tall back — they can see you from behind. Small circle. Stand. Face the rail. Walk off. If you disappear into the seat, we lost the verse.",
     diagram: "chair",
-    photo: NYX.photos.chair,
-    plate: NYX.plates.chair,
     practice: "Four reverse sits. Same slow stand every time.",
     passWhen: "Sit and stand are quiet. The back stays long.",
     firstThen: { first: "Front-edge sit you own", then: "Same sit facing away" },
@@ -299,8 +278,6 @@ export const EXOTIC_CLUB_SKILLS: Skill[] = [
     voiceScript:
       "Three parts. Walk in. Sit. That is the approach. Then the body — hips or a roll, on the chair, not on a person. Then the close: still, stand, walk off. If you skip the close, it reads as panic. Furniture only at home. In a club, consent and the house rules are the real choreography.",
     diagram: "chair",
-    photo: NYX.photos.chair,
-    plate: NYX.plates.chair,
     practice: "Three full phrases. Rest an 8 between. No extra tricks.",
     passWhen: "A stranger could name approach, body, and close from the timing.",
     firstThen: { first: "Chair approach you own", then: "Approach, body, close" },
@@ -326,8 +303,6 @@ export const EXOTIC_CLUB_SKILLS: Skill[] = [
     voiceScript:
       "The hips move the cloth. Hands help once, then they go back to framing. If the skirt fights you, wear a simpler one tonight. Eyes up. Fabric is a prop. Props that pick fights get cut.",
     diagram: "layer",
-    photo: NYX.photos.walk,
-    plate: NYX.plates.walk,
     practice: "Two 8-counts in the real garment. Change nothing else.",
     passWhen: "You can walk and figure-8 without looking at the hem.",
     firstThen: { first: "Hip figure-8", then: "Same 8 in the skirt" },
@@ -353,8 +328,6 @@ export const EXOTIC_CLUB_SKILLS: Skill[] = [
     voiceScript:
       "Phrase. Peel. Phrase. On the count, not in a panic. Put the layer somewhere you chose. Eyes up. If the top fights you, we change the top, not the music. This is adult set-craft. Unhurried is the point.",
     diagram: "layer",
-    photo: NYX.photos.portrait,
-    plate: NYX.plates.portrait,
     practice: "Three peels with the real layer. Full rest between.",
     passWhen: "The peel fits inside one 8 and you still know where you are on stage.",
     firstThen: { first: "8-count you own", then: "Same 8 plus one layer" },
@@ -380,8 +353,6 @@ export const EXOTIC_CLUB_SKILLS: Skill[] = [
     voiceScript:
       "Pick a plan. Keep the heels, or take them off on an eight and park them upstage. Do not invent on the way down. Pads. Hand if you need it. Intact ankles are the aesthetic.",
     diagram: "heels",
-    photo: NYX.photos.floor,
-    plate: NYX.plates.floor,
     practice: "Two descents keeping heels. Two with a counted take-off.",
     passWhen: "You can name the plan out loud and then do it.",
     firstThen: { first: "Floor descent in trainers", then: "Same descent with a heel plan" },
@@ -407,8 +378,6 @@ export const EXOTIC_CLUB_SKILLS: Skill[] = [
     voiceScript:
       "Walk to the rail. Look. Open palm. Two counts. Then you leave — a corner, or home. Camping the rail is needy. Visiting the rail is expensive. In a real club the house rules win. At home, the wall is your audience.",
     diagram: "hands",
-    photo: NYX.photos.walk,
-    plate: NYX.plates.walk,
     practice: "Five approaches. Different exits: corner, home, kneel.",
     passWhen: "You can arrive, pause, and leave without speeding up.",
     firstThen: { first: "Own the rectangle", then: "Visit the rail and leave" },
@@ -434,8 +403,6 @@ export const EXOTIC_CLUB_SKILLS: Skill[] = [
     voiceScript:
       "Two songs. First song you arrive — walk, box, maybe a layer, pole as a prop. Rest. Second song is the body — chair, floor, one skill you already own, then you close. Amateur night might only give you one song. Then we compress: arrive, body, close, stop. Never a new invert. Never a panic trick.",
     diagram: "song",
-    photo: NYX.photos.walk,
-    plate: NYX.plates.walk,
     practice: "Talk the map out loud. Then run song one. Rest. Run song two. Sit.",
     passWhen: "You can say the map without moving, then dance it without adding.",
     firstThen: { first: "One 8-count", then: "Two-song map of owned skills" },
@@ -461,8 +428,6 @@ export const EXOTIC_CLUB_SKILLS: Skill[] = [
     voiceScript:
       "Still. Look. Pose. Walk off. Same slow. If the song has bars left, you hold. You do not invent. Jogging off is how a set unravels. We leave like we arrived.",
     diagram: "exit",
-    photo: NYX.photos.walk,
-    plate: NYX.plates.walk,
     practice: "Five closes from different phrases: walk, kneel, chair.",
     passWhen: "The last eight are slower than the middle of the set, not faster.",
     firstThen: { first: "Pause pose you own", then: "Pose plus walk off" },
@@ -488,8 +453,6 @@ export const EXOTIC_CLUB_SKILLS: Skill[] = [
     voiceScript:
       "Something will miss. Pause. Two counts. Walk. Continue the map. Do not invent a save. Do not apologize to the wall. A recovery that stays slow looks like choreography. A recovery that speeds up looks like a mistake.",
     diagram: "exit",
-    photo: NYX.photos.portrait,
-    plate: NYX.plates.portrait,
     practice: "Three fake misses in three different phrases. Close after each.",
     passWhen: "A miss does not change your tempo.",
     firstThen: { first: "8-count you own", then: "Same 8 with a planned freeze" },
@@ -515,8 +478,6 @@ export const EXOTIC_CLUB_SKILLS: Skill[] = [
     voiceScript:
       "The ankle first. Short-foot. Calf on the wall. Slow heel stands in trainers. If that is not quiet, we do not put the heels on. A limp is not a look. Intact is the aesthetic.",
     diagram: "heels",
-    photo: NYX.photos.walk,
-    plate: NYX.plates.walk,
     practice: "One round of the prep. Then decide: heels or trainers for the rest of the session.",
     passWhen: "You can name the stop signs — pinch, numb, roll — and you actually stop.",
     firstThen: { first: "Quiet trainer walk", then: "Ankle prep, then heels if they earn it" },
@@ -542,8 +503,6 @@ export const EXOTIC_CLUB_SKILLS: Skill[] = [
     voiceScript:
       "The table is furniture. Against the wall. Pads. Sit the edge. Phrase. Stand or stay. Step down with a hand. We do not drop off a podium to look brave. Brave is intact.",
     diagram: "floor",
-    photo: NYX.photos.floor,
-    plate: NYX.plates.floor,
     practice: "Four sit-phrase-down cycles. Same slow every time.",
     passWhen: "Up and down are quiet. The table never moves.",
     firstThen: { first: "Chair sit you own", then: "Same phrase on a sturdy table" },
@@ -570,8 +529,6 @@ export const EXOTIC_CLUB_SKILLS: Skill[] = [
     voiceScript:
       "Hand on the chair. Low fan. I said low. Other side, same number. If you need a whip to get height, you do not own the kick. We stay expensive, not ballistic.",
     diagram: "walk",
-    photo: NYX.photos.walk,
-    plate: NYX.plates.walk,
     practice: "Six fans each side. Rest. Six more lower than you want.",
     passWhen: "Both sides match height and you can breathe at the top of the arc.",
     firstThen: { first: "Attitude lift you own", then: "Same standing leg into a low fan" },
@@ -597,8 +554,6 @@ export const EXOTIC_CLUB_SKILLS: Skill[] = [
     voiceScript:
       "Jacket is a layer. Phrase. One sleeve. Other sleeve. Place it where you chose. Walk. If the jacket fights you, we wear a different jacket. We do not throw costume at the room.",
     diagram: "layer",
-    photo: NYX.photos.portrait,
-    plate: NYX.plates.portrait,
     practice: "Three peels with the real jacket or a robe. Full rest between.",
     passWhen: "The peel fits in one 8 and the garment has a home.",
     firstThen: { first: "Top peel you own", then: "Same count with sleeves" },
@@ -625,8 +580,6 @@ export const EXOTIC_CLUB_SKILLS: Skill[] = [
     voiceScript:
       "One turn. Spot the wall. Land. Other way. Same number. This is a transition, not a ballet exam. If you need heels to feel like a turn, you do not own the turn. Trainers first.",
     diagram: "phrase",
-    photo: NYX.photos.walk,
-    plate: NYX.plates.walk,
     practice: "Five turns each way. Rest. Five more slower.",
     passWhen: "You land on two quiet feet both directions.",
     firstThen: { first: "Passé balance", then: "Same passé into one turn" },
@@ -652,8 +605,6 @@ export const EXOTIC_CLUB_SKILLS: Skill[] = [
     voiceScript:
       "Walk to the rail. Tray. Open palm. Look. Two counts. Leave. Visiting is expensive. Camping is needy. In a club the house rules win. At home the wall is your audience.",
     diagram: "hands",
-    photo: NYX.photos.walk,
-    plate: NYX.plates.walk,
     practice: "Six visits. Different exits each time.",
     passWhen: "Arrive, tray, leave — without speeding up.",
     firstThen: { first: "Rail approach", then: "Same visit with a tray shape" },
