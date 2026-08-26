@@ -4,7 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getProfile, getSession } from "@/lib/auth";
-import { planAdjustFromAssessment } from "@/lib/assessment/plan-adjust";
+import { planAdjustForSession } from "@/lib/assessment/session-adjust";
 import { upsertCalendarMark } from "@/lib/calendar";
 import { CALENDAR_EPOCH, compareISO } from "@/lib/calendar-core";
 import { db } from "@/lib/db";
@@ -27,7 +27,7 @@ export async function startWorkoutAction(dayId?: string) {
   const profile = getProfile(user.id);
   if (!profile?.activeProgramId) redirect("/programs");
 
-  const fitness = planAdjustFromAssessment(profile.assessment);
+  const fitness = planAdjustForSession(user.id, profile.assessment);
   const draft = buildPlannedSession({
     programId: profile.activeProgramId,
     week: profile.currentWeek,

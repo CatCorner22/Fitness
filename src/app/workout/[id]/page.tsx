@@ -9,8 +9,9 @@ import { getProgram } from "@/lib/programs/catalog";
 import { estimateSessionMinutes } from "@/lib/programs/plan";
 import { requireAuthed } from "@/lib/session-page";
 import { courseForProgram } from "@/lib/course/catalog";
-import { lastWorkingSets } from "@/lib/autoregulation";
+import { lastWorkingSets, suggestionsForExercises } from "@/lib/autoregulation";
 import { getAiOptIn } from "@/lib/prefs";
+import { aiEnabled } from "@/lib/spirit/config";
 
 export default async function WorkoutPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -32,6 +33,19 @@ export default async function WorkoutPage({ params }: { params: Promise<{ id: st
   const phase = program?.phases.find((p) => p.weeks.includes(workout.week));
   const ghostSets = lastWorkingSets(user.id, exerciseIds);
   const course = courseForProgram(workout.programId);
+  const optIn = await getAiOptIn();
+  const { decisions } = suggestionsForExercises(
+    user.id,
+    exerciseIds.map((eid) => {
+      const row = sets.find((s) => s.exerciseId === eid);
+      return {
+        exerciseId: eid,
+        targetRpe: row?.targetRpe ?? 8,
+        reps: row?.targetReps ?? "8",
+      };
+    }),
+    ghostSets,
+  );
 
   return (
     <AppShell user={user} profile={profile}>
@@ -53,9 +67,9 @@ export default async function WorkoutPage({ params }: { params: Promise<{ id: st
             priority: 2,
           })),
         )}
-        decisions={[]}
-        aiAvailable={false}
-        aiOptIn={await getAiOptIn()}
+        decisions={decisions.map((d) => ({ exerciseId: d.exerciseId, reason: d.reason }))}
+        aiAvailable={optIn && aiEnabled()}
+        aiOptIn={optIn}
         ghostSets={ghostSets}
         courseId={course?.id}
         courseSkillIds={course?.modules.flatMap((m) => m.skillIds)}

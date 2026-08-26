@@ -1,5 +1,7 @@
 // Deterministic risk routing — strictness is a property of the SESSION STATE, not model opinion.
 
+import { isLowEnergy } from "@/lib/assessment/session-adjust";
+
 export type SpiritMode = "standard" | "injury" | "fatigue" | "time_crunch" | "high_rpe" | "deload";
 
 export type SpiritProfileId = "standard" | "caution" | "strict";
@@ -23,7 +25,7 @@ export function resolveModes(input: {
 }): SpiritMode[] {
   const modes: SpiritMode[] = ["standard"];
   if (input.injuries.length > 0 || input.exerciseSafety === "caution") modes.push("injury");
-  if (input.fatigue != null && input.fatigue >= 4) modes.push("fatigue");
+  if (isLowEnergy(input.fatigue)) modes.push("fatigue");
   if (input.deloadRecommended) modes.push("deload");
   if (input.rpe != null && input.rpe >= 9.5) modes.push("high_rpe");
   if (

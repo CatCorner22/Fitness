@@ -61,9 +61,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Could not save set" }, { status: 500 });
   }
 
+  const catalogRest = getExercise(row.exerciseId)?.restSeconds ?? 90;
   const silentAdvice = {
     message: "",
-    restSeconds: 90,
+    restSeconds: catalogRest,
     nextAction: "repeat_load" as const,
     weightDeltaKg: null,
     swapToExerciseId: null,
