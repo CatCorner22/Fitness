@@ -120,6 +120,11 @@ for (const name of [
   "GARANIMAL_CHAT_MODEL",
   "HF_TOKEN",
   "SPIRIT_READS",
+  "GARANIMAL_PIONEER_MODEL",
+  "PIONEER_READS",
+  "PIONEER_DISABLED",
+  "PIONEER_KILL",
+  "PIONEER_LADDER_RESET",
   "HUGGINGFACE_HUB_TOKEN",
 ]) {
   expect(example.includes(name), `.env.example documents ${name}`);
@@ -131,6 +136,8 @@ const code = [
   fs.readFileSync("src/lib/spirit/config.ts", "utf8"),
   fs.readFileSync("src/lib/spirit/provider.ts", "utf8"),
   fs.readFileSync("src/lib/spirit/embeddings.ts", "utf8"),
+  fs.readFileSync("src/lib/pioneer/config.ts", "utf8"),
+  fs.readFileSync("src/lib/pioneer/persist-ladder.ts", "utf8"),
 ].join("\n");
 for (const name of [
   "AUTH_SECRET",
@@ -143,6 +150,11 @@ for (const name of [
   "HF_TOKEN",
   "HUGGINGFACE_HUB_TOKEN",
   "SPIRIT_READS",
+  "GARANIMAL_PIONEER_MODEL",
+  "PIONEER_READS",
+  "PIONEER_DISABLED",
+  "PIONEER_KILL",
+  "PIONEER_LADDER_RESET",
 ]) {
   expect(code.includes(name), `runtime code reads ${name}`);
 }

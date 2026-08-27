@@ -36,6 +36,7 @@ export default async function SettingsPage() {
           ["/course", "Nyx course", "Amateur night and pole class"],
           ["/progress", "Calendar", "Green trained, red rest"],
           ["/coach", "Coach", "Ask why a lift is banned"],
+          ["/pioneer", "Draft", "Pioneer watches. It never writes"],
           ["/knowledge", "Guide", "The research notes"],
         ].map(([href, label, hint]) => (
           <Link
@@ -122,7 +123,7 @@ export default async function SettingsPage() {
         </label>
         <label className="flex items-start gap-3 text-sm">
           <input type="checkbox" name="aiOptIn" value="1" defaultChecked={aiOptIn} className="mt-1 w-auto" />
-          <span>Send workouts to a coach model. Off unless you check this. Your food, weight, and joints stay on this device until you turn it on.</span>
+          <span>Send workouts and drafts to a model. Off unless you check this. Draft instruments still run on this device.</span>
         </label>
 
         <details>

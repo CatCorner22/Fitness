@@ -61,6 +61,11 @@ body {
   line-height: 1.5;
 }
 
+.pioneer-silent {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 h1,
 .display {
   font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;

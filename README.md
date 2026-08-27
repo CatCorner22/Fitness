@@ -10,6 +10,7 @@ A private, two-user web app for evidence-based strength training and simple nutr
 - Set RPE (Helms–Zourdos RIR scale) plus session RPE
 - Safety registry that never prescribes bench/chair/parallel-bar dips, behind-the-neck presses/pulldowns, chin-height upright rows, or kipping pull-ups
 - Scientist or **Garanimal** coach voice (Goggins-grade accountability with injury rails)
+- **Pioneer**: a one-way draft observer for training and food notes — local instruments always, a constrained model only when you opt in. It never edits the page.
 - Day-at-a-glance nutrition, protein targets, optional adaptive calories from weigh-ins
 - Progress charts and CSV export
 
@@ -29,7 +30,7 @@ Set `TZ` (for example `America/Chicago`) if the machine's timezone is not the ho
 ## Replit
 
 1. Import the GitHub repo. Replit picks up `.replit` (`npm run dev` on `0.0.0.0`) and `replit.nix` (gcc/python so `better-sqlite3` can compile).
-2. Add Secrets: `AUTH_SECRET` (32+ random characters). Optional: `TZ`, `AI_GATEWAY_API_KEY`.
+2. Add Secrets: `AUTH_SECRET` (32+ random characters). Optional: `TZ`, `AI_GATEWAY_API_KEY` (Spirit + Pioneer).
 3. Press Run. Preview uses `*.replit.dev`; session cookies use `SameSite=None; Secure` so the IDE iframe keeps the login.
 4. Health check: `/api/health` (no login).
 
