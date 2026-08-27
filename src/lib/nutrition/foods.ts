@@ -1,12 +1,11 @@
 import { FAST_FOOD_BY_ID } from "@/lib/nutrition/fast-food";
+import type { HistamineLoad } from "./histamine";
+import { STARTER_FOODS } from "./starter-foods";
 
 export type { HistamineLoad } from "./histamine";
 export type { StarterFood } from "./starter-foods";
 export { STARTER_FOODS } from "./starter-foods";
 export { HISTAMINE_LABEL, LOW_HISTAMINE_STAPLES, histamineRank } from "./histamine";
-
-import { STARTER_FOODS } from "./starter-foods";
-import type { HistamineLoad } from "./histamine";
 
 const HISTAMINE_BY_ID = new Map(STARTER_FOODS.map((food) => [food.id, food.histamine]));
 
