@@ -138,8 +138,6 @@ export default async function NutritionPage() {
               planId={featured.template.id}
               name={featured.template.name}
               description={featured.template.description}
-              calories={targets.calories}
-              protein={targets.protein}
               totals={featured.totals}
               items={featured.items}
               hasLogs={day.logs.length > 0}
@@ -155,8 +153,6 @@ export default async function NutritionPage() {
                     planId={plan.template.id}
                     name={plan.template.name}
                     description={plan.template.description}
-                    calories={targets.calories}
-                    protein={targets.protein}
                     totals={plan.totals}
                     items={plan.items}
                     hasLogs={day.logs.length > 0}

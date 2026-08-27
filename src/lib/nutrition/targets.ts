@@ -1,5 +1,5 @@
 import { and, desc, eq, gte } from "drizzle-orm";
-import { daysAgoISO } from "@/lib/utils";
+import { daysAgoISO, todayISO } from "@/lib/utils";
 import { db } from "@/lib/db";
 import { bodyweightLogs, nutritionLogs } from "@/lib/db/schema";
 import type { ProfileRow } from "@/lib/auth";
@@ -8,7 +8,7 @@ import { activeDiet, dietCalorieFloor } from "@/lib/nutrition/diet-state";
 
 type MacroSpec = Pick<GoalNutrition, "carbRatio" | "fatRatio">;
 
-export function mifflinStJeor(profile: ProfileRow) {
+function mifflinStJeor(profile: ProfileRow) {
   const weight = profile.weightKg;
   const height = profile.heightCm;
   const age = profile.age;
@@ -17,7 +17,7 @@ export function mifflinStJeor(profile: ProfileRow) {
   return 10 * weight + 6.25 * height - 5 * age + s;
 }
 
-export function activityFactor(daysPerWeek: number) {
+function activityFactor(daysPerWeek: number) {
   if (daysPerWeek <= 2) return 1.375;
   if (daysPerWeek <= 4) return 1.55;
   return 1.725;
@@ -50,7 +50,7 @@ export function proteinTargetG(profile: ProfileRow) {
   return Math.round(nutritionSpec(profile).proteinPerKg * kg);
 }
 
-export function estimatedTdee(profile: ProfileRow) {
+function estimatedTdee(profile: ProfileRow) {
   const bmr = mifflinStJeor(profile);
   if (!bmr) return null;
   return Math.round(bmr * activityFactor(profile.daysPerWeek));
@@ -131,7 +131,11 @@ export function adaptiveCalories(userId: string, profile: ProfileRow) {
   for (const row of recentLogs) {
     byDate.set(row.date, (byDate.get(row.date) ?? 0) + row.calories);
   }
-  const logged = [...byDate.keys()].sort().slice(-7);
+  // Skip today: a half-logged day (breakfast only) would drag the average down.
+  const logged = [...byDate.keys()]
+    .filter((date) => date < todayISO())
+    .sort()
+    .slice(-7);
   let intake = 0;
   let intakeDays = 0;
   for (const date of logged) {
@@ -144,8 +148,10 @@ export function adaptiveCalories(userId: string, profile: ProfileRow) {
 
   const avgIntake = intakeDays ? intake / intakeDays : staticTdee;
   const impliedTdee = avgIntake - (weeklyChange * 7700) / 7;
-  const adapted = clampCalories(Math.round(impliedTdee), floor);
-  const calories = clampCalories(Math.round(adapted + spec.delta), floor);
+  // Report the estimate honestly (loose sanity bounds only); the intake floor
+  // applies to the eating target, not to the TDEE estimate itself.
+  const adapted = Math.min(6000, Math.max(800, Math.round(impliedTdee)));
+  const calories = clampCalories(adapted + spec.delta, floor);
   const macros = macroTargets(calories, protein, spec);
 
   return {

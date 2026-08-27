@@ -101,7 +101,7 @@ export const FAST_FOOD_RESTAURANTS: FastFoodRestaurant[] = [
   },
 ];
 
-export const FAST_FOOD_ITEMS: FastFoodItem[] = [
+const FAST_FOOD_ITEMS: FastFoodItem[] = [
   item(
     "cfa",
     "grilled-nuggets-12",

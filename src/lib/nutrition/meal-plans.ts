@@ -41,7 +41,7 @@ function line(foodId: string, servings: number, meal: MealSlot): PlanLine {
   return { foodId, servings, meal };
 }
 
-export const MEAL_PLAN_TEMPLATES: MealPlanTemplate[] = [
+const MEAL_PLAN_TEMPLATES: MealPlanTemplate[] = [
   {
     id: "strength-plate",
     name: "Strength plate",
@@ -303,12 +303,34 @@ function snap(n: number) {
   return Math.max(0.5, Math.round(n * 2) / 2);
 }
 
-function snapDown(n: number) {
-  return Math.max(0.5, Math.floor(n * 2) / 2);
-}
-
 function isProteinFood(food: FoodRef) {
   return food.protein >= 10;
+}
+
+/**
+ * Reduce protein overshoot by cutting half-serving steps from protein lines.
+ * A multiplicative trim that floors every line compounds to a big undershoot
+ * (each line loses up to 0.5 servings); stepwise cuts stay near the target.
+ */
+function trimProteinLines(items: PlanLine[], targetProtein: number, tolerance: number) {
+  for (let guard = 0; guard < 60; guard++) {
+    const excess = macrosForLines(items).protein - targetProtein;
+    if (excess <= tolerance) return;
+    let best: { item: PlanLine; step: number } | null = null;
+    let smallest: { item: PlanLine; step: number } | null = null;
+    for (const item of items) {
+      const food = foodById(item.foodId);
+      if (!food || !isProteinFood(food) || item.servings <= 0.5) continue;
+      const step = food.protein * 0.5;
+      if (step <= excess + tolerance && (!best || step > best.step)) best = { item, step };
+      if (!smallest || step < smallest.step) smallest = { item, step };
+    }
+    // Prefer the biggest cut that stays inside tolerance; otherwise take the
+    // smallest available cut only if it brings us closer to the target.
+    const cut = best ?? (smallest && Math.abs(excess - smallest.step) < excess ? smallest : null);
+    if (!cut) return;
+    cut.item.servings = Math.round((cut.item.servings - 0.5) * 2) / 2;
+  }
 }
 
 function isCarbFood(food: FoodRef) {
@@ -330,15 +352,8 @@ export function scalePlanToTargets(template: MealPlanTemplate, calories: number,
     }
   }
 
+  trimProteinLines(items, protein, 6);
   let current = macrosForLines(items);
-  if (current.protein > protein + 6) {
-    const trim = protein / current.protein;
-    for (const item of items) {
-      const food = foodById(item.foodId);
-      if (food && isProteinFood(food)) item.servings = snapDown(item.servings * trim);
-    }
-    current = macrosForLines(items);
-  }
 
   if (current.calories > 0) {
     const cScale = calories / current.calories;
@@ -372,15 +387,8 @@ export function scalePlanToTargets(template: MealPlanTemplate, calories: number,
     proteinFiller.servings = snap(proteinFiller.servings + (protein - current.protein) / Math.max(1, fillerProtein));
   }
 
+  trimProteinLines(items, protein, 3);
   current = macrosForLines(items);
-  if (current.protein > protein + 3) {
-    const trim = protein / current.protein;
-    for (const item of items) {
-      const food = foodById(item.foodId);
-      if (food && isProteinFood(food)) item.servings = snapDown(Math.max(0.5, item.servings * trim));
-    }
-    current = macrosForLines(items);
-  }
 
   const finalGap = calories - current.calories;
   if (rice && Math.abs(finalGap) > 60) {
@@ -412,7 +420,7 @@ export function getMealPlanTemplate(id: string) {
   return MEAL_PLAN_TEMPLATES.find((p) => p.id === id);
 }
 
-export function plansForGoal(goal: Goal) {
+function plansForGoal(goal: Goal) {
   const preferred = MEAL_PLAN_TEMPLATES.filter((p) => p.goals.includes(goal));
   return preferred.length ? preferred : MEAL_PLAN_TEMPLATES.filter((p) => p.goals.includes("general"));
 }

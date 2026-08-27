@@ -16,13 +16,14 @@ import { requireAuthed } from "@/lib/session-page";
 import { aiEnabled } from "@/lib/spirit/config";
 import { offlineBriefing } from "@/lib/spirit/context";
 import { getTodaySnapshot, weekDayStatuses } from "@/lib/today";
-import { calorieTarget, macroTargets, nutritionSpec, proteinTargetG } from "@/lib/nutrition/targets";
+import { adaptiveCalories } from "@/lib/nutrition/targets";
 
 export default async function TodayPage() {
   const { user, profile } = await requireAuthed();
   const { plan, checkin, deload, food, completed14d } = getTodaySnapshot(user.id, profile);
-  const spec = nutritionSpec(profile);
-  const targets = macroTargets(calorieTarget(profile), proteinTargetG(profile), spec);
+  // Same target source as the Eat page and the meal-plan scaler, so the
+  // numbers agree once adaptive TDEE kicks in.
+  const targets = adaptiveCalories(user.id, profile);
   const planned = plan?.planned;
   const course = courseForProgram(planned?.program.id ?? "");
   const lessonCtx = course
@@ -160,7 +161,7 @@ export default async function TodayPage() {
           </p>
           <p className="mt-1 text-sm text-muted">
             Protein {Math.round(food.protein)} / {targets.protein}g
-            {spec.label ? ` · ${spec.label}` : ""}
+            {targets.goalLabel ? ` · ${targets.goalLabel}` : ""}
           </p>
         </Link>
       </section>

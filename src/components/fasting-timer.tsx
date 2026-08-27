@@ -55,11 +55,16 @@ function subscribeNow(onStoreChange: () => void) {
 }
 
 function nowMs() {
+  // First client render can run before the interval starts; seed lazily so we
+  // never do timer math against 0.
+  if (nowMsValue === 0) nowMsValue = Date.now();
   return nowMsValue;
 }
 
-function serverNow() {
-  return 0;
+// Sentinel for SSR: the server cannot know the client clock, so components
+// render a placeholder instead of computing a bogus remaining time from 0.
+function serverNow(): number | null {
+  return null;
 }
 
 function formatClock(iso: string) {
@@ -167,11 +172,11 @@ function RunningFast({
   const now = useSyncExternalStore(subscribeNow, nowMs, serverNow);
   const end = Date.parse(fast.plannedEndAt);
   const start = Date.parse(fast.startedAt);
-  const remaining = end - now;
-  const elapsed = now - start;
+  const remaining = now == null ? null : end - now;
+  const elapsed = now == null ? 0 : now - start;
   const targetMs = fast.targetMinutes * 60_000;
   const pct = Math.max(0, Math.min(100, (elapsed / Math.max(1, targetMs)) * 100));
-  const overtime = remaining <= 0;
+  const overtime = remaining != null && remaining <= 0;
 
   return (
     <div className="mt-4">
@@ -188,13 +193,17 @@ function RunningFast({
                 {overtime ? "Window open" : "Remaining"}
               </p>
               <p className="display text-3xl leading-none" suppressHydrationWarning>
-                {overtime ? formatDuration(now - end) : formatDuration(remaining)}
+                {remaining == null || now == null
+                  ? "–:–"
+                  : overtime
+                    ? formatDuration(now - end)
+                    : formatDuration(remaining)}
               </p>
               <p className="mt-1 text-xs text-muted">{fast.protocol}</p>
             </div>
           </div>
         </div>
-        <p className="mt-3 text-sm text-muted">
+        <p className="mt-3 text-sm text-muted" suppressHydrationWarning>
           {formatClock(fast.startedAt)} → {formatClock(fast.plannedEndAt)}
         </p>
       </div>
@@ -288,10 +297,13 @@ function RunningFast({
           <input type="hidden" name="fastId" value={fast.id} />
           <label className="block text-sm text-muted">
             I already ate at
+            {/* Server and client evaluate new Date() at different times; the
+                default only needs to be roughly "now" and the user adjusts it. */}
             <input
               name="endedAt"
               type="datetime-local"
               defaultValue={isoToLocalInput(new Date().toISOString())}
+              suppressHydrationWarning
               className="mt-1"
             />
           </label>
@@ -373,6 +385,13 @@ function CompletedFast({ fast }: { fast: FastRow }) {
 
 export function FastingStrip({ running }: { running: FastRow }) {
   const now = useSyncExternalStore(subscribeNow, nowMs, serverNow);
+  if (now == null) {
+    return (
+      <p className="mt-2 text-center text-sm text-muted" suppressHydrationWarning>
+        Fast {running.protocol}: …
+      </p>
+    );
+  }
   const remaining = Date.parse(running.plannedEndAt) - now;
   const overtime = remaining <= 0;
   return (
