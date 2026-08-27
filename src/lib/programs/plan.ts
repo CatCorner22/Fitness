@@ -240,10 +240,3 @@ export function attachLoadHistory(
     })),
   };
 }
-
-export function nextDayForUser(
-  program: Program,
-  completedDayIdsInWeek: string[],
-) {
-  return program.days.find((d) => !completedDayIdsInWeek.includes(d.id)) ?? program.days[0];
-}

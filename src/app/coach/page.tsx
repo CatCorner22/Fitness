@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { SpiritCoachChat } from "@/components/spirit-coach-chat";
-import { aiEnabled } from "@/lib/ai/spirit";
-import { generateBriefing } from "@/lib/ai/live-advice";
 import { historyForUser } from "@/lib/coach/engine";
 import { getAiOptIn } from "@/lib/prefs";
+import { aiEnabled } from "@/lib/spirit/config";
 import { buildCoachContextSummary, parseCoachMeta } from "@/lib/spirit/context";
+import { runSpiritBriefing } from "@/lib/spirit/service";
 import { requireAuthed } from "@/lib/session-page";
 import type { UIMessage } from "ai";
 
@@ -28,7 +28,7 @@ export default async function CoachPage() {
   const optIn = await getAiOptIn();
   const contextSummary = buildCoachContextSummary(user.id, profile);
   const briefing =
-    optIn && aiEnabled() ? await generateBriefing({ profile, contextSummary }) : null;
+    optIn && aiEnabled() ? await runSpiritBriefing({ profile, contextSummary }) : null;
   const initialMessages = historyToUIMessages(history);
 
   return (

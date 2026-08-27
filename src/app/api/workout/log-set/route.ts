@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { getProfile, getSession } from "@/lib/auth";
-import { generateLiveAdvice } from "@/lib/ai/live-advice";
+import { runSpiritLiveAdvice } from "@/lib/spirit/service";
 import { allowedSubstitutes } from "@/lib/exercises/registry";
 import { db } from "@/lib/db";
 import { dailyCheckins, setLogs, workouts } from "@/lib/db/schema";
@@ -104,7 +104,7 @@ export async function POST(request: Request) {
     const swaps = allowedSubstitutes(row.exerciseId, profile.injuries).map((s) => s.id);
 
     const advice = await withTimeout(
-      generateLiveAdvice({
+      runSpiritLiveAdvice({
         profile,
         workoutId: row.workoutId,
         exerciseId: row.exerciseId,

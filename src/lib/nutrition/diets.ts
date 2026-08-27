@@ -347,11 +347,6 @@ export function isLowHistamineDiet(id: string | null | undefined) {
   return id === "low_histamine" || id === "low_histamine_cut";
 }
 
-export function dietsForGoal(goal: Goal) {
-  const hits = DIET_PROGRAMS.filter((d) => d.recommendedFor.includes(goal));
-  return hits.length ? hits : DIET_PROGRAMS.filter((d) => d.recommendedFor.includes("general"));
-}
-
 export function calorieFloorFor(sex: "female" | "male" | "unspecified", dietId?: string | null) {
   if (dietId === "stage_lean") {
     if (sex === "female") return 1600;

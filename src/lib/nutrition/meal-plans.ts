@@ -33,7 +33,7 @@ export type MealPlanTemplate = {
 
 const byId = new Map(STARTER_FOODS.map((f) => [f.id, f]));
 
-export function foodById(id: string): FoodRef | undefined {
+function foodById(id: string): FoodRef | undefined {
   return byId.get(id);
 }
 
@@ -284,7 +284,7 @@ export const MEAL_PLAN_TEMPLATES: MealPlanTemplate[] = [
   },
 ];
 
-export function macrosForLines(items: PlanLine[]) {
+function macrosForLines(items: PlanLine[]) {
   return items.reduce(
     (acc, item) => {
       const food = foodById(item.foodId);

@@ -11,14 +11,7 @@ import { db, ensureMigrated } from "@/lib/db";
 import { calendarMarks, workouts } from "@/lib/db/schema";
 import { todayISO } from "@/lib/utils";
 
-export {
-  addDaysISO,
-  CALENDAR_EPOCH,
-  compareISO,
-  resolveFill,
-  type CalendarFill,
-  type CalendarMarkFill,
-};
+export { addDaysISO, CALENDAR_EPOCH };
 
 export function loadCalendarState(userId: string, today = todayISO()) {
   ensureMigrated();

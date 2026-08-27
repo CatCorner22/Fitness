@@ -1,7 +1,7 @@
 import { EXOTIC_CLUB_SKILLS } from "./exotic-club-skills";
 import { POLE_CLASS_SKILLS } from "./pole-class-skills";
 import { makeSkill as skill } from "./skill-factory";
-import type { CourseId, Skill } from "./types";
+import type { Skill } from "./types";
 
 const SKILLS_CORE: Skill[] = [
   skill({
@@ -638,8 +638,4 @@ export function lessonForExercise(
   const hrefCourse =
     preferred?.courseId && preferred.skillIds?.includes(skill.id) ? preferred.courseId : skill.courseId;
   return { skill, href: `/course/${hrefCourse}/${skill.id}` };
-}
-
-export function skillsForCourse(courseId: CourseId) {
-  return SKILLS.filter((s) => s.courseId === courseId);
 }

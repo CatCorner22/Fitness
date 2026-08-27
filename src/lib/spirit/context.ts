@@ -66,8 +66,4 @@ export function offlineBriefing(userId: string, profile: ProfileRow, bits?: Toda
   return lines.join("\n\n");
 }
 
-export function coachMetaSuffix(citeIds: string[]) {
-  return citeIds.length ? `\n\n<!-- spirit-meta: ${JSON.stringify({ citeIds })} -->` : "";
-}
-
-export { parseCoachMeta, textFromUIMessageParts } from "./client-utils";
+export { parseCoachMeta, textFromUIMessageParts, coachMetaSuffix } from "./client-utils";

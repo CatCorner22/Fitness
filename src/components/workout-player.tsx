@@ -93,8 +93,6 @@ export function WorkoutPlayer({
 }: {
   workoutId: string;
   dayName: string;
-  week: number;
-  phase: string;
   units: "lb" | "kg";
   sets: SetRow[];
   exercises: Record<string, Exercise>;

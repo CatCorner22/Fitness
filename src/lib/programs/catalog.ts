@@ -629,7 +629,3 @@ export const PROGRAMS: Program[] = [
 export function getProgram(id: string) {
   return PROGRAMS.find((p) => p.id === id);
 }
-
-export function programsForGoal(goal: string) {
-  return PROGRAMS.filter((p) => p.recommendedFor.includes(goal as never) || p.id === goal);
-}

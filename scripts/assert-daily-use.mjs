@@ -132,7 +132,6 @@ const code = [
   fs.readFileSync("src/lib/spirit/config.ts", "utf8"),
   fs.readFileSync("src/lib/spirit/provider.ts", "utf8"),
   fs.readFileSync("src/lib/spirit/embeddings.ts", "utf8"),
-  fs.readFileSync("src/lib/ai/spirit.ts", "utf8"),
 ].join("\n");
 for (const name of [
   "AUTH_SECRET",

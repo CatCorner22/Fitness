@@ -7,8 +7,6 @@ export const FAST_PROTOCOLS = [
   { id: "24h", hours: 24, label: "24 h", blurb: "A one-day fast. Not a weekly default." },
 ] as const;
 
-export type FastProtocolId = (typeof FAST_PROTOCOLS)[number]["id"] | "custom";
-
 export const MIN_FAST_MINUTES = 8 * 60;
 export const MAX_FAST_MINUTES = 48 * 60;
 
@@ -30,10 +28,6 @@ export function formatElapsedLabel(startedAt: string, endedAt: string) {
   if (ms < 3_600_000) return `${Math.round(ms / 60_000)} min`;
   const hours = Math.round((ms / 3_600_000) * 10) / 10;
   return `${hours} h`;
-}
-
-export function hoursToMinutes(hours: number) {
-  return clampFastMinutes(hours * 60);
 }
 
 export function protocolHours(id: string, customHours?: number) {

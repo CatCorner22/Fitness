@@ -5,7 +5,6 @@ import { WorkoutPlayer } from "@/components/workout-player";
 import { allowedSubstitutes, getExercise } from "@/lib/exercises/registry";
 import { db } from "@/lib/db";
 import { setLogs, workouts } from "@/lib/db/schema";
-import { getProgram } from "@/lib/programs/catalog";
 import { estimateSessionMinutes } from "@/lib/programs/plan";
 import { requireAuthed } from "@/lib/session-page";
 import { courseForProgram } from "@/lib/course/catalog";
@@ -35,8 +34,6 @@ export default async function WorkoutPage({ params }: { params: Promise<{ id: st
     exerciseIds.map((eid) => [eid, allowedSubstitutes(eid, profile.injuries)]),
   );
 
-  const program = getProgram(workout.programId);
-  const phase = program?.phases.find((p) => p.weeks.includes(workout.week));
   const ghostSets = lastWorkingSets(user.id, exerciseIds);
   const course = courseForProgram(workout.programId);
   const optIn = await getAiOptIn();
@@ -58,8 +55,6 @@ export default async function WorkoutPage({ params }: { params: Promise<{ id: st
       <WorkoutPlayer
         workoutId={workout.id}
         dayName={workout.dayName}
-        week={workout.week}
-        phase={phase?.name ?? "Training"}
         units={profile.units}
         sets={sets}
         exercises={exercises}
