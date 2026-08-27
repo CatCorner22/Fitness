@@ -69,7 +69,10 @@ export default async function ProgressPage() {
                   {f.startedAt.slice(0, 10)} · {f.protocol}
                   <span className="block text-xs text-muted">{f.status}</span>
                 </span>
-                <span className="text-muted">{formatElapsedLabel(f.startedAt, end)}</span>
+                <span className="text-muted">
+                  {/* A running fast has no end yet — its planned window is not elapsed time. */}
+                  {f.status === "running" ? "in progress" : formatElapsedLabel(f.startedAt, end)}
+                </span>
               </li>
             );
           })}

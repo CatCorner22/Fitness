@@ -44,8 +44,10 @@ export function scoreArticle(article: KnowledgeArticle, ctx: SearchContext) {
     if (article.tags.includes(muscle)) score += 4;
   }
   for (const injury of ctx.injuries ?? []) {
-    if (article.tags.includes(injury) || article.id === "shoulder-health" || article.id === "banned-exercises") {
-      score += injury === "shoulder" ? 4 : 2;
+    if (article.tags.includes(injury)) score += injury === "shoulder" ? 4 : 2;
+    // Only a shoulder injury makes these two articles more relevant.
+    if (injury === "shoulder" && (article.id === "shoulder-health" || article.id === "banned-exercises")) {
+      score += 4;
     }
   }
   if (ctx.programId) {

@@ -47,20 +47,14 @@ function scoreFromCuts(value: number, cuts: [number, number, number, number]): D
   return 1;
 }
 
-function pushTable(style: PushupStyle, sex: Sex) {
-  if (style === "knees") return CSEP_PUSH.female;
-  if (style === "toes") return CSEP_PUSH.male;
-  return sex === "female" ? CSEP_PUSH.female : CSEP_PUSH.male;
-}
-
-export function scorePushups(
+function scorePushups(
   reps: number,
   age: number | null,
-  sex: Sex,
   style: PushupStyle,
 ): { score: DomainScore; detail: string } {
   const band = ageBand(age);
-  const table = pushTable(style, sex);
+  // CSEP tables are keyed by protocol: kneeling uses the women's table, toes the men's.
+  const table = style === "knees" ? CSEP_PUSH.female : CSEP_PUSH.male;
   const cuts = table[band];
   const score = scoreFromCuts(reps, cuts);
   const protocol = style === "knees" ? "kneeling (CSEP women's protocol)" : "toes (CSEP men's protocol)";
@@ -71,7 +65,7 @@ export function scorePushups(
 }
 
 /** Enright & Sherrill 1998, healthy adults 40–80. */
-export function predicted6mwd(age: number, sex: Sex, heightCm: number, weightKg: number) {
+function predicted6mwd(age: number, sex: Sex, heightCm: number, weightKg: number) {
   const men = 7.57 * heightCm - 5.02 * age - 1.76 * weightKg - 309;
   const women = 2.11 * heightCm - 2.29 * weightKg - 5.78 * age + 667;
   if (sex === "male") return men;
@@ -250,7 +244,7 @@ export function scoreAssessment(input: AssessmentInput, takenAt = new Date().toI
         ? scoreStep2(input.stepCount, input.age)
         : null;
 
-  const push = input.pushups != null ? scorePushups(input.pushups, input.age, input.sex, input.pushupStyle) : null;
+  const push = input.pushups != null ? scorePushups(input.pushups, input.age, input.pushupStyle) : null;
   const lower = input.chairStand != null ? scoreChair(input.chairStand, input.age, input.sex) : null;
   const core = input.plankSeconds != null ? scorePlank(input.plankSeconds, input.age, input.sex) : null;
   const balance = input.singleLegSeconds != null ? scoreSls(input.singleLegSeconds, input.age) : null;

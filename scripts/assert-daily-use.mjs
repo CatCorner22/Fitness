@@ -94,9 +94,10 @@ expect(loadSrc.includes("Repeat the load"), "suggestNextLoad has a match-window 
 
 expect(!getSpiritConfig({}).enabled, "Spirit stays offline without AI keys");
 expect(getSpiritConfig({ AI_GATEWAY_API_KEY: "k" }).enabled, "AI_GATEWAY_API_KEY enables Spirit");
-expect(getSpiritConfig({ OPENAI_API_KEY: "k" }).enabled, "OPENAI_API_KEY enables Spirit");
-expect(getSpiritConfig({ HF_TOKEN: "hf" }).semanticSearch, "HF_TOKEN enables semantic search");
-expect(getSpiritConfig({ HUGGINGFACE_HUB_TOKEN: "hf" }).semanticSearch, "HUGGINGFACE_HUB_TOKEN alias works");
+// Only a gateway key may enable Spirit — the gateway client cannot
+// authenticate with an OpenAI or HF key, so those must stay offline.
+expect(!getSpiritConfig({ OPENAI_API_KEY: "k" }).enabled, "OPENAI_API_KEY alone keeps Spirit offline");
+expect(!getSpiritConfig({ HF_TOKEN: "hf" }).enabled, "HF_TOKEN alone keeps Spirit offline");
 expect(getSpiritConfig({ GARANIMAL_LIVE_MODEL: "openai/fast" }).liveModel === "openai/fast", "GARANIMAL_LIVE_MODEL routes live coaching");
 expect(getSpiritConfig({ GARANIMAL_CHAT_MODEL: "openai/chat" }).chatModel === "openai/chat", "GARANIMAL_CHAT_MODEL routes chat");
 expect(getSpiritConfig({ GARANIMAL_AI_MODEL: "openai/shared" }).liveModel === "openai/shared", "GARANIMAL_AI_MODEL is the shared default");
@@ -118,14 +119,12 @@ for (const name of [
   "GARANIMAL_LIVE_MODEL",
   "GARANIMAL_CHAT_MODEL",
   "HF_TOKEN",
-  "GARANIMAL_HF_MODEL",
   "SPIRIT_READS",
   "GARANIMAL_PIONEER_MODEL",
   "PIONEER_READS",
   "PIONEER_DISABLED",
   "PIONEER_KILL",
   "PIONEER_LADDER_RESET",
-  "OPENAI_API_KEY",
   "HUGGINGFACE_HUB_TOKEN",
 ]) {
   expect(example.includes(name), `.env.example documents ${name}`);
@@ -150,14 +149,12 @@ for (const name of [
   "GARANIMAL_CHAT_MODEL",
   "HF_TOKEN",
   "HUGGINGFACE_HUB_TOKEN",
-  "GARANIMAL_HF_MODEL",
   "SPIRIT_READS",
   "GARANIMAL_PIONEER_MODEL",
   "PIONEER_READS",
   "PIONEER_DISABLED",
   "PIONEER_KILL",
   "PIONEER_LADDER_RESET",
-  "OPENAI_API_KEY",
 ]) {
   expect(code.includes(name), `runtime code reads ${name}`);
 }

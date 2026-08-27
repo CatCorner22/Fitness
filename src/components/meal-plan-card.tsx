@@ -12,8 +12,6 @@ export function MealPlanCard({
   planId: string;
   name: string;
   description: string;
-  calories: number;
-  protein: number;
   totals: { calories: number; protein: number; carbs: number; fat: number };
   items: ScaledPlanItem[];
   hasLogs: boolean;

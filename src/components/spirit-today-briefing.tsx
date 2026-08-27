@@ -15,6 +15,9 @@ export function SpiritTodayBriefing({
   const started = useRef(false);
   const { completion, complete, isLoading, error } = useCompletion({
     api: "/api/spirit/briefing",
+    // The briefing route streams plain text (toTextStreamResponse), not the
+    // default SSE data protocol; without this the briefing renders blank.
+    streamProtocol: "text",
   });
 
   useEffect(() => {

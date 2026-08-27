@@ -10,17 +10,16 @@ import {
 } from "@/lib/knowledge/search";
 import { getArticle } from "@/lib/knowledge/articles";
 import {
-  gaugesToMood,
   instrumentAdvice,
   measureGauges,
   parseContextFor,
   type SpiritInstrumentAdvice,
 } from "./advisor";
-import { aiEnabled, getSpiritConfig, resolveReads, SPIRIT_UNAVAILABLE } from "./config";
+import { aiEnabled, resolveReads } from "./config";
 import { modelForTier } from "./provider";
 import { spiritSystemPrompt, SPIRIT_PROMPT_VERSION } from "./prompts";
 import { resolveModes, resolveProfile, strictPromptAddendum } from "./router";
-import { SpiritChatSchema, SpiritLiveAdviceSchema, type SpiritLiveAdvice } from "./schemas";
+import { SpiritLiveAdviceSchema, type SpiritLiveAdvice } from "./schemas";
 
 export type LiveAdviceRequest = {
   profile: ProfileRow;
@@ -39,6 +38,8 @@ export type LiveAdviceRequest = {
   elapsedMinutes: number;
   remainingExercises: number;
   priorSets?: { weightKg: number | null; reps: number | null; rpe: number | null; setIndex: number }[];
+  sessionSetsCompleted?: number;
+  sessionSetsTotal?: number;
   fatigue?: number | null;
 };
 
@@ -70,8 +71,11 @@ function validateAdvice(
   return advice;
 }
 
+// Reads use different lenses on purpose, so exact numeric agreement almost
+// never happens. Consensus compares the action, the rest bucket (30 s), and
+// the direction of the load change instead of exact values.
 function consensusKey(a: SpiritLiveAdvice): string {
-  return `${a.nextAction}|${a.restSeconds}|${Math.round((a.weightDeltaKg ?? 0) * 10)}`;
+  return `${a.nextAction}|${Math.round(a.restSeconds / 30)}|${Math.sign(a.weightDeltaKg ?? 0)}`;
 }
 
 const READ_LENSES = [
@@ -204,13 +208,17 @@ Allowed swap IDs: ${req.allowedSwapIds.join(", ") || "none"}
 Injuries: ${req.profile.injuries.join(", ") || "none"}
 Program: ${req.profile.activeProgramId}, week ${req.profile.currentWeek}`;
 
-  const cfg = getSpiritConfig();
-  const reads = Math.max(resolveReads(), profile.minReads, cfg.reads > 1 ? cfg.reads : 0);
-  const effectiveReads = Math.min(3, Math.max(1, reads));
+  const effectiveReads = Math.min(3, Math.max(resolveReads(), profile.minReads));
 
+  // The reads are independent lenses merged afterward; run them in parallel so
+  // multi-read profiles stay inside the caller's timeout budget.
+  const raws = await Promise.all(
+    Array.from({ length: effectiveReads }, (_, i) =>
+      readLiveOnce(system, prompt, READ_LENSES[i % READ_LENSES.length]!),
+    ),
+  );
   const rawResults: SpiritLiveAdvice[] = [];
-  for (let i = 0; i < effectiveReads; i++) {
-    const raw = await readLiveOnce(system, prompt, READ_LENSES[i % READ_LENSES.length]!);
+  for (const raw of raws) {
     if (raw) {
       const validated = validateAdvice(raw, req.allowedSwapIds);
       if (validated) rawResults.push(validated);
@@ -233,7 +241,6 @@ Program: ${req.profile.activeProgramId}, week ${req.profile.currentWeek}`;
 
   return {
     ...merged.advice,
-    mood: merged.advice.mood ?? gaugesToMood(gauges, modes),
     source: "llm",
     promptVersion: SPIRIT_PROMPT_VERSION,
     modes,
@@ -244,75 +251,3 @@ Program: ${req.profile.activeProgramId}, week ${req.profile.currentWeek}`;
   };
 }
 
-export async function runSpiritChatReply(options: {
-  profile: ProfileRow;
-  question: string;
-  contextSummary: string;
-  history?: { role: "user" | "coach"; content: string }[];
-}) {
-  const articles = await searchKnowledgeAsync({
-    query: options.question,
-    goal: options.profile.goal,
-    programId: options.profile.activeProgramId ?? undefined,
-    injuries: options.profile.injuries,
-    limit: 8,
-  });
-
-  if (!aiEnabled()) {
-    return {
-      text: `${options.contextSummary}\n\n*(Spirit is in offline mode — add AI_GATEWAY_API_KEY or HF_TOKEN.)*\n\n${formatKnowledgeForPrompt(articles.slice(0, 2))}`,
-      source: "rules" as const,
-      citeIds: articles.map((a) => a.id),
-      mood: "encouraging" as const,
-      promptVersion: SPIRIT_PROMPT_VERSION,
-    };
-  }
-
-  const historyBlock =
-    options.history?.length ?
-      options.history
-        .slice(-8)
-        .map((m) => `${m.role === "user" ? "User" : "Spirit"}: ${m.content}`)
-        .join("\n")
-    : "";
-
-  try {
-    const result = await generateText({
-      model: modelForTier("chat"),
-      output: Output.object({ schema: SpiritChatSchema }),
-      system: spiritSystemPrompt({
-        persona: options.profile.persona,
-        knowledgeBlock: formatKnowledgeForPrompt(articles),
-        registryBlock: registrySummary(),
-      }),
-      prompt: `User context:\n${options.contextSummary}\n\n${historyBlock ? `Recent chat:\n${historyBlock}\n\n` : ""}User question: ${options.question}`,
-    });
-    return {
-      text: result.output.message,
-      source: "llm" as const,
-      citeIds: result.output.citeIds.filter((id) => Boolean(getArticle(id))),
-      mood: result.output.mood ?? ("encouraging" as const),
-      promptVersion: SPIRIT_PROMPT_VERSION,
-    };
-  } catch (err) {
-    console.error("Spirit chat failed:", err);
-    return {
-      text: `${options.contextSummary}\n\n${SPIRIT_UNAVAILABLE}\n\n${formatKnowledgeForPrompt(articles.slice(0, 2))}`,
-      source: "rules" as const,
-      citeIds: articles.map((a) => a.id),
-      mood: "caution" as const,
-      promptVersion: SPIRIT_PROMPT_VERSION,
-    };
-  }
-}
-
-export async function runSpiritBriefing(options: {
-  profile: ProfileRow;
-  contextSummary: string;
-}) {
-  return runSpiritChatReply({
-    profile: options.profile,
-    question: "Give me a concise daily training briefing: program focus, fatigue/deload status, one actionable tip.",
-    contextSummary: options.contextSummary,
-  });
-}

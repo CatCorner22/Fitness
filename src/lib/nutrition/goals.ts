@@ -14,7 +14,7 @@ export type GoalNutrition = {
   fallbackCalories: number;
 };
 
-export const GOAL_NUTRITION: Record<Goal, GoalNutrition> = {
+const GOAL_NUTRITION: Record<Goal, GoalNutrition> = {
   powerlifting: {
     goal: "powerlifting",
     title: "Strength surplus",

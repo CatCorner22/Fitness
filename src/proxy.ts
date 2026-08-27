@@ -3,7 +3,9 @@ import { jwtVerify } from "jose";
 import { authSecretBytes } from "@/lib/auth-secret";
 import { publicOriginFromHeaders } from "@/lib/runtime";
 
-const PUBLIC = ["/login", "/api/health"];
+// The manifest must be public: browsers fetch it during PWA install checks,
+// sometimes without cookies, and it contains only the app name and colors.
+const PUBLIC = ["/login", "/api/health", "/manifest.webmanifest"];
 
 function publicUrl(request: NextRequest, pathname: string): URL {
   return new URL(

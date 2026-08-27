@@ -60,7 +60,7 @@ export function formatRest(sec: number) {
 
 export function displayWeightToKg(value: number, units: "lb" | "kg") {
   if (!Number.isFinite(value) || value <= 0) return null;
-  return units === "lb" ? value / 2.20462 : value;
+  return displayToKg(value, units);
 }
 
 export function displayHeightToCm(value: number, units: "lb" | "kg") {

@@ -55,6 +55,10 @@ export default async function SettingsPage() {
       </nav>
 
       <form action={saveSettingsAction} className="mt-8 space-y-5 rounded-3xl border border-line bg-surface p-5">
+        {/* Weight/height are pre-filled in the current units; the action needs
+            to know that so switching the Units dropdown doesn't reinterpret
+            the unedited numbers in the new units. */}
+        <input type="hidden" name="displayUnits" value={profile.units} />
         <label className="block text-sm text-muted">
           Name
           <input name="displayName" defaultValue={user.displayName} className="mt-1" />

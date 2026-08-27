@@ -20,11 +20,3 @@ export const SpiritLiveAdviceSchema = z.object({
 });
 
 export type SpiritLiveAdvice = z.infer<typeof SpiritLiveAdviceSchema>;
-
-export const SpiritChatSchema = z.object({
-  message: z.string(),
-  citeIds: z.array(z.string()),
-  mood: z.enum(["proud", "encouraging", "caution", "celebrate", "thinking"]).optional(),
-});
-
-export type SpiritChatReply = z.infer<typeof SpiritChatSchema>;

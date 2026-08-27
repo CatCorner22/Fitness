@@ -4,6 +4,11 @@ function Figure({ children, label }: { children: React.ReactNode; label: string 
   return (
     <figure className="overflow-hidden rounded-3xl border border-line bg-bg-2 p-4">
       <svg viewBox="0 0 320 180" className="h-auto w-full" role="img" aria-label={label}>
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill={copper} />
+          </marker>
+        </defs>
         <rect width="320" height="180" fill="#1b1914" />
         {children}
       </svg>

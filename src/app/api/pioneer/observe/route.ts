@@ -15,6 +15,9 @@ export async function POST(request: Request) {
   const profile = getProfile(user.id);
   if (!profile) return new Response("Profile missing", { status: 400 });
 
+  if (!request.headers.get("content-type")?.includes("application/json")) {
+    return new Response("Invalid request", { status: 415 });
+  }
   let body: { text?: string; kind?: string };
   try {
     body = (await request.json()) as { text?: string; kind?: string };

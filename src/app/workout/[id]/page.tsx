@@ -6,6 +6,7 @@ import { allowedSubstitutes, getExercise } from "@/lib/exercises/registry";
 import { db } from "@/lib/db";
 import { setLogs, workouts } from "@/lib/db/schema";
 import { estimateSessionMinutes } from "@/lib/programs/plan";
+import { planAdjustForSession } from "@/lib/assessment/session-adjust";
 import { requireAuthed } from "@/lib/session-page";
 import { courseForProgram } from "@/lib/course/catalog";
 import { lastWorkingSets, suggestionsForExercises } from "@/lib/autoregulation";
@@ -45,6 +46,7 @@ export default async function WorkoutPage({ params }: { params: Promise<{ id: st
   );
 
   const ghostSets = lastWorkingSets(user.id, exerciseIds);
+  const sessionAdjust = planAdjustForSession(user.id, profile.assessment);
   const course = courseForProgram(workout.programId);
   const optIn = await getAiOptIn();
   const { decisions } = suggestionsForExercises(
@@ -67,6 +69,7 @@ export default async function WorkoutPage({ params }: { params: Promise<{ id: st
         aiAvailable={optIn && aiEnabled()}
         aiOptIn={optIn}
         ghostSets={ghostSets}
+        restMultiplier={sessionAdjust.restMultiplier}
         courseId={course?.id}
         courseSkillIds={course?.modules.flatMap((m) => m.skillIds)}
       />

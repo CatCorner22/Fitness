@@ -111,8 +111,13 @@ export async function saveOnboardingAction(formData: FormData) {
 export async function saveSettingsAction(formData: FormData) {
   const user = await requireUser();
   const units = pickEnum(formData.get("units"), UNITS, "lb");
-  const weightKg = displayWeightToKg(Number(formData.get("weight")), units);
-  const heightCm = displayHeightToCm(Number(formData.get("height")), units);
+  // The form pre-fills weight/height in the units it was rendered with, which
+  // may differ from the newly selected `units`. Parse with the render-time
+  // units so flipping the dropdown doesn't silently corrupt stored values
+  // (e.g. 180 lb re-read as 180 kg).
+  const displayUnits = pickEnum(formData.get("displayUnits"), UNITS, units);
+  const weightKg = displayWeightToKg(Number(formData.get("weight")), displayUnits);
+  const heightCm = displayHeightToCm(Number(formData.get("height")), displayUnits);
   const programId = formString(formData, "programId");
   const existing = db.select().from(profiles).where(eq(profiles.userId, user.id)).get();
   const dietField = formData.get("dietId");

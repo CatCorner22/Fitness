@@ -16,7 +16,10 @@ export function getPioneerConfig(
   env: Record<string, string | undefined> = process.env,
 ): PioneerConfig {
   const killed = env.PIONEER_DISABLED === "1" || env.PIONEER_KILL === "1";
-  const gateway = Boolean(env.AI_GATEWAY_API_KEY || env.OPENAI_API_KEY);
+  // Same rule as Spirit: only a gateway key can actually authenticate
+  // the Vercel AI Gateway client. An OpenAI key would flip enabled=true
+  // and then fail every Pioneer call.
+  const gateway = Boolean(env.AI_GATEWAY_API_KEY);
   return {
     enabled: gateway && !killed,
     model: env.GARANIMAL_PIONEER_MODEL ?? env.GARANIMAL_AI_MODEL ?? "openai/gpt-5.4",

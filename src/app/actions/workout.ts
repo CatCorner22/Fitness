@@ -68,15 +68,21 @@ export async function startWorkoutAction(dayId?: string) {
       })
       .run();
 
+    // A plan may list the same lift in two blocks; continue setIndex across
+    // blocks so (workoutId, exerciseId, setIndex) stays unique — next-set
+    // lookups and prior-set history rely on that.
+    const setCounters = new Map<string, number>();
     for (const item of planned.exercises) {
       for (let i = 0; i < item.sets; i++) {
+        const setIndex = setCounters.get(item.exerciseId) ?? 0;
+        setCounters.set(item.exerciseId, setIndex + 1);
         tx.insert(setLogs)
           .values({
             id: crypto.randomUUID(),
             workoutId: id,
             userId: user.id,
             exerciseId: item.exerciseId,
-            setIndex: i,
+            setIndex,
             targetReps: item.reps,
             targetRpe: item.targetRpe,
             weightKg: item.suggestedWeightKg,

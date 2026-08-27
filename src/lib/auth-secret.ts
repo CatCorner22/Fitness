@@ -21,7 +21,10 @@ function errorCode(error: unknown): string | undefined {
 function secretDataDir(env: NodeJS.ProcessEnv): string {
   const explicitDbPath = env.DATABASE_PATH?.trim();
   if (explicitDbPath) return path.dirname(path.resolve(explicitDbPath));
-  return path.resolve(env.GARANIMAL_DATA_DIR?.trim() || path.join(process.cwd(), "data"));
+  // turbopackIgnore: the data dir only exists at runtime; without the opt-out
+  // this dynamic path pulls the whole project (public/ included) into the
+  // traced server output.
+  return path.resolve(/* turbopackIgnore: true */ env.GARANIMAL_DATA_DIR?.trim() || path.join(process.cwd(), "data"));
 }
 
 function readPersistedSecret(secretPath: string): string | null {

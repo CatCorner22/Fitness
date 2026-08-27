@@ -52,6 +52,8 @@ export function seedStarterFoods(db: Db) {
 export function seedIfNeeded(db: Db) {
   const now = new Date().toISOString();
   for (const person of HOUSEHOLD) {
+    // onConflictDoNothing keeps this safe when several processes (e.g. parallel
+    // `next build` workers) seed a fresh database at the same time.
     const exists = db.select({ id: users.id }).from(users).where(eq(users.username, person.username)).get();
     if (!exists) {
       db.insert(users)
@@ -62,6 +64,7 @@ export function seedIfNeeded(db: Db) {
           displayName: person.displayName,
           createdAt: now,
         })
+        .onConflictDoNothing()
         .run();
     }
     db.insert(profiles)
@@ -74,11 +77,4 @@ export function seedIfNeeded(db: Db) {
   }
 
   seedStarterFoods(db);
-
-  for (const person of HOUSEHOLD) {
-    const profile = db.select().from(profiles).where(eq(profiles.userId, person.id)).get();
-    if (!profile) {
-      db.insert(profiles).values({ userId: person.id, equipment: DEFAULT_EQUIPMENT }).onConflictDoNothing().run();
-    }
-  }
 }

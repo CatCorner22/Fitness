@@ -52,8 +52,16 @@ export function measureGauges(input: {
   remainingExercises: number;
   rpe: number | null;
   targetRpe: number;
+  sessionSetsCompleted?: number;
+  sessionSetsTotal?: number;
 }): SpiritGauges {
-  const sessionProgress = Math.min(1, (input.setIndex + 1) / Math.max(1, input.totalSets));
+  const liftProgress = Math.min(1, (input.setIndex + 1) / Math.max(1, input.totalSets));
+  // Time pacing must compare against the whole session: per-lift progress
+  // resets toward zero on each new exercise while the clock keeps running,
+  // which falsely flagged well-paced sessions as off track.
+  const sessionProgress = input.sessionSetsTotal
+    ? Math.min(1, (input.sessionSetsCompleted ?? 0) / input.sessionSetsTotal)
+    : liftProgress;
   const rpeDrift =
     input.rpe != null ? (input.rpe - input.targetRpe) / Math.max(1, input.targetRpe) : 0;
   const timeBudgetUsed = input.elapsedMinutes / Math.max(1, input.sessionMinutesBudget);
@@ -67,7 +75,7 @@ export function measureGauges(input: {
     notes: {
       progress: {
         why: `Set ${input.setIndex + 1} of ${input.totalSets} on this lift.`,
-        next: sessionProgress < 0.5 ? "Main work still ahead — protect quality." : "Finish strong, don't rush.",
+        next: liftProgress < 0.5 ? "Main work still ahead — protect quality." : "Finish strong, don't rush.",
       },
       rpe: {
         why:
@@ -104,6 +112,8 @@ export function instrumentAdvice(input: {
   sessionMinutesBudget: number;
   elapsedMinutes: number;
   remainingExercises: number;
+  sessionSetsCompleted?: number;
+  sessionSetsTotal?: number;
   modes: SpiritMode[];
   citeIds: string[];
 }): SpiritInstrumentAdvice {
@@ -168,14 +178,6 @@ export function instrumentAdvice(input: {
     mood,
     citeIds: input.citeIds,
   };
-}
-
-export function gaugesToMood(gauges: SpiritGauges, modes: SpiritMode[]): SpiritMood {
-  if (modes.includes("injury") || modes.includes("deload")) return "caution";
-  if (modes.includes("high_rpe")) return "caution";
-  if (gauges.rpeDrift <= -0.1) return "proud";
-  if (!gauges.onTrack) return "thinking";
-  return "encouraging";
 }
 
 export function parseContextFor(input: {

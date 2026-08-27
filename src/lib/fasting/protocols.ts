@@ -7,7 +7,7 @@ export const FAST_PROTOCOLS = [
   { id: "24h", hours: 24, label: "24 h", blurb: "A one-day fast. Not a weekly default." },
 ] as const;
 
-export const MIN_FAST_MINUTES = 8 * 60;
+const MIN_FAST_MINUTES = 8 * 60;
 export const MAX_FAST_MINUTES = 48 * 60;
 
 export function clampFastMinutes(n: number) {

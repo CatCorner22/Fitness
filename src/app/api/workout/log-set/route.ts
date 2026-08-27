@@ -9,6 +9,9 @@ import { clamp, displayToKg, todayISO } from "@/lib/utils";
 import { getAiOptIn } from "@/lib/prefs";
 
 function withTimeout<T>(promise: Promise<T>, ms: number) {
+  // If the timeout wins, the losing promise is abandoned mid-flight; swallow
+  // its eventual rejection so it cannot become an unhandled rejection.
+  promise.catch(() => {});
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
     timer = setTimeout(() => reject(new Error("coach timeout")), ms);
@@ -24,6 +27,11 @@ export async function POST(request: Request) {
   const profile = getProfile(user.id);
   if (!profile) return NextResponse.json({ error: "Profile missing" }, { status: 400 });
 
+  // Requiring a JSON content type forces cross-origin senders into a CORS
+  // preflight, which fails; the Replit session cookie is SameSite=None.
+  if (!request.headers.get("content-type")?.includes("application/json")) {
+    return NextResponse.json({ error: "Invalid request" }, { status: 415 });
+  }
   let body: Record<string, unknown>;
   try {
     body = (await request.json()) as Record<string, unknown>;
@@ -119,6 +127,8 @@ export async function POST(request: Request) {
         sessionMinutesBudget: profile.sessionMinutes,
         elapsedMinutes,
         remainingExercises: remaining,
+        sessionSetsCompleted: allSets.filter((s) => s.completed).length,
+        sessionSetsTotal: allSets.length,
         priorSets,
         fatigue: checkin?.fatigue ?? null,
       }),
