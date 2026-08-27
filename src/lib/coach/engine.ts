@@ -111,6 +111,10 @@ function bannedHit(q: string) {
   });
 }
 
+function hasWord(q: string, word: string) {
+  return new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(q);
+}
+
 function isDipQuestion(q: string, hit?: Exercise) {
   return (
     /\bdips?\b/.test(q) ||
@@ -159,7 +163,12 @@ const QUESTION_RULES: QuestionRule[] = [
       "You → Fitness check. Six field tests (6-minute walk or 2-minute step, CSEP push-ups, 30s chair stand, plank, single-leg stance, overhead squat + back-scratch). We scale RPE and swaps from that. No 1RM on day one. Sit-ups are not the core test.",
   },
   {
-    test: (q) => q.includes("fast") || q.includes("16:8") || q.includes("16/8") || q.includes("eating window"),
+    test: (q) =>
+      hasWord(q, "fast") ||
+      hasWord(q, "fasting") ||
+      q.includes("16:8") ||
+      q.includes("16/8") ||
+      q.includes("eating window"),
     reply: () =>
       "Open Eat. Start a fast, then change the start time, the target, or the eat-at time whenever you need to — including after you already ended it. TRE is a timer. Matched-calorie studies do not show a magic metabolism bonus.",
   },
@@ -184,13 +193,13 @@ const QUESTION_RULES: QuestionRule[] = [
       "Eat → Diet blocks. Cut slowly (0.5–1% bodyweight/week). Mini-cut is four weeks if you are already lean. Reverse is how you leave a deficit. Lean bulk is a small surplus.",
   },
   {
-    test: (q) => q.includes("protein") || q.includes("eat") || q.includes("calorie"),
+    test: (q) => q.includes("protein") || q.includes("calorie") || hasWord(q, "eat") || hasWord(q, "eating"),
     reply: (_persona, profile) =>
       `Protein target is about 1.6–2.2 g/kg. Yours is based on ${profile.weightKg ?? "your"} kg bodyweight. Eat enough to train. This app will not praise a crash diet.`,
   },
   {
     test: (q) =>
-      q.includes("time") ||
+      hasWord(q, "time") ||
       q.includes("busy") ||
       q.includes("minutes") ||
       q.includes("skip extra") ||
@@ -200,7 +209,7 @@ const QUESTION_RULES: QuestionRule[] = [
       `Your clock cap is ${profile.sessionMinutes} minutes. The planner still keeps every programmed drill and tells you if the day runs long. We do not hide or drop lifts to fake a short session.`,
   },
   {
-    test: (q) => q.includes("glute") || q.includes("butt") || q.includes("ass"),
+    test: (q) => q.includes("glute") || q.includes("butt") || hasWord(q, "ass"),
     reply: () =>
       "Hip thrust, squat or split squat, RDL, abduction, 45° extension. Variety. Plotkin 2023: thrust ≈ squat for glute size. Kassiano 2024: adding thrusts on top of hinges and presses grew more glute. Do the work.",
   },
