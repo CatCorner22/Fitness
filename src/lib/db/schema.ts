@@ -180,3 +180,14 @@ export const calendarMarks = sqliteTable("calendar_marks", {
   fill: text("fill").notNull(),
   updatedAt: text("updated_at").notNull(),
 });
+
+export const pioneerDrafts = sqliteTable("pioneer_drafts", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id),
+  title: text("title").notNull().default(""),
+  body: text("body").notNull().default(""),
+  kind: text("kind").notNull().default("mixed"),
+  updatedAt: text("updated_at").notNull(),
+});

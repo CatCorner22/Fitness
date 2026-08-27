@@ -7,6 +7,9 @@ import { FastFoodPicks } from "@/components/fast-food-picks";
 import { FastingTimer } from "@/components/fasting-timer";
 import { MealFoodForm } from "@/components/meal-food-form";
 import { MealPlanCard } from "@/components/meal-plan-card";
+import { PioneerWatch } from "@/components/pioneer-watch";
+import { watchTodaysPlateAction } from "@/app/actions/pioneer";
+import { buildPioneerHousehold, serializePlateDraft } from "@/lib/pioneer/context";
 import { db } from "@/lib/db";
 import { foods } from "@/lib/db/schema";
 import { isoToLocalInput } from "@/lib/fasting/protocols";
@@ -45,6 +48,8 @@ export default async function NutritionPage() {
   const adjustments = openFast ? adjustmentsForFast(openFast.id, user.id) : [];
   const diet = targets.diet;
   const lowHistamine = isLowHistamineDiet(profile.activeDietId);
+  const household = buildPioneerHousehold(user.id, profile);
+  const plateDraft = serializePlateDraft(day.logs, household);
 
   return (
     <AppShell user={user} profile={profile}>
@@ -120,6 +125,15 @@ export default async function NutritionPage() {
           </p>
         )}
       </section>
+
+      <div className="mt-6 space-y-3">
+        <PioneerWatch text={plateDraft} household={household} />
+        <form action={watchTodaysPlateAction}>
+          <button className="btn-quiet w-full" type="submit">
+            Open this plate in Draft
+          </button>
+        </form>
+      </div>
 
       <div className="mt-6">
         <FastingTimer

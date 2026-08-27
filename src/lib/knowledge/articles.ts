@@ -369,6 +369,19 @@ Stalled for 3 weeks with rising session RPE → deload or reduce weekly sets bef
 Use cues on hip thrusts, abduction, and curls; on squats/deadlifts prioritize bracing and bar path.`,
     citations: ["Calatayud et al. 2016"],
   },
+  {
+    id: "pioneer-observer",
+    title: "Pioneer — observe-only fitness and nutrition reads",
+    tags: ["pioneer", "instrument", "draft", "safety", "nutrition", "rpe"],
+    summary:
+      "Pioneer watches a training or food draft. Instruments always score stimulus, fuel, recovery, safety, and adherence. The language model only speaks when allowed, and it never edits the page.",
+    body: `Pioneer is one-way on purpose. You write. It reports gaps, banned-lift wording, crash intake, and missing RPE. It cannot paste into the draft and you cannot copy its cards back in.
+
+The instrument layer is local: household calorie floors, ISSN-range protein, Helms–Zourdos RPE, the Garanimal lift registry, and rest-day honesty. The pioneer layer is a constrained model with multiple reads and a source allow-list. If the model is dark, throttled, or refused, the gauges still work.
+
+This is not medical care. Sharp, hot, numb, or radiating pain is a stop.`,
+    citations: ["Helms et al. 2016", "Morton et al. 2018", "McKenzie et al. 2022", "ISSN protein position"],
+  },
 ];
 
 export function getArticle(id: string) {
