@@ -93,19 +93,33 @@ textarea {
 
 input:focus-visible,
 select:focus-visible,
-textarea:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--copper) 55%, transparent);
-  outline-offset: 1px;
+textarea:focus-visible,
+button:focus-visible,
+a:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--copper);
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 0.75rem;
+  top: 0.75rem;
+  z-index: 80;
+  border-radius: 0.9rem;
+  background: var(--copper);
+  color: var(--on-copper);
+  padding: 0.55rem 0.9rem;
+  font-weight: 600;
+  transform: translateY(-180%);
+}
+
+.skip-link:focus {
+  transform: none;
 }
 
 button:not(:disabled) {
   cursor: pointer;
-}
-
-.btn-primary:focus-visible,
-.btn-quiet:focus-visible {
-  outline: 2px solid var(--copper);
-  outline-offset: 2px;
 }
 
 .btn-primary {

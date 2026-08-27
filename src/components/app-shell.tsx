@@ -22,11 +22,16 @@ export async function AppShell({
         wide ? "max-w-lg lg:max-w-4xl" : "max-w-lg lg:max-w-2xl"
       }`}
     >
+      <a href="#main" className="skip-link">
+        Skip to main content
+      </a>
       <header className="mb-6 flex items-center justify-between gap-4">
         <LookBrand avatarId={look.avatar} name={user.displayName} />
         <DesktopNav />
       </header>
-      <main className="flex-1">{children}</main>
+      <main id="main" className="flex-1">
+        {children}
+      </main>
       <MobileNav />
     </div>
   );

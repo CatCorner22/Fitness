@@ -46,6 +46,7 @@ export default async function OnboardingPage() {
               ))}
             </select>
           </label>
+          <p className="text-sm text-muted">We only put that many sessions on Today, even if a plan lists a longer week.</p>
           <label className="block text-sm text-muted">
             Minutes per session
             <select name="sessionMinutes" className="mt-1" defaultValue="45">
@@ -110,7 +111,7 @@ export default async function OnboardingPage() {
             <input name="weight" type="number" step="0.1" className="mt-1" />
           </label>
           <p className="text-sm text-muted">Anything currently sore?</p>
-          {["knee", "shoulder", "low_back"].map((i) => (
+          {["knee", "shoulder", "low_back", "wrist", "elbow", "hip", "ankle"].map((i) => (
             <label key={i} className="flex min-h-12 items-center gap-3 capitalize">
               <input type="checkbox" name="injuries" value={i} className="w-auto" />
               {i.replace("_", " ")}

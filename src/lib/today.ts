@@ -7,6 +7,7 @@ import type { FitnessPlanAdjust } from "@/lib/assessment/types";
 import { shouldDeload } from "@/lib/autoregulation";
 import { getProgram } from "@/lib/programs/catalog";
 import { buildPlannedSession } from "@/lib/programs/plan";
+import { scheduledProgramDays } from "@/lib/programs/schedule";
 import { daysAgoISO, todayISO } from "@/lib/utils";
 
 function startOfWeekISO() {
@@ -36,9 +37,12 @@ export function todaysPlan(userId: string, profile: ProfileRow, fitness?: Fitnes
     )
     .all();
 
+  const scheduledDays = scheduledProgramDays(program.days, profile.daysPerWeek);
+  if (!scheduledDays.length) return null;
   const doneIds = new Set(weekWorkouts.filter((w) => w.status !== "in_progress").map((w) => w.dayId));
-  const nextDay = program.days.find((d) => !doneIds.has(d.id)) ?? program.days[0];
-  const allDone = program.days.every((d) => doneIds.has(d.id));
+  const nextDay = scheduledDays.find((d) => !doneIds.has(d.id)) ?? scheduledDays[0];
+  if (!nextDay) return null;
+  const allDone = scheduledDays.every((d) => doneIds.has(d.id));
 
   const planned = buildPlannedSession({
     programId: program.id,
@@ -62,6 +66,7 @@ export function todaysPlan(userId: string, profile: ProfileRow, fitness?: Fitnes
     allDone,
     weekWorkouts,
     open,
+    scheduledDays,
   };
 }
 
@@ -98,7 +103,7 @@ const LOG_STATUS: Record<string, "done" | "skipped" | "open"> = {
 
 export function weekDayStatuses(plan: NonNullable<ReturnType<typeof todaysPlan>>) {
   const nextId = plan.planned?.day.id;
-  return plan.program.days.map((day) => {
+  return plan.scheduledDays.map((day) => {
     const logged = plan.weekWorkouts.find((w) => w.dayId === day.id);
     const fromLog = logged ? LOG_STATUS[logged.status] : undefined;
     const status = fromLog ?? (nextId === day.id ? "today" : "upcoming");

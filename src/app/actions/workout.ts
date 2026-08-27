@@ -170,6 +170,32 @@ export async function skipWorkoutAction(dayId: string, _dayName: string, program
   const program = getProgram(programId);
   const day = program?.days.find((d) => d.id === dayId);
   if (!program || !day) return;
+  const open = db
+    .select()
+    .from(workouts)
+    .where(and(eq(workouts.userId, user.id), eq(workouts.status, "in_progress")))
+    .get();
+  if (open) redirect(`/workout/${open.id}`);
+
+  const weekNumber = clampInt(week, 1, 1, program.durationWeeks);
+  const alreadyLogged = db
+    .select()
+    .from(workouts)
+    .where(
+      and(
+        eq(workouts.userId, user.id),
+        eq(workouts.programId, program.id),
+        eq(workouts.week, weekNumber),
+        eq(workouts.dayId, day.id),
+      ),
+    )
+    .all()
+    .some((row) => row.status === "skipped" || row.status === "completed");
+  if (alreadyLogged) {
+    revalidatePath("/");
+    redirect("/?toast=skipped");
+  }
+
   const date = todayISO();
   db.insert(workouts)
     .values({
@@ -178,7 +204,7 @@ export async function skipWorkoutAction(dayId: string, _dayName: string, program
       programId: program.id,
       dayId: day.id,
       dayName: day.name,
-      week: clampInt(week, 1, 1, program.durationWeeks),
+      week: weekNumber,
       date,
       startedAt: new Date().toISOString(),
       completedAt: new Date().toISOString(),

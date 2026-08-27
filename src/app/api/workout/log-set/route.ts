@@ -32,12 +32,16 @@ export async function POST(request: Request) {
   if (!request.headers.get("content-type")?.includes("application/json")) {
     return NextResponse.json({ error: "Invalid request" }, { status: 415 });
   }
-  let body: Record<string, unknown>;
+  let parsed: unknown;
   try {
-    body = (await request.json()) as Record<string, unknown>;
+    parsed = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
+  const body = parsed as Record<string, unknown>;
   const setId = String(body.setId ?? "");
   const weight = Number(body.weight);
   const reps = Number(body.reps);

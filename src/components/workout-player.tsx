@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { completeWorkoutAction, swapExerciseAction } from "@/app/actions/workout";
 import { PlateCalc } from "@/components/plate-calc";
@@ -31,7 +31,45 @@ const HARDNESS = [
   ["hard", "Hard"],
 ] as const;
 
+const REST_MUTE_KEY = "garanimal_rest_mute";
+const muteListeners = new Set<() => void>();
+
+function restMuteSnapshot() {
+  try {
+    return localStorage.getItem(REST_MUTE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function subscribeRestMute(onStoreChange: () => void) {
+  muteListeners.add(onStoreChange);
+  return () => {
+    muteListeners.delete(onStoreChange);
+  };
+}
+
+function setRestMute(next: boolean) {
+  try {
+    localStorage.setItem(REST_MUTE_KEY, next ? "1" : "0");
+  } catch {
+    /* private mode */
+  }
+  for (const listener of muteListeners) listener();
+}
+
+function restAlertsAllowed() {
+  try {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
+    if (restMuteSnapshot()) return false;
+  } catch {
+    /* private mode / SSR */
+  }
+  return true;
+}
+
 function playRestBeep() {
+  if (!restAlertsAllowed()) return;
   try {
     const ctx = new AudioContext();
     const osc = ctx.createOscillator();
@@ -59,13 +97,13 @@ function HardnessButtons({
   onChange: (next: string) => void;
 }) {
   return (
-    <div className="flex gap-2">
-      {(
-        HARDNESS
-      ).map(([id, label]) => (
+    <div className="flex gap-2" role="group">
+      {HARDNESS.map(([id, label]) => (
         <button
           key={id}
           type="button"
+          aria-pressed={value === id}
+          aria-label={`${label} (about RPE ${hardnessToRpe(id)})`}
           onClick={() => onChange(value === id ? "" : id)}
           className={`min-h-11 flex-1 rounded-xl border px-2 text-sm ${
             value === id ? "border-copper bg-copper/15 text-copper-2" : "border-line text-muted"
@@ -129,7 +167,10 @@ export function WorkoutPlayer({
   // Deadline timestamp instead of a decrementing counter: browsers throttle
   // intervals in background tabs / locked phones, which froze the countdown.
   const [restEndsAt, setRestEndsAt] = useState<number | null>(null);
-  const resting = restEndsAt != null;
+  const [pausedRemaining, setPausedRemaining] = useState<number | null>(null);
+  const muteAlerts = useSyncExternalStore(subscribeRestMute, restMuteSnapshot, () => false);
+  const resting = restEndsAt != null || pausedRemaining != null;
+  const paused = pausedRemaining != null;
   const alertedRef = useRef(false);
   const loggingRef = useRef<string | null>(null);
   const [started] = useState(() => Date.now());
@@ -194,8 +235,37 @@ export function WorkoutPlayer({
 
   function startRest(rest: number) {
     alertedRef.current = false;
+    setPausedRemaining(null);
     setSeconds(rest);
     setRestEndsAt(Date.now() + rest * 1000);
+  }
+
+  function pauseRest() {
+    if (restEndsAt == null) return;
+    const remaining = Math.max(0, Math.ceil((restEndsAt - Date.now()) / 1000));
+    setRestEndsAt(null);
+    setPausedRemaining(remaining);
+    setSeconds(remaining);
+  }
+
+  function resumeRest() {
+    if (pausedRemaining == null || pausedRemaining <= 0) {
+      setPausedRemaining(null);
+      return;
+    }
+    alertedRef.current = false;
+    setRestEndsAt(Date.now() + pausedRemaining * 1000);
+    setPausedRemaining(null);
+  }
+
+  function skipRest() {
+    setRestEndsAt(null);
+    setPausedRemaining(null);
+    setSeconds(0);
+  }
+
+  function toggleMuteAlerts() {
+    setRestMute(!muteAlerts);
   }
 
   function stampDuration(form: HTMLFormElement) {
@@ -309,14 +379,20 @@ export function WorkoutPlayer({
 
       <div
         className={`rounded-3xl border bg-surface px-5 py-4 text-center ${
-          resting && seconds <= 10 ? "border-copper" : "border-line"
+          resting && !paused && seconds <= 10 ? "border-copper" : "border-line"
         }`}
       >
-        <p className="text-sm text-muted">{resting ? "Rest" : "Rest starts after you log a set"}</p>
-        <p className={`display mt-1 text-5xl tabular-nums ${resting && seconds <= 10 ? "text-copper-2" : ""}`}>
+        <p className="text-sm text-muted">
+          {paused ? "Rest paused" : resting ? "Rest" : "Rest starts after you log a set"}
+        </p>
+        <p
+          className={`display mt-1 text-5xl tabular-nums ${resting && !paused && seconds <= 10 ? "text-copper-2" : ""}`}
+          aria-live="polite"
+          aria-atomic="true"
+        >
           {formatRest(seconds)}
         </p>
-        <div className="mt-3 flex justify-center gap-3">
+        <div className="mt-3 flex flex-wrap justify-center gap-3">
           {catalogRest > 0 && catalogRest !== 90 && catalogRest !== 180 ? (
             <button type="button" onClick={() => startRest(catalogRest)} className="min-h-11 rounded-xl border border-line px-4">
               {formatRest(catalogRest)}
@@ -328,12 +404,30 @@ export function WorkoutPlayer({
           <button type="button" onClick={() => startRest(180)} className="min-h-11 rounded-xl border border-line px-4">
             3:00
           </button>
-          {resting ? (
-            <button type="button" onClick={() => setRestEndsAt(null)} className="min-h-11 rounded-xl px-4 text-muted">
+          {restEndsAt != null ? (
+            <button type="button" onClick={pauseRest} className="min-h-11 rounded-xl px-4 text-muted">
               Pause
             </button>
           ) : null}
+          {paused ? (
+            <button type="button" onClick={resumeRest} className="min-h-11 rounded-xl border border-line px-4">
+              Resume
+            </button>
+          ) : null}
+          {resting ? (
+            <button type="button" onClick={skipRest} className="min-h-11 rounded-xl px-4 text-muted">
+              Skip rest
+            </button>
+          ) : null}
         </div>
+        <button
+          type="button"
+          aria-pressed={muteAlerts}
+          onClick={toggleMuteAlerts}
+          className="mt-3 text-sm text-muted underline-offset-2 hover:underline"
+        >
+          {muteAlerts ? "Alerts muted" : "Mute beep and vibrate"}
+        </button>
       </div>
 
       {logError ? <p className="text-sm text-danger">{logError}</p> : null}
@@ -489,7 +583,7 @@ export function WorkoutPlayer({
                       </label>
                     </div>
                     <div>
-                      <p className="mb-2 text-sm text-muted">How did that feel? Optional.</p>
+                      <p className="mb-2 text-sm text-muted">How did that feel? Optional. Easy / OK / Hard maps to about RPE 6 / 7.5 / 9.</p>
                       <HardnessButtons
                         value={hardness[set.id] ?? ""}
                         onChange={(next) => setHardness((prev) => ({ ...prev, [set.id]: next }))}

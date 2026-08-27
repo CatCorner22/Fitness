@@ -8,6 +8,7 @@ import { restAfterLoggedSet } from "../src/lib/rest.ts";
 import { todayISO, yesterdayISO } from "../src/lib/utils.ts";
 import { getSpiritConfig, resolveReads } from "../src/lib/spirit/config.ts";
 import { resolveAuthSecret } from "../src/lib/auth-secret.ts";
+import { scheduledProgramDays } from "../src/lib/programs/schedule.ts";
 
 function expect(condition, message) {
   assert.ok(condition, message);
@@ -80,6 +81,11 @@ const copied = itemsForEmptyMeals(
 );
 expect(copied.length === 2 && copied.every((row) => row.meal === "lunch"), "copy skips meals already logged today");
 expect(itemsForEmptyMeals([{ meal: "snack" }], ["snack"]).length === 0, "fully overlapping day copies nothing");
+
+expect(scheduledProgramDays(["a", "b", "c", "d", "e", "f"], 3).join() === "a,b,c", "3-day week keeps the first three programmed days");
+expect(scheduledProgramDays(["a", "b"], 6).join() === "a,b", "days-per-week cannot invent extra sessions");
+expect(scheduledProgramDays(["a", "b", "c"], 0).join() === "a", "zero days still schedules one session");
+expect(scheduledProgramDays([], 4).length === 0, "empty program stays empty");
 
 const plansSrc = fs.readFileSync(path.join("src", "lib", "nutrition", "meal-plans.ts"), "utf8");
 const planFoodIds = [...plansSrc.matchAll(/line\("([^"]+)"/g)].map((m) => m[1]);

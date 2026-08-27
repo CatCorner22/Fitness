@@ -108,8 +108,9 @@ export default async function SettingsPage() {
         </label>
         <label className="text-sm text-muted block">
           Days / week
-          <input name="daysPerWeek" type="number" defaultValue={profile.daysPerWeek} className="mt-1" />
+          <input name="daysPerWeek" type="number" min={2} max={7} defaultValue={profile.daysPerWeek} className="mt-1" />
         </label>
+        <p className="text-sm text-muted">Today only asks for this many sessions, even if the plan card lists more days.</p>
         <label className="text-sm text-muted block">
           Units
           <select name="units" defaultValue={profile.units} className="mt-1">
@@ -132,8 +133,8 @@ export default async function SettingsPage() {
             <label className="text-sm text-muted block">
               Coach voice
               <select name="persona" defaultValue={profile.persona} className="mt-1">
-                <option value="scientist">Calm</option>
-                <option value="garanimal">Tough</option>
+                <option value="scientist">Calm (Scientist)</option>
+                <option value="garanimal">Tough (Garanimal)</option>
               </select>
             </label>
             <label className="text-sm text-muted block">
