@@ -3,17 +3,11 @@
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { profiles } from "@/lib/db/schema";
 import { getDiet } from "@/lib/nutrition/diets";
 import { todayISO } from "@/lib/utils";
-
-async function requireUser() {
-  const user = await getSession();
-  if (!user) redirect("/login");
-  return user;
-}
 
 function refreshDiet() {
   revalidatePath("/");

@@ -3,18 +3,12 @@
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getProfile, getSession } from "@/lib/auth";
+import { getProfile, requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { fitnessAssessments, profiles } from "@/lib/db/schema";
 import { inputFromForm } from "@/lib/assessment/parse";
 import { scoreAssessment } from "@/lib/assessment/score";
 import { planAdjustFromAssessment } from "@/lib/assessment/plan-adjust";
-
-async function requireUser() {
-  const user = await getSession();
-  if (!user) redirect("/login");
-  return user;
-}
 
 function refresh() {
   revalidatePath("/");

@@ -3,7 +3,7 @@
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getProfile, getSession } from "@/lib/auth";
+import { getProfile, requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { bodyweightLogs, dailyCheckins, profiles, users } from "@/lib/db/schema";
 import { clampInt, pickEnum, todayISO } from "@/lib/utils";
@@ -41,12 +41,6 @@ function optionalAge(raw: unknown) {
   const n = Number(raw);
   if (!Number.isFinite(n)) return null;
   return clampInt(n, 0, 15, 99);
-}
-
-async function requireUser() {
-  const user = await getSession();
-  if (!user) redirect("/login");
-  return user;
 }
 
 function upsertBodyweight(userId: string, weightKg: number, date = todayISO()) {

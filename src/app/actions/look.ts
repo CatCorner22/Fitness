@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { ACCENTS, AVATARS, FONTS, PALETTES, TYPE_SIZES, type LookPrefs } from "@/lib/look";
 import { setPrefCookies } from "@/lib/prefs";
 
@@ -11,8 +11,7 @@ function pick<T extends string>(value: string, allowed: readonly { id: T }[], fa
 }
 
 export async function saveLookAction(formData: FormData) {
-  const user = await getSession();
-  if (!user) redirect("/login");
+  await requireUser();
   const look: LookPrefs = {
     palette: pick(String(formData.get("palette") || ""), PALETTES, "copper"),
     size: pick(String(formData.get("size") || ""), TYPE_SIZES, "md"),

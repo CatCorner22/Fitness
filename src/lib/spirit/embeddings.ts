@@ -4,7 +4,7 @@
  */
 
 import { KNOWLEDGE_ARTICLES, type KnowledgeArticle } from "@/lib/knowledge/articles";
-import type { SearchContext } from "@/lib/knowledge/search";
+import type { SearchContext } from "@/lib/knowledge/scoring";
 import { scoreArticle } from "@/lib/knowledge/scoring";
 
 const HF_MODEL = "sentence-transformers/all-MiniLM-L6-v2";
@@ -117,5 +117,3 @@ export async function hybridSearchKnowledge(ctx: SearchContext): Promise<Knowled
 
   return semanticScored.slice(0, limit).map((x) => x.article);
 }
-
-export { HF_MODEL };

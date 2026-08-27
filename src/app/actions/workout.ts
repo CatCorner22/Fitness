@@ -3,7 +3,7 @@
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getProfile, getSession } from "@/lib/auth";
+import { getProfile, requireUser } from "@/lib/auth";
 import { planAdjustForSession } from "@/lib/assessment/session-adjust";
 import { upsertCalendarMark } from "@/lib/calendar";
 import { CALENDAR_EPOCH, compareISO } from "@/lib/calendar-core";
@@ -15,12 +15,6 @@ import { attachLoadHistory, buildPlannedSession } from "@/lib/programs/plan";
 import { clampInt, todayISO } from "@/lib/utils";
 import { parseRepTarget } from "@/lib/copy";
 import { allowedSubstitutes, getExercise } from "@/lib/exercises/registry";
-
-async function requireUser() {
-  const user = await getSession();
-  if (!user) redirect("/login");
-  return user;
-}
 
 export async function startWorkoutAction(dayId?: string) {
   const user = await requireUser();
