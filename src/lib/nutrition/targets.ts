@@ -1,4 +1,5 @@
 import { and, desc, eq, gte } from "drizzle-orm";
+import { daysAgoISO } from "@/lib/utils";
 import { db } from "@/lib/db";
 import { bodyweightLogs, nutritionLogs } from "@/lib/db/schema";
 import type { ProfileRow } from "@/lib/auth";
@@ -121,12 +122,10 @@ export function adaptiveCalories(userId: string, profile: ProfileRow) {
   );
   const weeklyChange = ((newest - oldest) / days) * 7;
 
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - 14);
   const recentLogs = db
     .select({ date: nutritionLogs.date, calories: nutritionLogs.calories })
     .from(nutritionLogs)
-    .where(and(eq(nutritionLogs.userId, userId), gte(nutritionLogs.date, cutoff.toISOString().slice(0, 10))))
+    .where(and(eq(nutritionLogs.userId, userId), gte(nutritionLogs.date, daysAgoISO(14))))
     .all();
   const byDate = new Map<string, number>();
   for (const row of recentLogs) {

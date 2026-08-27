@@ -10,13 +10,7 @@ import { bodyweightLogs, fasts, workouts } from "@/lib/db/schema";
 import { getExercise } from "@/lib/exercises/registry";
 import { formatElapsedLabel } from "@/lib/fasting/protocols";
 import { requireAuthed } from "@/lib/session-page";
-import { formatWeight, todayISO } from "@/lib/utils";
-
-function weekAgo() {
-  const d = new Date();
-  d.setDate(d.getDate() - 7);
-  return todayISO(d);
-}
+import { formatWeight, daysAgoISO } from "@/lib/utils";
 
 export default async function ProgressPage() {
   const { user, profile } = await requireAuthed();
@@ -39,7 +33,7 @@ export default async function ProgressPage() {
     .orderBy(desc(fasts.startedAt))
     .limit(12)
     .all();
-  const volume = weeklyVolume(user.id, weekAgo());
+  const volume = weeklyVolume(user.id, daysAgoISO(7));
   const best = bestSets(user.id);
   const mainLifts = ["back-squat", "bench-press", "conventional-deadlift", "hip-thrust", "ohp", "pullup"];
 

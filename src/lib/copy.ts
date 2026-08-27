@@ -1,3 +1,14 @@
+const GOAL_PROGRAMS: Record<string, string> = {
+  powerlifting: "powerlifting",
+  bodybuilding: "ppl",
+  glute_specialization: "ppl",
+  strength_endurance: "strength_endurance",
+  pole_stage: "pole_stage",
+  exotic_stage: "pole_amateur_night",
+};
+
+const HARDNESS_RPE = { easy: 6, ok: 7.5, hard: 9 } as const;
+
 export function parseRepTarget(reps: string | null | undefined) {
   if (!reps) return 8;
   const match = reps.match(/\d+/);
@@ -5,17 +16,9 @@ export function parseRepTarget(reps: string | null | undefined) {
 }
 
 export function hardnessToRpe(value: string) {
-  if (value === "easy") return 6;
-  if (value === "ok") return 7.5;
-  if (value === "hard") return 9;
-  return null;
+  return HARDNESS_RPE[value as keyof typeof HARDNESS_RPE] ?? null;
 }
 
 export function programForGoal(goal: string) {
-  if (goal === "powerlifting") return "powerlifting";
-  if (goal === "bodybuilding" || goal === "glute_specialization") return "ppl";
-  if (goal === "strength_endurance") return "strength_endurance";
-  if (goal === "pole_stage") return "pole_stage";
-  if (goal === "exotic_stage") return "pole_amateur_night";
-  return "upper_lower";
+  return GOAL_PROGRAMS[goal] ?? "upper_lower";
 }

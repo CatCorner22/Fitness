@@ -1,7 +1,6 @@
 "use server";
 
 import { and, eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -16,12 +15,7 @@ import {
   type FastAdjustmentKind,
 } from "@/lib/fasting/protocols";
 import { fastOwnedBy, runningFast } from "@/lib/fasting/queries";
-
-function refreshFast() {
-  revalidatePath("/");
-  revalidatePath("/nutrition");
-  revalidatePath("/progress");
-}
+import { revalidateFasting } from "@/lib/revalidate";
 
 function recordAdjustment(
   fastId: string,
@@ -76,7 +70,7 @@ export async function startFastAction(formData: FormData) {
     startedAt,
     targetMinutes,
   });
-  refreshFast();
+  revalidateFasting();
   redirect("/nutrition?toast=fast-on");
 }
 
@@ -96,7 +90,7 @@ export async function nudgeFastAction(formData: FormData) {
     .run();
   const label = minutes > 0 ? `Extended ${minutes} min` : `Shortened ${Math.abs(minutes)} min`;
   recordAdjustment(row.id, user.id, "nudge", label, { minutes, targetMinutes });
-  refreshFast();
+  revalidateFasting();
   redirect("/nutrition?toast=fast-edit");
 }
 
@@ -173,7 +167,7 @@ export async function adjustFastAction(formData: FormData) {
   }
 
   recordAdjustment(row.id, user.id, kind, summary, { startedAt, targetMinutes, plannedEndAt });
-  refreshFast();
+  revalidateFasting();
   redirect("/nutrition?toast=fast-edit");
 }
 
@@ -204,6 +198,6 @@ export async function endFastAction(formData: FormData) {
     abort ? "Stopped early" : "Ended fast",
     { endedAt },
   );
-  refreshFast();
+  revalidateFasting();
   redirect(abort ? "/nutrition?toast=fast-abort" : "/nutrition?toast=fast-off");
 }

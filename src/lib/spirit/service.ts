@@ -171,11 +171,9 @@ export async function runSpiritLiveAdvice(req: LiveAdviceRequest): Promise<Spiri
 
   const citeIds = articles.map((a) => a.id);
   const instrument = instrumentAdvice({ ...req, modes, citeIds });
-  const modeLabels = modes;
-  const profileId = profile.id;
 
   if (!aiEnabled()) {
-    return toInstrumentResult(instrument, modeLabels, profileId, gauges);
+    return toInstrumentResult(instrument, modes, profile.id, gauges);
   }
 
   const parseContext = parseContextFor({
@@ -221,7 +219,7 @@ Program: ${req.profile.activeProgramId}, week ${req.profile.currentWeek}`;
 
   if (rawResults.length === 0) {
     console.error("Spirit LLM live advice failed — falling back to instrument");
-    return toInstrumentResult(instrument, modeLabels, profileId, gauges);
+    return toInstrumentResult(instrument, modes, profile.id, gauges);
   }
 
   const merged =
@@ -230,7 +228,7 @@ Program: ${req.profile.activeProgramId}, week ${req.profile.currentWeek}`;
       : mergeConsensus(rawResults, profile);
 
   if (!merged) {
-    return toInstrumentResult(instrument, modeLabels, profileId, gauges);
+    return toInstrumentResult(instrument, modes, profile.id, gauges);
   }
 
   return {
@@ -238,8 +236,8 @@ Program: ${req.profile.activeProgramId}, week ${req.profile.currentWeek}`;
     mood: merged.advice.mood ?? gaugesToMood(gauges, modes),
     source: "llm",
     promptVersion: SPIRIT_PROMPT_VERSION,
-    modes: modeLabels,
-    profile: profileId,
+    modes,
+    profile: profile.id,
     reads: rawResults.length,
     corroboration: merged.corroboration,
     gauges,

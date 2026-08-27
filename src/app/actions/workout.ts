@@ -12,7 +12,7 @@ import { setLogs, workouts } from "@/lib/db/schema";
 import { lastWorkingSets, suggestionsForExercises } from "@/lib/autoregulation";
 import { getProgram } from "@/lib/programs/catalog";
 import { attachLoadHistory, buildPlannedSession } from "@/lib/programs/plan";
-import { clampInt, todayISO } from "@/lib/utils";
+import { clampInt, formString, todayISO } from "@/lib/utils";
 import { parseRepTarget } from "@/lib/copy";
 import { allowedSubstitutes, getExercise } from "@/lib/exercises/registry";
 
@@ -32,19 +32,13 @@ export async function startWorkoutAction(dayId?: string) {
     fitness,
   });
   if (!draft) redirect("/programs");
-  const last = lastWorkingSets(
-    user.id,
-    draft.exercises.map((e) => e.exerciseId),
-  );
-  const { suggested } = suggestionsForExercises(
-    user.id,
-    draft.exercises.map((e) => ({
-      exerciseId: e.exerciseId,
-      targetRpe: e.targetRpe,
-      reps: e.reps,
-    })),
-    last,
-  );
+  const liftMeta = draft.exercises.map((e) => ({
+    exerciseId: e.exerciseId,
+    targetRpe: e.targetRpe,
+    reps: e.reps,
+  }));
+  const last = lastWorkingSets(user.id, liftMeta.map((e) => e.exerciseId));
+  const { suggested } = suggestionsForExercises(user.id, liftMeta, last);
   const planned = attachLoadHistory(draft, last, suggested);
 
   const id = crypto.randomUUID();
@@ -103,9 +97,9 @@ export async function startWorkoutAction(dayId?: string) {
 export async function swapExerciseAction(formData: FormData) {
   const user = await requireUser();
   const profile = getProfile(user.id);
-  const workoutId = String(formData.get("workoutId") || "");
-  const fromId = String(formData.get("fromId") || "");
-  const toId = String(formData.get("toId") || "");
+  const workoutId = formString(formData, "workoutId");
+  const fromId = formString(formData, "fromId");
+  const toId = formString(formData, "toId");
   const exercise = getExercise(toId);
   if (!exercise || exercise.safety === "banned") return;
   const allowed = allowedSubstitutes(fromId, profile?.injuries ?? []).some((alt) => alt.id === toId);
@@ -132,20 +126,17 @@ export async function swapExerciseAction(formData: FormData) {
 
 export async function completeWorkoutAction(formData: FormData) {
   const user = await requireUser();
-  const workoutId = String(formData.get("workoutId") || "");
+  const workoutId = formString(formData, "workoutId");
   const existing = db
     .select()
     .from(workouts)
     .where(and(eq(workouts.id, workoutId), eq(workouts.userId, user.id)))
     .get();
   if (!existing) redirect("/");
-  const sessionRaw = String(formData.get("sessionRpe") || "");
-  const sessionRpe = sessionRaw === "" ? Number.NaN : Number(sessionRaw);
+  const sessionRpe = Number(formString(formData, "sessionRpe") || NaN);
   const durationMinutes = Number(formData.get("durationMinutes"));
-  const stopped = String(formData.get("stop") || "") === "1";
-  const notes = stopped
-    ? "Stopped early — something hurt."
-    : String(formData.get("notes") || "");
+  const stopped = formString(formData, "stop") === "1";
+  const notes = stopped ? "Stopped early — something hurt." : formString(formData, "notes");
 
   db.update(workouts)
     .set({

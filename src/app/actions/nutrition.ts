@@ -10,14 +10,48 @@ import { getMealPlanTemplate, scalePlanToTargets } from "@/lib/nutrition/meal-pl
 import { adaptiveCalories } from "@/lib/nutrition/targets";
 import { todayNutrition } from "@/lib/today";
 import { itemsForEmptyMeals } from "@/lib/nutrition/copy-meals";
-import { clamp, todayISO, yesterdayISO } from "@/lib/utils";
+import { clamp, formString, todayISO, yesterdayISO } from "@/lib/utils";
 
 const MEALS = new Set(["breakfast", "lunch", "dinner", "snack"]);
 
+type NutritionLogItem = {
+  meal: string;
+  foodId: string | null;
+  foodName: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  servings: number;
+};
+
+function insertNutritionLog(
+  tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
+  userId: string,
+  date: string,
+  item: NutritionLogItem,
+) {
+  tx.insert(nutritionLogs)
+    .values({
+      id: crypto.randomUUID(),
+      userId,
+      date,
+      meal: item.meal,
+      foodId: item.foodId,
+      foodName: item.foodName,
+      calories: item.calories,
+      protein: item.protein,
+      carbs: item.carbs,
+      fat: item.fat,
+      servings: item.servings,
+    })
+    .run();
+}
+
 export async function addFoodLogAction(formData: FormData) {
   const user = await requireUser();
-  const foodId = String(formData.get("foodId") || "");
-  const meal = String(formData.get("meal") || "lunch");
+  const foodId = formString(formData, "foodId");
+  const meal = formString(formData, "meal") || "lunch";
   if (!MEALS.has(meal)) return;
   const servingsRaw = Number(formData.get("servings") || 1);
   if (!Number.isFinite(servingsRaw) || servingsRaw <= 0) return;
@@ -79,8 +113,8 @@ export async function addCustomFoodAction(formData: FormData) {
 
 export async function applyMealPlanAction(formData: FormData) {
   const user = await requireUser();
-  const planId = String(formData.get("planId") || "");
-  const replace = String(formData.get("replace") || "") === "1";
+  const planId = formString(formData, "planId");
+  const replace = formString(formData, "replace") === "1";
   const profile = getProfile(user.id);
   if (!profile) redirect("/onboarding");
 
@@ -102,21 +136,7 @@ export async function applyMealPlanAction(formData: FormData) {
     }
 
     for (const item of replace ? items : itemsForEmptyMeals(items, filledMeals)) {
-      tx.insert(nutritionLogs)
-        .values({
-          id: crypto.randomUUID(),
-          userId: user.id,
-          date,
-          meal: item.meal,
-          foodId: item.foodId,
-          foodName: item.foodName,
-          calories: item.calories,
-          protein: item.protein,
-          carbs: item.carbs,
-          fat: item.fat,
-          servings: item.servings,
-        })
-        .run();
+      insertNutritionLog(tx, user.id, date, item);
       inserted++;
     }
   });
@@ -145,21 +165,7 @@ export async function copyYesterdayFoodAction() {
   let inserted = 0;
   db.transaction((tx) => {
     for (const item of toCopy) {
-      tx.insert(nutritionLogs)
-        .values({
-          id: crypto.randomUUID(),
-          userId: user.id,
-          date: today,
-          meal: item.meal,
-          foodId: item.foodId,
-          foodName: item.foodName,
-          calories: item.calories,
-          protein: item.protein,
-          carbs: item.carbs,
-          fat: item.fat,
-          servings: item.servings,
-        })
-        .run();
+      insertNutritionLog(tx, user.id, today, item);
       inserted++;
     }
   });

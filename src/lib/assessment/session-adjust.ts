@@ -46,7 +46,7 @@ export function planAdjustForSession(
   signals?: SessionSignals,
 ): FitnessPlanAdjust {
   let adjust = planAdjustFromAssessment(assessment);
-  const energy = signals && "energy" in signals ? signals.energy : todayEnergy(userId);
+  const energy = signals?.energy ?? todayEnergy(userId);
 
   if (isLowEnergy(energy)) {
     adjust = mergeAdjust(adjust, {

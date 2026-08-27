@@ -6,9 +6,8 @@ export function runningFast(userId: string) {
   return db
     .select()
     .from(fasts)
-    .where(eq(fasts.userId, userId))
-    .all()
-    .find((f) => f.status === "running");
+    .where(and(eq(fasts.userId, userId), eq(fasts.status, "running")))
+    .get();
 }
 
 export function recentFasts(userId: string, limit = 8) {

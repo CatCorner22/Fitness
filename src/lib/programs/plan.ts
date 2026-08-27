@@ -41,21 +41,18 @@ function applyPhase(item: TemplateExercise, phase: WeekPhase, fitness?: FitnessP
 }
 
 function rotateConjugate(day: ProgramDay, week: number): ProgramDay {
-  if (day.id === "conj-me-lower") {
-    const id = CONJUGATE_ME_LOWER[(week - 1) % CONJUGATE_ME_LOWER.length];
-    return {
-      ...day,
-      exercises: day.exercises.map((e, i) => (i === 0 ? { ...e, exerciseId: id } : e)),
-    };
-  }
-  if (day.id === "conj-me-upper") {
-    const id = CONJUGATE_ME_UPPER[(week - 1) % CONJUGATE_ME_UPPER.length];
-    return {
-      ...day,
-      exercises: day.exercises.map((e, i) => (i === 0 ? { ...e, exerciseId: id } : e)),
-    };
-  }
-  return day;
+  const pool =
+    day.id === "conj-me-lower"
+      ? CONJUGATE_ME_LOWER
+      : day.id === "conj-me-upper"
+        ? CONJUGATE_ME_UPPER
+        : null;
+  if (!pool) return day;
+  const id = pool[(week - 1) % pool.length];
+  return {
+    ...day,
+    exercises: day.exercises.map((e, i) => (i === 0 ? { ...e, exerciseId: id } : e)),
+  };
 }
 
 function equippedFor(exercise: NonNullable<ReturnType<typeof getExercise>>, equipment: string[]) {

@@ -36,9 +36,9 @@ export function todaysPlan(userId: string, profile: ProfileRow, fitness?: Fitnes
     )
     .all();
 
-  const doneIds = weekWorkouts.filter((w) => w.status !== "in_progress").map((w) => w.dayId);
-  const nextDay = program.days.find((d) => !doneIds.includes(d.id)) ?? program.days[0];
-  const allDone = program.days.every((d) => doneIds.includes(d.id));
+  const doneIds = new Set(weekWorkouts.filter((w) => w.status !== "in_progress").map((w) => w.dayId));
+  const nextDay = program.days.find((d) => !doneIds.has(d.id)) ?? program.days[0];
+  const allDone = program.days.every((d) => doneIds.has(d.id));
 
   const planned = buildPlannedSession({
     programId: program.id,
@@ -80,29 +80,28 @@ export function todayNutrition(userId: string) {
     .from(nutritionLogs)
     .where(and(eq(nutritionLogs.userId, userId), eq(nutritionLogs.date, date)))
     .all();
-  return {
-    logs,
-    calories: logs.reduce((s, l) => s + l.calories, 0),
-    protein: logs.reduce((s, l) => s + l.protein, 0),
-    carbs: logs.reduce((s, l) => s + l.carbs, 0),
-    fat: logs.reduce((s, l) => s + l.fat, 0),
-  };
+  const totals = { calories: 0, protein: 0, carbs: 0, fat: 0 };
+  for (const log of logs) {
+    totals.calories += log.calories;
+    totals.protein += log.protein;
+    totals.carbs += log.carbs;
+    totals.fat += log.fat;
+  }
+  return { logs, ...totals };
 }
+
+const LOG_STATUS: Record<string, "done" | "skipped" | "open"> = {
+  completed: "done",
+  skipped: "skipped",
+  in_progress: "open",
+};
 
 export function weekDayStatuses(plan: NonNullable<ReturnType<typeof todaysPlan>>) {
   const nextId = plan.planned?.day.id;
   return plan.program.days.map((day) => {
     const logged = plan.weekWorkouts.find((w) => w.dayId === day.id);
-    const status =
-      logged?.status === "completed"
-        ? "done"
-        : logged?.status === "skipped"
-          ? "skipped"
-          : logged?.status === "in_progress"
-            ? "open"
-            : nextId === day.id
-              ? "today"
-              : "upcoming";
+    const fromLog = logged ? LOG_STATUS[logged.status] : undefined;
+    const status = fromLog ?? (nextId === day.id ? "today" : "upcoming");
     return { id: day.id, name: day.name, status } as const;
   });
 }

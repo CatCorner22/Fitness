@@ -31,19 +31,8 @@ export function planAdjustFromAssessment(result: AssessmentResult | null): Fitne
   const balance = scoreOf(result, "balance");
   const mobility = scoreOf(result, "mobility");
   const notes: string[] = [];
-
-  const adjust: FitnessPlanAdjust = {
-    rpeAdjust: 0,
-    accessorySetAdjust: 0,
-    restMultiplier: 1,
-    squatSwap: null,
-    pressSwap: null,
-    avoidSingleLeg: false,
-    easyCardio: false,
-    addPlank: false,
-    addWalk: false,
-    notes,
-  };
+  const adjust = emptyAdjust();
+  adjust.notes = notes;
 
   if (result.overall === "foundation") {
     adjust.rpeAdjust = -1;
