@@ -13,8 +13,12 @@ export function todayISO(date = new Date()) {
 }
 
 export function yesterdayISO(date = new Date()) {
+  return daysAgoISO(1, date);
+}
+
+export function daysAgoISO(n: number, date = new Date()) {
   const d = new Date(date.getTime());
-  d.setDate(d.getDate() - 1);
+  d.setDate(d.getDate() - n);
   return todayISO(d);
 }
 

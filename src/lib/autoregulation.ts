@@ -15,13 +15,12 @@ export type LoadDecision = {
   targetRpe: number | null;
 };
 
-function incrementKg(weight: number, exerciseId: string) {
+function incrementKg(exerciseId: string) {
   const ex = getExercise(exerciseId);
-  const upper = ex?.pattern.includes("push") || ex?.pattern.includes("pull") || ex?.pattern === "isolation";
-  const step = upper ? 2.5 : 5;
-  // isolation / laterals even smaller
-  if (ex?.pattern === "isolation" || ex?.pattern === "mobility") return Math.max(1.25, step / 2);
-  return step;
+  if (ex?.pattern === "isolation") return 1.25;
+  if (ex?.pattern === "mobility") return 2.5;
+  if (ex?.pattern.includes("push") || ex?.pattern.includes("pull")) return 2.5;
+  return 5;
 }
 
 export function suggestNextLoad(input: {
@@ -46,7 +45,7 @@ export function suggestNextLoad(input: {
   }
   if (lastRpe != null && lastRpe <= targetRpe - 1) {
     return {
-      weightKg: lastWeightKg + incrementKg(lastWeightKg, exerciseId),
+      weightKg: lastWeightKg + incrementKg(exerciseId),
       reason: `Last top set was ≥1 RPE under target (${lastRpe} vs ${targetRpe}). Add a small jump.`,
     };
   }
@@ -59,57 +58,30 @@ export function suggestNextLoad(input: {
 export function lastWorkingSets(userId: string, exerciseIds?: string[]) {
   const map: Record<string, { weightKg: number; reps: number; rpe: number | null }> = {};
   const ids = exerciseIds?.length ? [...new Set(exerciseIds)] : null;
-  if (ids) {
-    for (const exerciseId of ids) {
-      const row = db
-        .select({
-          exerciseId: setLogs.exerciseId,
-          weightKg: setLogs.weightKg,
-          reps: setLogs.reps,
-          rpe: setLogs.rpe,
-        })
-        .from(setLogs)
-        .innerJoin(workouts, eq(setLogs.workoutId, workouts.id))
-        .where(
-          and(
-            eq(setLogs.userId, userId),
-            eq(setLogs.completed, 1),
-            eq(setLogs.exerciseId, exerciseId),
-            eq(workouts.status, "completed"),
-          ),
-        )
-        .orderBy(desc(workouts.startedAt), desc(setLogs.setIndex))
-        .limit(1)
-        .get();
-      if (row?.weightKg == null || row.reps == null) continue;
-      map[exerciseId] = { weightKg: row.weightKg, reps: row.reps, rpe: row.rpe };
-    }
-    return map;
-  }
-
   const rows = db
     .select({
       exerciseId: setLogs.exerciseId,
       weightKg: setLogs.weightKg,
       reps: setLogs.reps,
       rpe: setLogs.rpe,
-      startedAt: workouts.startedAt,
-      setIndex: setLogs.setIndex,
     })
     .from(setLogs)
     .innerJoin(workouts, eq(setLogs.workoutId, workouts.id))
-    .where(and(eq(setLogs.userId, userId), eq(setLogs.completed, 1), eq(workouts.status, "completed")))
+    .where(
+      and(
+        eq(setLogs.userId, userId),
+        eq(setLogs.completed, 1),
+        eq(workouts.status, "completed"),
+        ids ? inArray(setLogs.exerciseId, ids) : undefined,
+      ),
+    )
     .orderBy(desc(workouts.startedAt), desc(setLogs.setIndex))
     .all();
 
   for (const row of rows) {
-    if (map[row.exerciseId]) continue;
-    if (row.weightKg == null || row.reps == null) continue;
-    map[row.exerciseId] = {
-      weightKg: row.weightKg,
-      reps: row.reps,
-      rpe: row.rpe,
-    };
+    if (map[row.exerciseId] || row.weightKg == null || row.reps == null) continue;
+    map[row.exerciseId] = { weightKg: row.weightKg, reps: row.reps, rpe: row.rpe };
+    if (ids && Object.keys(map).length === ids.length) break;
   }
   return map;
 }
@@ -131,10 +103,6 @@ export function suggestionsForExercises(
       targetReps: item.reps,
       exerciseId: item.exerciseId,
     });
-    // use exercise-specific increment
-    if (prev && prev.rpe != null && prev.rpe <= item.targetRpe - 1) {
-      decision.weightKg = prev.weightKg + incrementKg(prev.weightKg, item.exerciseId);
-    }
     suggested[item.exerciseId] = decision.weightKg;
     decisions.push({
       exerciseId: item.exerciseId,
@@ -217,7 +185,11 @@ export function shouldDeload(userId: string) {
 
 export function bestSets(userId: string) {
   const sets = db
-    .select()
+    .select({
+      exerciseId: setLogs.exerciseId,
+      weightKg: setLogs.weightKg,
+      reps: setLogs.reps,
+    })
     .from(setLogs)
     .where(and(eq(setLogs.userId, userId), eq(setLogs.completed, 1)))
     .all();

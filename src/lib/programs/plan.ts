@@ -225,6 +225,22 @@ export function buildPlannedSession(options: {
   };
 }
 
+/** Attach last-set history after the slot list is resolved — do not rebuild the session. */
+export function attachLoadHistory(
+  session: PlannedSession,
+  lastSets: Record<string, { weightKg: number; reps: number; rpe: number | null }>,
+  suggested?: Record<string, number | null>,
+): PlannedSession {
+  return {
+    ...session,
+    exercises: session.exercises.map((item) => ({
+      ...item,
+      last: lastSets[item.exerciseId],
+      suggestedWeightKg: suggested?.[item.exerciseId] ?? lastSets[item.exerciseId]?.weightKg ?? null,
+    })),
+  };
+}
+
 export function nextDayForUser(
   program: Program,
   completedDayIdsInWeek: string[],

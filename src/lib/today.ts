@@ -3,9 +3,11 @@ import { db } from "@/lib/db";
 import { dailyCheckins, nutritionLogs, workouts } from "@/lib/db/schema";
 import type { ProfileRow } from "@/lib/auth";
 import { planAdjustForSession } from "@/lib/assessment/session-adjust";
+import type { FitnessPlanAdjust } from "@/lib/assessment/types";
+import { shouldDeload } from "@/lib/autoregulation";
 import { getProgram } from "@/lib/programs/catalog";
 import { buildPlannedSession } from "@/lib/programs/plan";
-import { todayISO } from "@/lib/utils";
+import { daysAgoISO, todayISO } from "@/lib/utils";
 
 export { yesterdayISO } from "@/lib/utils";
 
@@ -17,7 +19,7 @@ function startOfWeekISO() {
   return todayISO(d);
 }
 
-export function todaysPlan(userId: string, profile: ProfileRow) {
+export function todaysPlan(userId: string, profile: ProfileRow, fitness?: FitnessPlanAdjust) {
   if (!profile.activeProgramId) return null;
   const program = getProgram(profile.activeProgramId);
   if (!program) return null;
@@ -47,7 +49,7 @@ export function todaysPlan(userId: string, profile: ProfileRow) {
     sessionMinutes: profile.sessionMinutes,
     injuries: profile.injuries,
     equipment: profile.equipment,
-    fitness: planAdjustForSession(userId, profile.assessment),
+    fitness: fitness ?? planAdjustForSession(userId, profile.assessment),
   });
 
   const open = db
@@ -87,4 +89,43 @@ export function todayNutrition(userId: string) {
     carbs: logs.reduce((s, l) => s + l.carbs, 0),
     fat: logs.reduce((s, l) => s + l.fat, 0),
   };
+}
+
+export function weekDayStatuses(plan: NonNullable<ReturnType<typeof todaysPlan>>) {
+  const nextId = plan.planned?.day.id;
+  return plan.program.days.map((day) => {
+    const logged = plan.weekWorkouts.find((w) => w.dayId === day.id);
+    const status =
+      logged?.status === "completed"
+        ? "done"
+        : logged?.status === "skipped"
+          ? "skipped"
+          : logged?.status === "in_progress"
+            ? "open"
+            : nextId === day.id
+              ? "today"
+              : "upcoming";
+    return { id: day.id, name: day.name, status } as const;
+  });
+}
+
+/** One pass for Today: check-in, deload, plan, food, 14-day completed count. */
+export function getTodaySnapshot(userId: string, profile: ProfileRow) {
+  const checkin = todayCheckin(userId);
+  const deload = shouldDeload(userId);
+  const fitness = planAdjustForSession(userId, profile.assessment, {
+    energy: checkin?.fatigue ?? null,
+    deload,
+  });
+  const plan = todaysPlan(userId, profile, fitness);
+  const food = todayNutrition(userId);
+  const completed14d = db
+    .select({ id: workouts.id })
+    .from(workouts)
+    .where(
+      and(eq(workouts.userId, userId), eq(workouts.status, "completed"), gte(workouts.date, daysAgoISO(14))),
+    )
+    .all().length;
+
+  return { plan, checkin, deload, food, completed14d };
 }

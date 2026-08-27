@@ -7,7 +7,6 @@ import { SpiritTodayBriefing } from "@/components/spirit-today-briefing";
 import { WeekProgressStrip } from "@/components/week-progress-strip";
 import { advanceWeekAction } from "@/app/actions/profile";
 import { skipWorkoutAction, startWorkoutAction } from "@/app/actions/workout";
-import { shouldDeload } from "@/lib/autoregulation";
 import { courseForProgram } from "@/lib/course/catalog";
 import { lessonForExercise } from "@/lib/course/skills";
 import { runningFast } from "@/lib/fasting/queries";
@@ -16,13 +15,12 @@ import { getAiOptIn } from "@/lib/prefs";
 import { requireAuthed } from "@/lib/session-page";
 import { aiEnabled } from "@/lib/spirit/config";
 import { offlineBriefing } from "@/lib/spirit/context";
-import { todayCheckin, todayNutrition, todaysPlan } from "@/lib/today";
+import { getTodaySnapshot, weekDayStatuses } from "@/lib/today";
 import { calorieTarget, macroTargets, nutritionSpec, proteinTargetG } from "@/lib/nutrition/targets";
 
 export default async function TodayPage() {
   const { user, profile } = await requireAuthed();
-  const plan = todaysPlan(user.id, profile);
-  const food = todayNutrition(user.id);
+  const { plan, checkin, deload, food, completed14d } = getTodaySnapshot(user.id, profile);
   const spec = nutritionSpec(profile);
   const targets = macroTargets(calorieTarget(profile), proteinTargetG(profile), spec);
   const planned = plan?.planned;
@@ -30,30 +28,13 @@ export default async function TodayPage() {
   const lessonCtx = course
     ? { courseId: course.id, skillIds: course.modules.flatMap((m) => m.skillIds) }
     : undefined;
-  const deload = shouldDeload(user.id);
   const open = plan?.open;
   const fast = runningFast(user.id);
-  const checkin = todayCheckin(user.id);
   const optIn = await getAiOptIn();
   const openMismatch = Boolean(
     open && planned && (open.dayId !== planned.day.id || open.programId !== planned.program.id),
   );
-  const weekDays = plan
-    ? plan.program.days.map((day) => {
-        const logged = plan.weekWorkouts.find((w) => w.dayId === day.id);
-        const status =
-          logged?.status === "completed"
-            ? "done"
-            : logged?.status === "skipped"
-              ? "skipped"
-              : logged?.status === "in_progress"
-                ? "open"
-                : planned?.day.id === day.id
-                  ? "today"
-                  : "upcoming";
-        return { id: day.id, name: day.name, status } as const;
-      })
-    : [];
+  const weekDays = plan ? weekDayStatuses(plan) : [];
 
   return (
     <AppShell user={user} profile={profile}>
@@ -165,7 +146,10 @@ export default async function TodayPage() {
       </div>
 
       <div className="mt-6">
-        <SpiritTodayBriefing aiAvailable={optIn && aiEnabled()} fallbackText={offlineBriefing(user.id, profile)} />
+        <SpiritTodayBriefing
+          aiAvailable={optIn && aiEnabled()}
+          fallbackText={offlineBriefing(user.id, profile, { plan, checkin, deload, completed14d })}
+        />
       </div>
 
       <section className="mt-6 rounded-3xl border border-line bg-surface p-5">

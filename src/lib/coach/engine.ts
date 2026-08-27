@@ -6,13 +6,7 @@ import { bannedExercises, getExercise } from "@/lib/exercises/registry";
 import { isLowEnergy } from "@/lib/assessment/session-adjust";
 import { shouldDeload, weeklyVolume } from "@/lib/autoregulation";
 import { getProgram } from "@/lib/programs/catalog";
-import { todayISO } from "@/lib/utils";
-
-function daysAgoISO(n: number) {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return todayISO(d);
-}
+import { daysAgoISO, todayISO } from "@/lib/utils";
 
 export function coachContext(userId: string, profile: ProfileRow) {
   const since = daysAgoISO(14);
