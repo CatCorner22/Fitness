@@ -22,10 +22,3 @@ export function modelForTier(tier: "live" | "chat") {
   const normalized = id.includes("/") ? id : `openai/${id}`;
   return getGateway()(normalized);
 }
-
-export function modelLabel(env: Record<string, string | undefined> = process.env) {
-  const cfg = getSpiritConfig(env);
-  const parts = [cfg.liveModel];
-  if (cfg.semanticSearch) parts.push("HF:MiniLM embeddings");
-  return parts.join(" · ");
-}

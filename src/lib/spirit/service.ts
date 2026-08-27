@@ -17,7 +17,7 @@ import {
   type SpiritInstrumentAdvice,
 } from "./advisor";
 import { aiEnabled, getSpiritConfig, resolveReads, SPIRIT_UNAVAILABLE } from "./config";
-import { modelForTier, modelLabel } from "./provider";
+import { modelForTier } from "./provider";
 import { spiritSystemPrompt, SPIRIT_PROMPT_VERSION } from "./prompts";
 import { resolveModes, resolveProfile, strictPromptAddendum } from "./router";
 import { SpiritChatSchema, SpiritLiveAdviceSchema, type SpiritLiveAdvice } from "./schemas";
@@ -318,5 +318,3 @@ export async function runSpiritBriefing(options: {
     contextSummary: options.contextSummary,
   });
 }
-
-export { modelLabel, SPIRIT_PROMPT_VERSION };

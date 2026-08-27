@@ -1,4 +1,4 @@
-import { SPIRIT_NAME } from "@/lib/ai/spirit";
+export const SPIRIT_NAME = "Spirit";
 
 // Versioned independently — prompt changes must be traceable in logs.
 export const SPIRIT_PROMPT_VERSION = "2.0.0";

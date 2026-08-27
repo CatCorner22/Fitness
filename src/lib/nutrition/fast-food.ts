@@ -395,11 +395,6 @@ export function isFastFoodId(id: string) {
   return id.startsWith("ff-");
 }
 
-export function getFastFoodItem(id: string | null | undefined) {
-  if (!id) return undefined;
-  return FAST_FOOD_BY_ID.get(id);
-}
-
 function isCutDiet(dietId: string | null | undefined) {
   return dietId === "steady_cut" || dietId === "mini_cut" || dietId === "low_histamine_cut" || dietId === "beach_week" || dietId === "stage_lean";
 }
@@ -412,7 +407,7 @@ function isLowHistamine(dietId: string | null | undefined) {
   return dietId === "low_histamine" || dietId === "low_histamine_cut";
 }
 
-export function scoreFastFoodItem(
+function scoreFastFoodItem(
   row: FastFoodItem,
   options: { dietId?: string | null; goal?: Goal | null },
 ) {

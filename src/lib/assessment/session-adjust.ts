@@ -31,7 +31,7 @@ export type SessionSignals = {
   deload?: { deload: boolean; reason: string };
 };
 
-export function todayEnergy(userId: string): number | null {
+function todayEnergy(userId: string): number | null {
   const row = db
     .select()
     .from(dailyCheckins)

@@ -9,8 +9,6 @@ import { getProgram } from "@/lib/programs/catalog";
 import { buildPlannedSession } from "@/lib/programs/plan";
 import { daysAgoISO, todayISO } from "@/lib/utils";
 
-export { yesterdayISO } from "@/lib/utils";
-
 function startOfWeekISO() {
   const d = new Date();
   const day = d.getDay();

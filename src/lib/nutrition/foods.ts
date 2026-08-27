@@ -3,7 +3,6 @@ import type { HistamineLoad } from "./histamine";
 import { STARTER_FOODS } from "./starter-foods";
 
 export type { HistamineLoad } from "./histamine";
-export type { StarterFood } from "./starter-foods";
 export { STARTER_FOODS } from "./starter-foods";
 export { HISTAMINE_LABEL, LOW_HISTAMINE_STAPLES, histamineRank } from "./histamine";
 
