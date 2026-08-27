@@ -9,7 +9,7 @@ import { hardnessToRpe, parseRepTarget } from "@/lib/copy";
 import { lessonForExercise } from "@/lib/course/skills";
 import { restAfterLoggedSet } from "@/lib/rest";
 import type { Exercise } from "@/lib/types";
-import { displayToKg, kgToDisplay } from "@/lib/utils";
+import { displayToKg, formatRest, kgToDisplay } from "@/lib/utils";
 
 type SetRow = {
   id: string;
@@ -24,6 +24,12 @@ type SetRow = {
 };
 
 type GhostSet = { weightKg: number; reps: number; rpe: number | null };
+
+const HARDNESS = [
+  ["easy", "Easy"],
+  ["ok", "OK"],
+  ["hard", "Hard"],
+] as const;
 
 function playRestBeep() {
   try {
@@ -55,11 +61,7 @@ function HardnessButtons({
   return (
     <div className="flex gap-2">
       {(
-        [
-          ["easy", "Easy"],
-          ["ok", "OK"],
-          ["hard", "Hard"],
-        ] as const
+        HARDNESS
       ).map(([id, label]) => (
         <button
           key={id}
@@ -134,12 +136,6 @@ export function WorkoutPlayer({
   const current = grouped.find(([, rows]) => rows.some((s) => !s.completed)) ?? grouped[grouped.length - 1];
   const catalogRest = current ? (exercises[current[0]]?.restSeconds ?? 90) : 90;
   const why = current ? decisions.find((d) => d.exerciseId === current[0]) : undefined;
-
-  function formatRest(sec: number) {
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return s ? `${m}:${String(s).padStart(2, "0")}` : `${m}:00`;
-  }
 
   useEffect(() => {
     if (!resting) return;
@@ -281,7 +277,7 @@ export function WorkoutPlayer({
       >
         <p className="text-sm text-muted">{resting ? "Rest" : "Rest starts after you log a set"}</p>
         <p className={`display mt-1 text-5xl tabular-nums ${resting && seconds <= 10 ? "text-copper-2" : ""}`}>
-          {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, "0")}
+          {formatRest(seconds)}
         </p>
         <div className="mt-3 flex justify-center gap-3">
           {catalogRest > 0 && catalogRest !== 90 && catalogRest !== 180 ? (

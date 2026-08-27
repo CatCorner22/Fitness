@@ -2,6 +2,7 @@
 
 import { suggestNextLoad } from "@/lib/autoregulation";
 import { getExercise } from "@/lib/exercises/registry";
+import { formatRest } from "@/lib/utils";
 import type { SpiritMode } from "./router";
 
 export type SpiritMood = "proud" | "encouraging" | "caution" | "celebrate" | "thinking";
@@ -158,7 +159,7 @@ export function instrumentAdvice(input: {
   const paw = mood === "proud" ? "*tail swish*" : mood === "caution" ? "*soft paw tap*" : "*ears perk*";
 
   return {
-    message: `${paw} ${load.reason} Rest ${Math.floor(restSeconds / 60)}:${String(restSeconds % 60).padStart(2, "0")} — I'll watch the clock, nya~`,
+    message: `${paw} ${load.reason} Rest ${formatRest(restSeconds)} — I'll watch the clock, nya~`,
     why: gauges.notes.rpe.next ?? gauges.notes.rpe.why,
     restSeconds,
     nextAction,

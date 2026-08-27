@@ -49,3 +49,32 @@ export function clampInt(raw: unknown, fallback: number, min: number, max: numbe
 export function pickEnum<T extends string>(raw: unknown, allowed: readonly T[], fallback: T): T {
   return allowed.includes(raw as T) ? (raw as T) : fallback;
 }
+
+export function formString(formData: FormData, key: string) {
+  return String(formData.get(key) || "");
+}
+
+export function formatRest(sec: number) {
+  return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
+}
+
+export function displayWeightToKg(value: number, units: "lb" | "kg") {
+  if (!Number.isFinite(value) || value <= 0) return null;
+  return units === "lb" ? value / 2.20462 : value;
+}
+
+export function displayHeightToCm(value: number, units: "lb" | "kg") {
+  if (!Number.isFinite(value) || value <= 0) return null;
+  return units === "lb" ? value * 2.54 : value;
+}
+
+export function optionalCheckinInt(
+  raw: FormDataEntryValue | null,
+  fallback: number | null,
+  min: number,
+  max: number,
+) {
+  if (raw === "" || raw == null) return fallback;
+  const n = Number(raw);
+  return Number.isFinite(n) ? clampInt(n, fallback ?? min, min, max) : null;
+}

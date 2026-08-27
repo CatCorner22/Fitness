@@ -2,11 +2,10 @@ import { NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { getProfile, getSession } from "@/lib/auth";
 import { runSpiritLiveAdvice } from "@/lib/spirit/service";
-import { allowedSubstitutes } from "@/lib/exercises/registry";
+import { allowedSubstitutes, getExercise } from "@/lib/exercises/registry";
 import { db } from "@/lib/db";
 import { dailyCheckins, setLogs, workouts } from "@/lib/db/schema";
-import { displayToKg, todayISO, clamp } from "@/lib/utils";
-import { getExercise } from "@/lib/exercises/registry";
+import { clamp, displayToKg, todayISO } from "@/lib/utils";
 import { getAiOptIn } from "@/lib/prefs";
 
 function withTimeout<T>(promise: Promise<T>, ms: number) {

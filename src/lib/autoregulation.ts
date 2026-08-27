@@ -147,16 +147,15 @@ export function weeklyVolume(userId: string, sinceISO: string) {
     .where(and(eq(setLogs.userId, userId), eq(setLogs.completed, 1), inArray(setLogs.workoutId, ids)))
     .all();
   const totals: Partial<Record<Muscle, number>> = {};
+  const bump = (muscle: Muscle, n: number) => {
+    totals[muscle] = (totals[muscle] ?? 0) + n;
+  };
 
   for (const set of sets) {
     const ex = getExercise(set.exerciseId);
     if (!ex || ex.isCardio || ex.pattern === "mobility") continue;
-    for (const muscle of ex.primaryMuscles) {
-      totals[muscle] = (totals[muscle] ?? 0) + 1;
-    }
-    for (const muscle of ex.secondaryMuscles) {
-      totals[muscle] = (totals[muscle] ?? 0) + 0.5;
-    }
+    ex.primaryMuscles.forEach((m) => bump(m, 1));
+    ex.secondaryMuscles.forEach((m) => bump(m, 0.5));
   }
   return totals;
 }

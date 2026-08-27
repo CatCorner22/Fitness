@@ -35,10 +35,17 @@ export default async function TodayPage() {
     open && planned && (open.dayId !== planned.day.id || open.programId !== planned.program.id),
   );
   const weekDays = plan ? weekDayStatuses(plan) : [];
+  const openLabel = openMismatch
+    ? `${getProgram(open?.programId ?? "")?.name ?? "Open session"} · resume`
+    : `${plan?.program.name} · week ${profile.currentWeek}`;
+  const timeNote =
+    planned?.overTimeBudget
+      ? ` — longer than your ${profile.sessionMinutes}-minute cap. We still keep every drill.`
+      : "";
 
   return (
     <AppShell user={user} profile={profile}>
-      {weekDays.length ? <WeekProgressStrip days={[...weekDays]} /> : null}
+      {weekDays.length ? <WeekProgressStrip days={weekDays} /> : null}
 
       {!profile.activeProgramId ? (
         <section className="rounded-3xl border border-line bg-surface p-6">
@@ -66,11 +73,7 @@ export default async function TodayPage() {
       ) : (
         <section className="rounded-3xl border border-line bg-surface p-6">
           {deload.deload ? <p className="mb-3 text-sm text-muted">Easy week — keep the weights a little lighter.</p> : null}
-          <p className="text-xs uppercase tracking-[0.16em] text-copper">
-            {openMismatch
-              ? `${getProgram(open?.programId ?? "")?.name ?? "Open session"} · resume`
-              : `${plan?.program.name} · week ${profile.currentWeek}`}
-          </p>
+          <p className="text-xs uppercase tracking-[0.16em] text-copper">{openLabel}</p>
           <h1 className="display mt-1 text-[2.6rem] leading-none">{open ? open.dayName : planned?.day.name}</h1>
           {openMismatch ? (
             <p className="mt-3 text-sm text-muted">
@@ -78,10 +81,7 @@ export default async function TodayPage() {
             </p>
           ) : (
             <p className="mt-3 text-muted">
-              {planned ? `About ${planned.estimatedMinutes} minutes` : "No session yet."}
-              {planned?.overTimeBudget
-                ? ` — longer than your ${profile.sessionMinutes}-minute cap. We still keep every drill.`
-                : ""}
+              {planned ? `About ${planned.estimatedMinutes} minutes${timeNote}` : "No session yet."}
             </p>
           )}
           {!openMismatch && planned && planned.fitnessNotes?.length ? (

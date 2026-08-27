@@ -17,8 +17,12 @@ export function coachContext(userId: string, profile: ProfileRow) {
     .orderBy(desc(workouts.startedAt))
     .all();
 
-  const completed = recent.filter((w) => w.status === "completed");
-  const missed = recent.filter((w) => w.status === "skipped");
+  const completed: typeof recent = [];
+  const missed: typeof recent = [];
+  for (const w of recent) {
+    if (w.status === "completed") completed.push(w);
+    else if (w.status === "skipped") missed.push(w);
+  }
   const checkin = db
     .select()
     .from(dailyCheckins)
@@ -31,6 +35,13 @@ export function coachContext(userId: string, profile: ProfileRow) {
   return { recent, completed, missed, checkin, deload, volume, program };
 }
 
+function deloadLine(reason: string, deload: boolean, persona: "scientist" | "garanimal") {
+  if (!deload) return reason;
+  return persona === "scientist"
+    ? `Fatigue flag: ${reason} A deload is the scientific call — not more suffering.`
+    : `Listen carefully: I will not tell you to train through a broken body. ${reason} Take the deload like a professional. Cowards skip recovery and then wonder why they stay weak.`;
+}
+
 function scientistVoice(input: ReturnType<typeof coachContext>, profile: ProfileRow, question?: string) {
   const lines: string[] = [];
   lines.push(
@@ -41,11 +52,7 @@ function scientistVoice(input: ReturnType<typeof coachContext>, profile: Profile
       average(input.completed.map((w) => w.sessionRpe)) ?? "not enough data"
     }.`,
   );
-  if (input.deload.deload) {
-    lines.push(`Fatigue flag: ${input.deload.reason} A deload is the scientific call — not more suffering.`);
-  } else {
-    lines.push(input.deload.reason);
-  }
+  lines.push(deloadLine(input.deload.reason, input.deload.deload, "scientist"));
   const glute = input.volume.glutes ?? 0;
   if (profile.goal === "glute_specialization" || profile.activeProgramId === "big_ass") {
     lines.push(
@@ -69,9 +76,7 @@ function garanimalVoice(input: ReturnType<typeof coachContext>, profile: Profile
   const lines: string[] = [];
   lines.push("GARANIMAL MODE. Soft living is optional. Showing up is not.");
   if (input.deload.deload) {
-    lines.push(
-      `Listen carefully: I will not tell you to train through a broken body. ${input.deload.reason} Take the deload like a professional. Cowards skip recovery and then wonder why they stay weak.`,
-    );
+    lines.push(deloadLine(input.deload.reason, true, "garanimal"));
   } else if (input.missed.length >= 2) {
     lines.push(
       `${input.missed.length} skipped sessions in two weeks. Nobody is coming to save you. Get in the room. ${profile.sessionMinutes} minutes. That is the standard.`,

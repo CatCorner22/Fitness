@@ -1,7 +1,6 @@
 "use server";
 
 import { eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getProfile, requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -9,15 +8,7 @@ import { fitnessAssessments, profiles } from "@/lib/db/schema";
 import { inputFromForm } from "@/lib/assessment/parse";
 import { scoreAssessment } from "@/lib/assessment/score";
 import { planAdjustFromAssessment } from "@/lib/assessment/plan-adjust";
-
-function refresh() {
-  revalidatePath("/");
-  revalidatePath("/onboarding");
-  revalidatePath("/onboarding/assess");
-  revalidatePath("/onboarding/results");
-  revalidatePath("/assess");
-  revalidatePath("/settings");
-}
+import { revalidateAssessment } from "@/lib/revalidate";
 
 export async function saveAssessmentAction(formData: FormData) {
   const user = await requireUser();
@@ -52,6 +43,6 @@ export async function saveAssessmentAction(formData: FormData) {
     })
     .run();
 
-  refresh();
+  revalidateAssessment();
   redirect("/onboarding/results?toast=assess");
 }

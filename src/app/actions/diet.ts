@@ -1,21 +1,13 @@
 "use server";
 
 import { eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { profiles } from "@/lib/db/schema";
 import { getDiet } from "@/lib/nutrition/diets";
+import { revalidateNutrition } from "@/lib/revalidate";
 import { todayISO } from "@/lib/utils";
-
-function refreshDiet() {
-  revalidatePath("/");
-  revalidatePath("/nutrition");
-  revalidatePath("/diets");
-  revalidatePath("/settings");
-  revalidatePath("/progress");
-}
 
 export async function enrollDietAction(dietId: string) {
   const user = await requireUser();
@@ -29,7 +21,7 @@ export async function enrollDietAction(dietId: string) {
     })
     .where(eq(profiles.userId, user.id))
     .run();
-  refreshDiet();
+  revalidateNutrition();
   redirect("/nutrition?toast=diet");
 }
 
@@ -43,7 +35,7 @@ export async function clearDietAction() {
     })
     .where(eq(profiles.userId, user.id))
     .run();
-  refreshDiet();
+  revalidateNutrition();
   redirect("/nutrition?toast=diet-off");
 }
 
@@ -55,6 +47,6 @@ export async function setDietStartAction(formData: FormData) {
     .set({ dietStartDate: date })
     .where(eq(profiles.userId, user.id))
     .run();
-  refreshDiet();
+  revalidateNutrition();
   redirect("/nutrition?toast=diet");
 }

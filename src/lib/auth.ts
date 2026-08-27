@@ -12,9 +12,11 @@ import { parseAssessment } from "@/lib/assessment/parse";
 import type { Experience, Goal, Injury, Persona, Units } from "@/lib/types";
 
 const COOKIE = "garanimal_session";
+const SESSION_MAX_AGE = 60 * 60 * 24 * 30;
 
-function secret() {
-  return authSecretBytes();
+function sessionCookie(maxAge: number) {
+  const policy = cookiePolicy();
+  return { httpOnly: true, sameSite: policy.sameSite, secure: policy.secure, path: "/", maxAge } as const;
 }
 
 export type SessionUser = {
@@ -28,26 +30,12 @@ export async function createSession(user: SessionUser) {
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("30d")
-    .sign(secret());
-  const policy = cookiePolicy();
-  (await cookies()).set(COOKIE, token, {
-    httpOnly: true,
-    sameSite: policy.sameSite,
-    secure: policy.secure,
-    path: "/",
-    maxAge: 60 * 60 * 24 * 30,
-  });
+    .sign(authSecretBytes());
+  (await cookies()).set(COOKIE, token, sessionCookie(SESSION_MAX_AGE));
 }
 
 export async function destroySession() {
-  const policy = cookiePolicy();
-  (await cookies()).set(COOKIE, "", {
-    httpOnly: true,
-    sameSite: policy.sameSite,
-    secure: policy.secure,
-    path: "/",
-    maxAge: 0,
-  });
+  (await cookies()).set(COOKIE, "", sessionCookie(0));
 }
 
 export async function requireUser(): Promise<SessionUser> {
@@ -60,7 +48,7 @@ export async function getSession(): Promise<SessionUser | null> {
   const token = (await cookies()).get(COOKIE)?.value;
   if (!token) return null;
   try {
-    const { payload } = await jwtVerify(token, secret(), { algorithms: ["HS256"] });
+    const { payload } = await jwtVerify(token, authSecretBytes(), { algorithms: ["HS256"] });
     const id = typeof payload.id === "string" ? payload.id : "";
     if (!id) return null;
     const row = db.select().from(users).where(eq(users.id, id)).get();
@@ -151,7 +139,7 @@ function readProfile(userId: string): ProfileRow | null {
     programStartDate: row.programStartDate,
     currentWeek: row.currentWeek,
     assessment: parseAssessment(row.assessmentJson),
-    fitnessTier: (row.fitnessTier as FitnessTier | null) ?? null,
+    fitnessTier: row.fitnessTier as FitnessTier | null,
     assessedAt: row.assessedAt ?? null,
     activeDietId: row.activeDietId ?? null,
     dietStartDate: row.dietStartDate ?? null,

@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { getProfile, requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { bodyweightLogs, dailyCheckins, profiles, users } from "@/lib/db/schema";
-import { clampInt, pickEnum, todayISO } from "@/lib/utils";
+import { clampInt, displayHeightToCm, displayWeightToKg, formString, optionalCheckinInt, pickEnum, todayISO } from "@/lib/utils";
 import { programForGoal } from "@/lib/copy";
 import { getProgram } from "@/lib/programs/catalog";
 import { listedEquipment } from "@/lib/equipment";
@@ -64,13 +64,11 @@ function upsertBodyweight(userId: string, weightKg: number, date = todayISO()) {
 export async function saveOnboardingAction(formData: FormData) {
   const user = await requireUser();
   const goal = pickEnum(formData.get("goal"), GOALS, "general");
-  const programId = String(formData.get("programId") || programForGoal(goal));
+  const programId = formString(formData, "programId") || programForGoal(goal);
   const program = getProgram(programId);
   const units = pickEnum(formData.get("units"), UNITS, "lb");
-  const weight = Number(formData.get("weight"));
-  const height = Number(formData.get("height"));
-  const weightKg = Number.isFinite(weight) && weight > 0 ? (units === "lb" ? weight / 2.20462 : weight) : null;
-  const heightCm = Number.isFinite(height) && height > 0 ? (units === "lb" ? height * 2.54 : height) : null;
+  const weightKg = displayWeightToKg(Number(formData.get("weight")), units);
+  const heightCm = displayHeightToCm(Number(formData.get("height")), units);
   const fields = {
     goal,
     experience: pickEnum(formData.get("experience"), EXPERIENCES, "novice"),
@@ -98,7 +96,7 @@ export async function saveOnboardingAction(formData: FormData) {
   }
 
   db.update(users)
-    .set({ displayName: String(formData.get("displayName") || user.displayName) })
+    .set({ displayName: formString(formData, "displayName") || user.displayName })
     .where(eq(users.id, user.id))
     .run();
 
@@ -113,11 +111,9 @@ export async function saveOnboardingAction(formData: FormData) {
 export async function saveSettingsAction(formData: FormData) {
   const user = await requireUser();
   const units = pickEnum(formData.get("units"), UNITS, "lb");
-  const weight = Number(formData.get("weight"));
-  const height = Number(formData.get("height"));
-  const weightKg = Number.isFinite(weight) && weight > 0 ? (units === "lb" ? weight / 2.20462 : weight) : null;
-  const heightCm = Number.isFinite(height) && height > 0 ? (units === "lb" ? height * 2.54 : height) : null;
-  const programId = String(formData.get("programId") || "");
+  const weightKg = displayWeightToKg(Number(formData.get("weight")), units);
+  const heightCm = displayHeightToCm(Number(formData.get("height")), units);
+  const programId = formString(formData, "programId");
   const existing = db.select().from(profiles).where(eq(profiles.userId, user.id)).get();
   const dietField = formData.get("dietId");
   const nextDietId =
@@ -155,11 +151,11 @@ export async function saveSettingsAction(formData: FormData) {
     .run();
 
   db.update(users)
-    .set({ displayName: String(formData.get("displayName") || user.displayName) })
+    .set({ displayName: formString(formData, "displayName") || user.displayName })
     .where(eq(users.id, user.id))
     .run();
 
-  await setPrefCookies(String(formData.get("aiOptIn") || "") === "1", await getTheme());
+  await setPrefCookies(formString(formData, "aiOptIn") === "1", await getTheme());
 
   revalidatePath("/");
   revalidatePath("/settings");
@@ -205,9 +201,8 @@ export async function logBodyweightAction(formData: FormData) {
   const user = await requireUser();
   const profile = db.select().from(profiles).where(eq(profiles.userId, user.id)).get();
   const units = (profile?.units ?? "lb") as "lb" | "kg";
-  const raw = Number(formData.get("weight"));
-  if (!Number.isFinite(raw) || raw <= 0) return;
-  const weightKg = units === "lb" ? raw / 2.20462 : raw;
+  const weightKg = displayWeightToKg(Number(formData.get("weight")), units);
+  if (!weightKg) return;
   const date = todayISO();
   upsertBodyweight(user.id, weightKg, date);
   db.update(profiles).set({ weightKg }).where(eq(profiles.userId, user.id)).run();
@@ -230,22 +225,12 @@ export async function logCheckinAction(formData: FormData) {
   const sleepField = formData.get("sleepHours");
   const fatigueField = formData.get("fatigue");
   const payload = {
-    sleepHours:
-      sleepField === "" || sleepField == null
-        ? (existing?.sleepHours ?? null)
-        : Number.isFinite(Number(sleepField))
-          ? clampInt(sleepField, 0, 0, 16)
-          : null,
-    fatigue:
-      fatigueField === "" || fatigueField == null
-        ? (existing?.fatigue ?? null)
-        : Number.isFinite(Number(fatigueField))
-          ? clampInt(fatigueField, 1, 1, 5)
-          : null,
+    sleepHours: optionalCheckinInt(sleepField, existing?.sleepHours ?? null, 0, 16),
+    fatigue: optionalCheckinInt(fatigueField, existing?.fatigue ?? null, 1, 5),
     notes:
       formData.get("notes") == null
         ? (existing?.notes ?? null)
-        : String(formData.get("notes") || "").slice(0, 500) || null,
+        : formString(formData, "notes").slice(0, 500) || null,
   };
   if (existing) {
     db.update(dailyCheckins)
