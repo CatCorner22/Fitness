@@ -9,7 +9,7 @@ import { hardnessToRpe, parseRepTarget } from "@/lib/copy";
 import { lessonForExercise } from "@/lib/course/skills";
 import { restAfterLoggedSet } from "@/lib/rest";
 import type { Exercise } from "@/lib/types";
-import { kgToDisplay } from "@/lib/utils";
+import { displayToKg, kgToDisplay } from "@/lib/utils";
 
 type SetRow = {
   id: string;
@@ -195,7 +195,7 @@ export function WorkoutPlayer({
             ? {
                 ...s,
                 completed: 1,
-                weightKg: Number.isFinite(weight) ? (units === "lb" ? weight / 2.20462 : weight) : s.weightKg,
+                weightKg: Number.isFinite(weight) ? displayToKg(weight, units) : s.weightKg,
                 reps: Number.isFinite(reps) ? reps : s.reps,
                 rpe: Number.isFinite(rpe) ? rpe : null,
               }
@@ -241,7 +241,7 @@ export function WorkoutPlayer({
               (s) => s.exerciseId === set.exerciseId && s.setIndex === set.setIndex + 1,
             );
             if (nextSet && data.advice.weightDeltaKg != null && Number.isFinite(weight)) {
-              const baseKg = units === "lb" ? weight / 2.20462 : weight;
+              const baseKg = displayToKg(weight, units);
               const hinted = kgToDisplay(baseKg + data.advice.weightDeltaKg, units);
               setLoadHints((prev) => ({ ...prev, [nextSet.id]: hinted }));
             }

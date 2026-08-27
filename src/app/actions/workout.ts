@@ -11,8 +11,8 @@ import { db } from "@/lib/db";
 import { setLogs, workouts } from "@/lib/db/schema";
 import { lastWorkingSets, suggestionsForExercises } from "@/lib/autoregulation";
 import { getProgram } from "@/lib/programs/catalog";
-import { buildPlannedSession } from "@/lib/programs/plan";
-import { clamp, clampInt, todayISO } from "@/lib/utils";
+import { attachLoadHistory, buildPlannedSession } from "@/lib/programs/plan";
+import { clampInt, todayISO } from "@/lib/utils";
 import { parseRepTarget } from "@/lib/copy";
 import { allowedSubstitutes, getExercise } from "@/lib/exercises/registry";
 
@@ -51,18 +51,7 @@ export async function startWorkoutAction(dayId?: string) {
     })),
     last,
   );
-  const planned = buildPlannedSession({
-    programId: profile.activeProgramId,
-    week: profile.currentWeek,
-    dayId: draft.day.id,
-    sessionMinutes: profile.sessionMinutes,
-    injuries: profile.injuries,
-    equipment: profile.equipment,
-    lastSets: last,
-    suggested,
-    fitness,
-  });
-  if (!planned) redirect("/programs");
+  const planned = attachLoadHistory(draft, last, suggested);
 
   const id = crypto.randomUUID();
   let resumeId: string | null = null;
@@ -115,34 +104,6 @@ export async function startWorkoutAction(dayId?: string) {
   if (resumeId) redirect(`/workout/${resumeId}`);
   revalidatePath("/");
   redirect(`/workout/${id}`);
-}
-
-export async function logSetAction(formData: FormData) {
-  const user = await requireUser();
-  const id = String(formData.get("setId") || "");
-  const weight = Number(formData.get("weight"));
-  const reps = Number(formData.get("reps"));
-  const rpe = Number(formData.get("rpe"));
-  const profile = getProfile(user.id);
-  const units = profile?.units ?? "lb";
-  const weightKg = Number.isFinite(weight) ? (units === "lb" ? clamp(weight, 0, 1000) / 2.20462 : clamp(weight, 0, 1000)) : null;
-
-  db.update(setLogs)
-    .set({
-      weightKg,
-      reps: Number.isFinite(reps) ? Math.round(clamp(reps, 0, 100)) : null,
-      rpe: Number.isFinite(rpe) ? clamp(rpe, 1, 10) : null,
-      completed: 1,
-    })
-    .where(and(eq(setLogs.id, id), eq(setLogs.userId, user.id)))
-    .run();
-
-  const set = db
-    .select()
-    .from(setLogs)
-    .where(and(eq(setLogs.id, id), eq(setLogs.userId, user.id)))
-    .get();
-  revalidatePath(`/workout/${set?.workoutId}`);
 }
 
 export async function swapExerciseAction(formData: FormData) {

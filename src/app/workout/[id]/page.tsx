@@ -20,7 +20,13 @@ export default async function WorkoutPage({ params }: { params: Promise<{ id: st
   if (!workout || workout.userId !== user.id) notFound();
 
   const sets = db.select().from(setLogs).where(eq(setLogs.workoutId, id)).all();
-  const exerciseIds = [...new Set(sets.map((s) => s.exerciseId))];
+  const grouped = new Map<string, typeof sets>();
+  for (const row of sets) {
+    const list = grouped.get(row.exerciseId) ?? [];
+    list.push(row);
+    grouped.set(row.exerciseId, list);
+  }
+  const exerciseIds = [...grouped.keys()];
   const exercises = Object.fromEntries(
     exerciseIds.map((eid) => [eid, getExercise(eid)]).filter(([, ex]) => ex),
   ) as Record<string, NonNullable<ReturnType<typeof getExercise>>>;
@@ -37,7 +43,7 @@ export default async function WorkoutPage({ params }: { params: Promise<{ id: st
   const { decisions } = suggestionsForExercises(
     user.id,
     exerciseIds.map((eid) => {
-      const row = sets.find((s) => s.exerciseId === eid);
+      const row = grouped.get(eid)?.[0];
       return {
         exerciseId: eid,
         targetRpe: row?.targetRpe ?? 8,
@@ -59,13 +65,16 @@ export default async function WorkoutPage({ params }: { params: Promise<{ id: st
         exercises={exercises}
         swaps={swaps}
         estimatedMinutes={estimateSessionMinutes(
-          exerciseIds.map((eid) => ({
-            exerciseId: eid,
-            sets: sets.filter((s) => s.exerciseId === eid).length,
-            reps: sets.find((s) => s.exerciseId === eid)?.targetReps ?? "8",
-            targetRpe: sets.find((s) => s.exerciseId === eid)?.targetRpe ?? 8,
-            priority: 2,
-          })),
+          exerciseIds.map((eid) => {
+            const rows = grouped.get(eid) ?? [];
+            return {
+              exerciseId: eid,
+              sets: rows.length,
+              reps: rows[0]?.targetReps ?? "8",
+              targetRpe: rows[0]?.targetRpe ?? 8,
+              priority: 2,
+            };
+          }),
         )}
         decisions={decisions.map((d) => ({ exerciseId: d.exerciseId, reason: d.reason }))}
         aiAvailable={optIn && aiEnabled()}

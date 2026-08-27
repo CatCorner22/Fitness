@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { STARTER_FOODS } from "../src/lib/nutrition/foods.ts";
+import { STARTER_FOODS } from "../src/lib/nutrition/starter-foods.ts";
 import { itemsForEmptyMeals } from "../src/lib/nutrition/copy-meals.ts";
 import { EQUIPMENT_OPTIONS } from "../src/lib/equipment.ts";
 import { restAfterLoggedSet } from "../src/lib/rest.ts";

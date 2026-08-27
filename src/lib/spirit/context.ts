@@ -4,6 +4,13 @@ import { coachContext } from "@/lib/coach/engine";
 import { adaptiveCalories } from "@/lib/nutrition/targets";
 import { todaysPlan } from "@/lib/today";
 
+type TodayBriefingBits = {
+  plan: ReturnType<typeof todaysPlan>;
+  checkin: { fatigue?: number | null } | null | undefined;
+  deload: { reason: string };
+  completed14d: number;
+};
+
 export function buildCoachContextSummary(userId: string, profile: ProfileRow) {
   const ctx = coachContext(userId, profile);
   const food = adaptiveCalories(userId, profile);
@@ -38,18 +45,21 @@ ${exerciseLines}
 ${plan.open ? "Status: workout in progress — resume when ready." : plan.allDone ? "Status: week complete." : "Status: ready to start."}`;
 }
 
-export function offlineBriefing(userId: string, profile: ProfileRow) {
-  const ctx = coachContext(userId, profile);
-  const plan = todaysPlan(userId, profile);
+export function offlineBriefing(userId: string, profile: ProfileRow, bits?: TodayBriefingBits) {
+  const fallback = bits ? null : coachContext(userId, profile);
+  const plan = bits?.plan ?? todaysPlan(userId, profile);
+  const completed = bits?.completed14d ?? fallback?.completed.length ?? 0;
+  const deloadReason = bits?.deload.reason ?? fallback?.deload.reason ?? "";
+  const energy = bits?.checkin?.fatigue ?? fallback?.checkin?.fatigue;
   const lines = [
-    `*stretches paws* You're on ${ctx.program?.name ?? "no program"}, week ${profile.currentWeek}.`,
-    `${ctx.completed.length} sessions in 14 days. ${ctx.deload.reason}`,
+    `*stretches paws* You're on ${plan?.program.name ?? "no program"}, week ${profile.currentWeek}.`,
+    `${completed} sessions in 14 days. ${deloadReason}`,
   ];
   if (plan?.planned && !plan.allDone) {
     lines.push(
       `Today: ${plan.planned.day.name} — ${plan.planned.day.focus}. ~${plan.planned.estimatedMinutes} min.`,
     );
-    if (isLowEnergy(ctx.checkin?.fatigue)) {
+    if (isLowEnergy(energy)) {
       lines.push("Energy is low — keep every listed drill, lighter and honest RPE.");
     }
   }

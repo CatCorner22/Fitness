@@ -26,6 +26,11 @@ function mergeAdjust(base: FitnessPlanAdjust, extra: Partial<FitnessPlanAdjust>)
   };
 }
 
+export type SessionSignals = {
+  energy?: number | null;
+  deload?: { deload: boolean; reason: string };
+};
+
 export function todayEnergy(userId: string): number | null {
   const row = db
     .select()
@@ -35,9 +40,13 @@ export function todayEnergy(userId: string): number | null {
   return row?.fatigue ?? null;
 }
 
-export function planAdjustForSession(userId: string, assessment: AssessmentResult | null): FitnessPlanAdjust {
+export function planAdjustForSession(
+  userId: string,
+  assessment: AssessmentResult | null,
+  signals?: SessionSignals,
+): FitnessPlanAdjust {
   let adjust = planAdjustFromAssessment(assessment);
-  const energy = todayEnergy(userId);
+  const energy = signals && "energy" in signals ? signals.energy : todayEnergy(userId);
 
   if (isLowEnergy(energy)) {
     adjust = mergeAdjust(adjust, {
@@ -52,7 +61,7 @@ export function planAdjustForSession(userId: string, assessment: AssessmentResul
     });
   }
 
-  const deload = shouldDeload(userId);
+  const deload = signals?.deload ?? shouldDeload(userId);
   if (deload.deload) {
     adjust = mergeAdjust(adjust, {
       rpeAdjust: -1,
