@@ -3,14 +3,17 @@ import { hybridSearchKnowledge } from "@/lib/spirit/embeddings";
 import { KNOWLEDGE_ARTICLES, type KnowledgeArticle } from "./articles";
 import { scoreArticle, type SearchContext } from "./scoring";
 
-export function searchKnowledge(ctx: SearchContext): KnowledgeArticle[] {
-  const limit = ctx.limit ?? 5;
+function rankArticles(ctx: SearchContext, limit: number) {
   return [...KNOWLEDGE_ARTICLES]
     .map((article) => ({ article, score: scoreArticle(article, ctx) }))
     .filter((x) => x.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)
     .map((x) => x.article);
+}
+
+export function searchKnowledge(ctx: SearchContext): KnowledgeArticle[] {
+  return rankArticles(ctx, ctx.limit ?? 5);
 }
 
 /** Async hybrid retrieval — keyword + HF MiniLM embeddings when HF_TOKEN is set. */

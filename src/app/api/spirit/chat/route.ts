@@ -3,12 +3,12 @@ import { eq, desc } from "drizzle-orm";
 import { getProfile, getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { coachMessages } from "@/lib/db/schema";
+import { generateCoachReply, storeCoachMessage } from "@/lib/coach/engine";
 import { aiEnabled } from "@/lib/spirit/config";
 import { coachMetaSuffix, textFromUIMessageParts } from "@/lib/spirit/client-utils";
 import { getAiOptIn } from "@/lib/prefs";
 import { prepareSpiritChatStream } from "@/lib/spirit/chat-stream";
 import { modelForTier } from "@/lib/spirit/provider";
-import { generateCoachReply } from "@/lib/coach/engine";
 
 const MAX_QUESTION = 4000;
 const MAX_MESSAGES = 40;
@@ -36,7 +36,6 @@ export async function POST(request: Request) {
     return new Response("Question required", { status: 400 });
   }
 
-  const now = new Date().toISOString();
   const lastStored = db
     .select()
     .from(coachMessages)
@@ -45,29 +44,13 @@ export async function POST(request: Request) {
     .get();
 
   if (!lastStored || lastStored.role !== "user" || lastStored.content !== question) {
-    db.insert(coachMessages)
-      .values({
-        id: crypto.randomUUID(),
-        userId: user.id,
-        role: "user",
-        content: question,
-        createdAt: now,
-      })
-      .run();
+    storeCoachMessage(user.id, "user", question);
   }
 
   const optIn = await getAiOptIn();
   if (!optIn || !aiEnabled()) {
     const text = generateCoachReply(user.id, profile, question);
-    db.insert(coachMessages)
-      .values({
-        id: crypto.randomUUID(),
-        userId: user.id,
-        role: "coach",
-        content: text,
-        createdAt: new Date().toISOString(),
-      })
-      .run();
+    storeCoachMessage(user.id, "coach", text);
 
     const msgId = crypto.randomUUID();
     const stream = createUIMessageStream({
@@ -97,15 +80,7 @@ export async function POST(request: Request) {
     messages: modelMessages,
     onFinish: async ({ text }) => {
       try {
-        db.insert(coachMessages)
-          .values({
-            id: crypto.randomUUID(),
-            userId: user.id,
-            role: "coach",
-            content: text + coachMetaSuffix(citeIds),
-            createdAt: new Date().toISOString(),
-          })
-          .run();
+        storeCoachMessage(user.id, "coach", text + coachMetaSuffix(citeIds));
       } catch (error) {
         console.error("Failed to store Spirit reply", error);
       }

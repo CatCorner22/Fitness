@@ -6,5 +6,6 @@ export async function requireAuthed(options?: { allowOnboarding?: boolean }) {
   if (!user) redirect("/login");
   const profile = getProfile(user.id);
   if (!profile?.onboarded && !options?.allowOnboarding) redirect("/onboarding");
-  return { user, profile: profile! };
+  if (!profile) redirect("/onboarding");
+  return { user, profile };
 }

@@ -29,6 +29,16 @@ export default async function WorkoutPage({ params }: { params: Promise<{ id: st
   const exercises = Object.fromEntries(
     exerciseIds.map((eid) => [eid, getExercise(eid)]).filter(([, ex]) => ex),
   ) as Record<string, NonNullable<ReturnType<typeof getExercise>>>;
+  const templateExercises = exerciseIds.map((eid) => {
+    const rows = grouped.get(eid) ?? [];
+    return {
+      exerciseId: eid,
+      sets: rows.length,
+      reps: rows[0]?.targetReps ?? "8",
+      targetRpe: rows[0]?.targetRpe ?? 8,
+      priority: 2 as const,
+    };
+  });
 
   const swaps = Object.fromEntries(
     exerciseIds.map((eid) => [eid, allowedSubstitutes(eid, profile.injuries)]),
@@ -39,14 +49,7 @@ export default async function WorkoutPage({ params }: { params: Promise<{ id: st
   const optIn = await getAiOptIn();
   const { decisions } = suggestionsForExercises(
     user.id,
-    exerciseIds.map((eid) => {
-      const row = grouped.get(eid)?.[0];
-      return {
-        exerciseId: eid,
-        targetRpe: row?.targetRpe ?? 8,
-        reps: row?.targetReps ?? "8",
-      };
-    }),
+    templateExercises.map(({ exerciseId, targetRpe, reps }) => ({ exerciseId, targetRpe, reps })),
     ghostSets,
   );
 
@@ -59,18 +62,7 @@ export default async function WorkoutPage({ params }: { params: Promise<{ id: st
         sets={sets}
         exercises={exercises}
         swaps={swaps}
-        estimatedMinutes={estimateSessionMinutes(
-          exerciseIds.map((eid) => {
-            const rows = grouped.get(eid) ?? [];
-            return {
-              exerciseId: eid,
-              sets: rows.length,
-              reps: rows[0]?.targetReps ?? "8",
-              targetRpe: rows[0]?.targetRpe ?? 8,
-              priority: 2,
-            };
-          }),
-        )}
+        estimatedMinutes={estimateSessionMinutes(templateExercises)}
         decisions={decisions.map((d) => ({ exerciseId: d.exerciseId, reason: d.reason }))}
         aiAvailable={optIn && aiEnabled()}
         aiOptIn={optIn}

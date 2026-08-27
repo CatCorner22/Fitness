@@ -15,3 +15,7 @@ export function revalidateFasting() {
 export function revalidateAssessment() {
   revalidateAll(["/", "/onboarding", "/onboarding/assess", "/onboarding/results", "/assess", "/settings"]);
 }
+
+export function revalidateCalendar() {
+  revalidateAll(["/", "/progress"]);
+}
