@@ -3,7 +3,7 @@
 import { and, eq, isNull, or } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getProfile, getSession } from "@/lib/auth";
+import { getProfile, requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { foods, nutritionLogs } from "@/lib/db/schema";
 import { getMealPlanTemplate, scalePlanToTargets } from "@/lib/nutrition/meal-plans";
@@ -13,12 +13,6 @@ import { itemsForEmptyMeals } from "@/lib/nutrition/copy-meals";
 import { clamp, todayISO, yesterdayISO } from "@/lib/utils";
 
 const MEALS = new Set(["breakfast", "lunch", "dinner", "snack"]);
-
-async function requireUser() {
-  const user = await getSession();
-  if (!user) redirect("/login");
-  return user;
-}
 
 export async function addFoodLogAction(formData: FormData) {
   const user = await requireUser();

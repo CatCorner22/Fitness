@@ -1,17 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { loadCalendarState, upsertCalendarMark } from "@/lib/calendar";
 import { CALENDAR_EPOCH, resolveFill } from "@/lib/calendar-core";
 import { todayISO } from "@/lib/utils";
-
-async function requireUser() {
-  const user = await getSession();
-  if (!user) redirect("/login");
-  return user;
-}
 
 export async function setTodayCalendarFillAction(formData: FormData) {
   const user = await requireUser();

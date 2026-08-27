@@ -1,5 +1,6 @@
 import { ExerciseCalendar } from "@/components/exercise-calendar";
-import { addDaysISO, CALENDAR_EPOCH, fillMapRange, loadCalendarState } from "@/lib/calendar";
+import { addDaysISO, CALENDAR_EPOCH } from "@/lib/calendar-core";
+import { fillMapRange, loadCalendarState } from "@/lib/calendar";
 import { todayISO } from "@/lib/utils";
 
 export function ExerciseCalendarBlock({ userId }: { userId: string }) {

@@ -3,7 +3,7 @@
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { fastAdjustments, fasts } from "@/lib/db/schema";
 import {
@@ -16,12 +16,6 @@ import {
   type FastAdjustmentKind,
 } from "@/lib/fasting/protocols";
 import { fastOwnedBy, runningFast } from "@/lib/fasting/queries";
-
-async function requireUser() {
-  const user = await getSession();
-  if (!user) redirect("/login");
-  return user;
-}
 
 function refreshFast() {
   revalidatePath("/");

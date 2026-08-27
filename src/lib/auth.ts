@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { SignJWT, jwtVerify } from "jose";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
@@ -47,6 +48,12 @@ export async function destroySession() {
     path: "/",
     maxAge: 0,
   });
+}
+
+export async function requireUser(): Promise<SessionUser> {
+  const user = await getSession();
+  if (!user) redirect("/login");
+  return user;
 }
 
 export async function getSession(): Promise<SessionUser | null> {

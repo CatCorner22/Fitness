@@ -65,7 +65,7 @@ export function todaysPlan(userId: string, profile: ProfileRow, fitness?: Fitnes
   };
 }
 
-export function todayCheckin(userId: string) {
+function todayCheckin(userId: string) {
   return db
     .select()
     .from(dailyCheckins)

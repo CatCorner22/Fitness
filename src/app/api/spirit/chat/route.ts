@@ -4,7 +4,7 @@ import { getProfile, getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { coachMessages } from "@/lib/db/schema";
 import { aiEnabled } from "@/lib/spirit/config";
-import { coachMetaSuffix, textFromUIMessageParts } from "@/lib/spirit/context";
+import { coachMetaSuffix, textFromUIMessageParts } from "@/lib/spirit/client-utils";
 import { getAiOptIn } from "@/lib/prefs";
 import { prepareSpiritChatStream } from "@/lib/spirit/chat-stream";
 import { modelForTier } from "@/lib/spirit/provider";

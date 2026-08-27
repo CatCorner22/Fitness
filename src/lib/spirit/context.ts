@@ -65,5 +65,3 @@ export function offlineBriefing(userId: string, profile: ProfileRow, bits?: Toda
   }
   return lines.join("\n\n");
 }
-
-export { parseCoachMeta, textFromUIMessageParts, coachMetaSuffix } from "./client-utils";

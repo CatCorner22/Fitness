@@ -3,8 +3,6 @@ import { hybridSearchKnowledge } from "@/lib/spirit/embeddings";
 import { KNOWLEDGE_ARTICLES, type KnowledgeArticle } from "./articles";
 import { scoreArticle, type SearchContext } from "./scoring";
 
-export type { SearchContext };
-
 export function searchKnowledge(ctx: SearchContext): KnowledgeArticle[] {
   const limit = ctx.limit ?? 5;
   return [...KNOWLEDGE_ARTICLES]
