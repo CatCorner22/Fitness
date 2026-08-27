@@ -92,6 +92,7 @@ export function WorkoutPlayer({
   ghostSets,
   courseId,
   courseSkillIds,
+  restMultiplier = 1,
 }: {
   workoutId: string;
   dayName: string;
@@ -106,6 +107,8 @@ export function WorkoutPlayer({
   ghostSets: Record<string, GhostSet>;
   courseId?: string;
   courseSkillIds?: string[];
+  /** Session-level rest scaling from the fitness assessment / energy check-in. */
+  restMultiplier?: number;
 }) {
   const [sets, setSets] = useState(initialSets);
   const [editingSetId, setEditingSetId] = useState<string | null>(null);
@@ -134,7 +137,7 @@ export function WorkoutPlayer({
 
   const completedCount = sets.filter((s) => s.completed).length;
   const current = grouped.find(([, rows]) => rows.some((s) => !s.completed)) ?? grouped[grouped.length - 1];
-  const catalogRest = current ? (exercises[current[0]]?.restSeconds ?? 90) : 90;
+  const catalogRest = Math.round((current ? (exercises[current[0]]?.restSeconds ?? 90) : 90) * restMultiplier);
   const why = current ? decisions.find((d) => d.exerciseId === current[0]) : undefined;
 
   useEffect(() => {
@@ -245,7 +248,7 @@ export function WorkoutPlayer({
         }
         const moreSets = sets.some((s) => s.id !== set.id && !s.completed);
         const rest = restAfterLoggedSet({
-          catalogRestSeconds: exercises[set.exerciseId]?.restSeconds ?? 90,
+          catalogRestSeconds: Math.round((exercises[set.exerciseId]?.restSeconds ?? 90) * restMultiplier),
           moreSetsRemain: moreSets,
           adviceRestSeconds: adviceRest,
           useAdvice: aiOptIn,
@@ -258,7 +261,7 @@ export function WorkoutPlayer({
         if (loggingRef.current === set.id) loggingRef.current = null;
       }
     },
-    [aiOptIn, exercises, grouped.length, hardness, sets, started, units],
+    [aiOptIn, exercises, grouped.length, hardness, restMultiplier, sets, started, units],
   );
 
   return (

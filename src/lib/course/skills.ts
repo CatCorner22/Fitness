@@ -619,7 +619,7 @@ export function skillById(id: string) {
   return SKILLS.find((s) => s.id === id);
 }
 
-export function skillByExerciseId(exerciseId: string) {
+function skillByExerciseId(exerciseId: string) {
   return SKILLS.filter((s) => s.exerciseId === exerciseId);
 }
 

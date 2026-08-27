@@ -7,23 +7,34 @@ import { getProgram } from "./catalog";
 const CONJUGATE_ME_LOWER = ["box-squat", "pause-squat", "trap-bar-deadlift", "paused-deadlift"];
 const CONJUGATE_ME_UPPER = ["pause-bench", "close-grip-bench", "ohp", "incline-db-press"];
 
-export function phaseForWeek(program: Program, week: number): WeekPhase {
+function phaseForWeek(program: Program, week: number): WeekPhase {
   return (
     program.phases.find((p) => p.weeks.includes(week)) ??
     program.phases[0]
   );
 }
 
+/** Midpoint of a "20-40 min" style prescription, else a per-set fallback. */
+function cardioMinutes(item: TemplateExercise) {
+  const match = item.reps.match(/(\d+)(?:\s*[-–]\s*(\d+))?\s*min/i);
+  if (match) {
+    const lo = Number(match[1]);
+    const hi = match[2] ? Number(match[2]) : lo;
+    return ((lo + hi) / 2) * item.sets;
+  }
+  return Math.max(20, item.sets * 4);
+}
+
 export function estimateSessionMinutes(exercises: TemplateExercise[]) {
   const warmup = 6;
+  // Accumulates seconds; cardio prescriptions are minutes and must be converted.
   const time = exercises.reduce((sum, item) => {
     const ex = getExercise(item.exerciseId);
-    const rest = item.restSeconds ?? ex?.restSeconds ?? 90;
-    const exec = ex?.isCardio ? 0 : 40;
     if (ex?.isCardio) {
-      return sum + Math.max(20, item.sets * 4);
+      return sum + cardioMinutes(item) * 60;
     }
-    return sum + item.sets * (rest + exec);
+    const rest = item.restSeconds ?? ex?.restSeconds ?? 90;
+    return sum + item.sets * (rest + 40);
   }, 0);
   return Math.round(warmup + time / 60);
 }
@@ -31,7 +42,10 @@ export function estimateSessionMinutes(exercises: TemplateExercise[]) {
 function applyPhase(item: TemplateExercise, phase: WeekPhase, fitness?: FitnessPlanAdjust | null): TemplateExercise {
   const accessoryBump = fitness && item.priority >= 3 ? fitness.accessorySetAdjust : 0;
   const sets = Math.max(1, item.sets + phase.setAdjust + accessoryBump);
-  const targetRpe = Math.min(10, Math.max(5, item.targetRpe + phase.rpeAdjust + (fitness?.rpeAdjust ?? 0)));
+  // Never raise a deliberately easy prescription (stretch/yoga days run RPE 2–4);
+  // the floor only stops adjustments from dragging real lifting below RPE 5.
+  const rpeFloor = Math.min(5, item.targetRpe);
+  const targetRpe = Math.min(10, Math.max(rpeFloor, item.targetRpe + phase.rpeAdjust + (fitness?.rpeAdjust ?? 0)));
   const rest = item.restSeconds;
   const restSeconds =
     rest != null && fitness && fitness.restMultiplier !== 1
@@ -59,7 +73,7 @@ function equippedFor(exercise: NonNullable<ReturnType<typeof getExercise>>, equi
   return exercise.equipment.some((eq) => equipment.includes(eq) || eq === "bodyweight");
 }
 
-export function pickSubstitute(
+function pickSubstitute(
   exerciseId: string,
   injuries: Injury[],
   equipment: string[],
@@ -84,7 +98,7 @@ export function pickSubstitute(
 }
 
 /** Keep every programmed lift. Time budget never deletes work. */
-export function trimForDuration(items: TemplateExercise[], minutes: number) {
+function trimForDuration(items: TemplateExercise[], minutes: number) {
   const current = [...items];
   const estimate = estimateSessionMinutes(current);
   return { exercises: current, dropped: [] as string[], estimate, overTime: estimate > minutes };
@@ -137,10 +151,14 @@ export function buildPlannedSession(options: {
       resolved.push({ ...item, exerciseId: chosen.id });
       continue;
     }
+    // A candidate the fitness remap would rewrite (e.g. back-squat when the
+    // assessment swapped squats to goblet) must not sneak back in here.
+    const fitnessAdjust = fitness ?? emptyAdjust();
     const alt = allowedSubstitutes(item.exerciseId, options.injuries).find(
       (ex) =>
         !usedIds.has(ex.id) &&
         ex.safety !== "banned" &&
+        remapExerciseId(ex.id, fitnessAdjust, options.equipment) === ex.id &&
         equippedFor(ex, options.equipment),
     );
     if (alt) {
