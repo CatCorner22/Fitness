@@ -98,6 +98,15 @@ function migrate(sqlite: Database.Database) {
       updated_at TEXT NOT NULL
     );
     CREATE UNIQUE INDEX IF NOT EXISTS idx_calendar_marks_user_date ON calendar_marks(user_id, date);
+    CREATE TABLE IF NOT EXISTS pioneer_drafts (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id),
+      title TEXT NOT NULL DEFAULT '',
+      body TEXT NOT NULL DEFAULT '',
+      kind TEXT NOT NULL DEFAULT 'mixed',
+      updated_at TEXT NOT NULL
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_pioneer_drafts_user ON pioneer_drafts(user_id);
   `);
   const cols = sqlite.prepare("PRAGMA table_info(profiles)").all() as { name: string }[];
   const names = new Set(cols.map((c) => c.name));

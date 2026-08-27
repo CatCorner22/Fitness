@@ -165,6 +165,13 @@ export default async function TodayPage() {
         </Link>
       </section>
       {fast ? <div className="mt-4"><FastingStrip running={fast} /></div> : null}
+      <section className="mt-6 rounded-3xl border border-line bg-surface p-5">
+        <Link href="/pioneer" className="block">
+          <p className="text-xs uppercase tracking-[0.16em] text-copper">Pioneer</p>
+          <p className="mt-1 text-lg font-semibold text-ink">Draft a week or a plate</p>
+          <p className="mt-1 text-sm text-muted">Observe-only. Instruments always. The model never writes.</p>
+        </Link>
+      </section>
       <p className="mt-6 text-sm">
         <Link href="/progress" className="text-copper-2">
           Training calendar on History →
