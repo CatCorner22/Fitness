@@ -46,7 +46,13 @@ const mono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "Garanimal",
+  applicationName: "Garanimal",
   description: "Simple household training and food logging.",
+  appleWebApp: {
+    capable: true,
+    title: "Garanimal",
+    statusBarStyle: "default",
+  },
 };
 
 export async function generateViewport(): Promise<Viewport> {

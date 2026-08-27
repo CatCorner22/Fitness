@@ -126,8 +126,10 @@ export function WorkoutPlayer({
   }, [sets]);
 
   const [seconds, setSeconds] = useState(0);
-  const [resting, setResting] = useState(false);
-  const secondsRef = useRef(0);
+  // Deadline timestamp instead of a decrementing counter: browsers throttle
+  // intervals in background tabs / locked phones, which froze the countdown.
+  const [restEndsAt, setRestEndsAt] = useState<number | null>(null);
+  const resting = restEndsAt != null;
   const alertedRef = useRef(false);
   const loggingRef = useRef<string | null>(null);
   const [started] = useState(() => Date.now());
@@ -141,27 +143,59 @@ export function WorkoutPlayer({
   const why = current ? decisions.find((d) => d.exerciseId === current[0]) : undefined;
 
   useEffect(() => {
-    if (!resting) return;
-    const id = window.setInterval(() => {
-      const next = Math.max(0, secondsRef.current - 1);
-      secondsRef.current = next;
+    if (restEndsAt == null) return;
+    const tick = () => {
+      const next = Math.max(0, Math.ceil((restEndsAt - Date.now()) / 1000));
       setSeconds(next);
       if (next === 0) {
-        setResting(false);
+        setRestEndsAt(null);
         if (!alertedRef.current) {
           alertedRef.current = true;
           playRestBeep();
         }
       }
-    }, 1000);
-    return () => window.clearInterval(id);
-  }, [resting]);
+    };
+    tick();
+    const id = window.setInterval(tick, 250);
+    // Resync immediately when the tab wakes from background throttling.
+    document.addEventListener("visibilitychange", tick);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener("visibilitychange", tick);
+    };
+  }, [restEndsAt]);
+
+  // Keep the screen awake mid-workout; harmless no-op where unsupported.
+  useEffect(() => {
+    let active = true;
+    let sentinel: WakeLockSentinel | null = null;
+    const acquire = async () => {
+      if (!("wakeLock" in navigator) || document.visibilityState !== "visible") return;
+      try {
+        const lock = await navigator.wakeLock.request("screen");
+        if (!active) {
+          void lock.release();
+          return;
+        }
+        sentinel = lock;
+      } catch {
+        // Denied (e.g. battery saver) — screen dimming is acceptable.
+      }
+    };
+    const onVisibility = () => void acquire();
+    void acquire();
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      active = false;
+      document.removeEventListener("visibilitychange", onVisibility);
+      void sentinel?.release();
+    };
+  }, []);
 
   function startRest(rest: number) {
     alertedRef.current = false;
-    secondsRef.current = rest;
     setSeconds(rest);
-    setResting(true);
+    setRestEndsAt(Date.now() + rest * 1000);
   }
 
   function stampDuration(form: HTMLFormElement) {
@@ -295,7 +329,7 @@ export function WorkoutPlayer({
             3:00
           </button>
           {resting ? (
-            <button type="button" onClick={() => setResting(false)} className="min-h-11 rounded-xl px-4 text-muted">
+            <button type="button" onClick={() => setRestEndsAt(null)} className="min-h-11 rounded-xl px-4 text-muted">
               Pause
             </button>
           ) : null}
