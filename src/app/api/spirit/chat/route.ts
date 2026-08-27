@@ -19,6 +19,11 @@ export async function POST(request: Request) {
   const profile = getProfile(user.id);
   if (!profile) return new Response("Profile missing", { status: 400 });
 
+  // Requiring a JSON content type forces cross-origin senders into a CORS
+  // preflight, which fails; the Replit session cookie is SameSite=None.
+  if (!request.headers.get("content-type")?.includes("application/json")) {
+    return new Response("Invalid request", { status: 415 });
+  }
   let body: { messages?: UIMessage[] };
   try {
     body = (await request.json()) as { messages?: UIMessage[] };

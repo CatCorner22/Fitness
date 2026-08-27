@@ -163,14 +163,6 @@ function createConnection() {
       diet_start_date TEXT,
       diet_week INTEGER NOT NULL DEFAULT 1
     );
-    CREATE TABLE IF NOT EXISTS fitness_assessments (
-      id TEXT PRIMARY KEY,
-      user_id TEXT NOT NULL REFERENCES users(id),
-      taken_at TEXT NOT NULL,
-      fitness_tier TEXT,
-      payload TEXT NOT NULL
-    );
-    CREATE INDEX IF NOT EXISTS idx_assess_user_taken ON fitness_assessments(user_id, taken_at);
     CREATE TABLE IF NOT EXISTS workouts (
       id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL REFERENCES users(id),
