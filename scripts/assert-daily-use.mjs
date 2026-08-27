@@ -150,4 +150,14 @@ for (const name of [
   expect(code.includes(name), `runtime code reads ${name}`);
 }
 
+function hasWord(q, word) {
+  return new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(q);
+}
+
+expect(!hasWord("what should i eat for breakfast", "fast"), "breakfast does not match fasting word");
+expect(hasWord("how do i start fasting", "fasting"), "fasting word matches");
+expect(hasWord("what should i eat for breakfast", "eat"), "eat word matches in breakfast question");
+expect(!hasWord("how do i pass this class", "ass"), "class does not match glute ass word");
+expect(hasWord("build a bigger ass", "ass"), "ass word matches glute question");
+
 console.log("assert-daily-use: ok");
