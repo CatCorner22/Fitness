@@ -209,7 +209,7 @@ if "existing.sets +=" in plan:
 
 diet_src = read(SRC / "lib/nutrition/diets.ts")
 meal_src = read(SRC / "lib/nutrition/meal-plans.ts")
-foods_src = read(SRC / "lib/nutrition/foods.ts")
+foods_src = read(SRC / "lib/nutrition/starter-foods.ts") + read(SRC / "lib/nutrition/foods.ts")
 diet_ids = set(re.findall(r'id:\s*"(steady_cut|mini_cut|lean_bulk|recomp|reverse|beach_week|stage_lean|low_histamine|low_histamine_cut)"', diet_src))
 if "low_histamine" not in diet_ids or "low_histamine_cut" not in diet_ids:
     errors.append("low histamine diet blocks missing from DIET_PROGRAMS")

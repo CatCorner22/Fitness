@@ -1,5 +1,5 @@
 import type { Goal } from "@/lib/types";
-import type { HistamineLoad } from "@/lib/nutrition/foods";
+import type { HistamineLoad } from "./histamine";
 
 export type FastFoodFit = "cut" | "protein" | "bulk" | "breakfast";
 

@@ -162,7 +162,7 @@ export function MealFoodForm({
           className="text-sm"
         >
           <option value="" disabled>
-            Pick a food
+            {filtered.length ? "Pick a food" : query.trim() ? "No matches — try another search" : "Pick a food"}
           </option>
           {filtered.slice(0, 40).map((food) => (
             <option key={food.id} value={food.id}>
