@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { getProfile, requireUser } from "@/lib/auth";
 import { buildPioneerHousehold, serializePlateDraft } from "@/lib/pioneer/context";
-import { getPioneerDraft, upsertPioneerDraft } from "@/lib/pioneer/store";
+import { upsertPioneerDraft } from "@/lib/pioneer/store";
 import type { PioneerKind } from "@/lib/pioneer/types";
 import { todayNutrition } from "@/lib/today";
 
@@ -25,15 +25,9 @@ export async function watchTodaysPlateAction() {
   if (!profile) redirect("/onboarding");
   const household = buildPioneerHousehold(user.id, profile);
   const plate = todayNutrition(user.id);
-  const plateText = serializePlateDraft(plate.logs, household);
-  const existing = getPioneerDraft(user.id);
-  const body =
-    existing?.body.trim() && !existing.body.startsWith("Today's plate")
-      ? `${plateText}\n\n---\n\n${existing.body}`
-      : plateText;
   upsertPioneerDraft(user.id, {
-    title: existing?.title.trim() || "Today's plate",
-    body,
+    title: "Today's plate",
+    body: serializePlateDraft(plate.logs, household),
     kind: "nutrition",
   });
   redirect("/pioneer");
