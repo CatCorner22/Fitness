@@ -63,6 +63,8 @@ export function SpiritCoachChat({
             msg.role === "assistant" && streaming && msg.id === messages.at(-1)?.id;
           const parsed =
             msg.role === "assistant" && !isStreamingAssistant ? parseCoachMeta(raw) : { text: raw, citeIds: [] as string[] };
+          const metaCiteIds = (msg.metadata as { citeIds?: string[] } | undefined)?.citeIds;
+          const citeIds = metaCiteIds?.length ? metaCiteIds : parsed.citeIds;
           return (
             <article
               key={msg.id}
@@ -74,9 +76,9 @@ export function SpiritCoachChat({
               <p className="mt-1 whitespace-pre-wrap">
                 {parsed.text || (isStreamingAssistant ? "*ears perk* ..." : "")}
               </p>
-              {parsed.citeIds.length ? (
+              {citeIds.length ? (
                 <div className="mt-2 flex flex-wrap gap-1">
-                  {parsed.citeIds.map((id, i) => (
+                  {citeIds.map((id, i) => (
                     <Link key={`${id}-${i}`} href={`/knowledge#${id}`} className="text-[10px] text-copper-2">
                       {id}
                     </Link>

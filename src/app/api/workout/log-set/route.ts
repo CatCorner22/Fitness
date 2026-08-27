@@ -127,6 +127,8 @@ export async function POST(request: Request) {
         sessionMinutesBudget: profile.sessionMinutes,
         elapsedMinutes,
         remainingExercises: remaining,
+        sessionSetsCompleted: allSets.filter((s) => s.completed).length,
+        sessionSetsTotal: allSets.length,
         priorSets,
         fatigue: checkin?.fatigue ?? null,
       }),

@@ -116,8 +116,7 @@ function hasWord(q: string, word: string) {
 }
 
 function isDipQuestion(q: string, hit?: Exercise) {
-  return (
-    /\bdips?\b/.test(q) ||
+  if (
     q.includes("bench dip") ||
     q.includes("chair dip") ||
     q.includes("bar dip") ||
@@ -125,7 +124,13 @@ function isDipQuestion(q: string, hit?: Exercise) {
     q.includes("triceps dip") ||
     hit?.id === "bench-dip" ||
     hit?.id === "parallel-bar-dip"
-  );
+  ) {
+    return true;
+  }
+  // Bare "dip" is also a food ("chips and dip") — only treat it as the
+  // exercise when the question isn't clearly about eating.
+  const foodContext = /\b(chips?|salsa|hummus|guac(?:amole)?|veggies?|sauce|snacks?|ranch)\b/.test(q);
+  return /\bdips?\b/.test(q) && !foodContext;
 }
 
 type QuestionRule = {
@@ -163,9 +168,13 @@ const QUESTION_RULES: QuestionRule[] = [
       "You → Fitness check. Six field tests (6-minute walk or 2-minute step, CSEP push-ups, 30s chair stand, plank, single-leg stance, overhead squat + back-scratch). We scale RPE and swaps from that. No 1RM on day one. Sit-ups are not the core test.",
   },
   {
+    // Bare "fast" is usually the adverb ("how fast should I cut?") — require
+    // fasting-specific phrasing before answering about time-restricted eating.
     test: (q) =>
-      hasWord(q, "fast") ||
       hasWord(q, "fasting") ||
+      hasWord(q, "fasted") ||
+      q.includes("intermittent") ||
+      /\b(?:a|my|the|start|begin|end|break|breaking) fast\b/.test(q) ||
       q.includes("16:8") ||
       q.includes("16/8") ||
       q.includes("eating window"),
@@ -214,30 +223,35 @@ const QUESTION_RULES: QuestionRule[] = [
       "Hip thrust, squat or split squat, RDL, abduction, 45° extension. Variety. Plotkin 2023: thrust ≈ squat for glute size. Kassiano 2024: adding thrusts on top of hinges and presses grew more glute. Do the work.",
   },
   {
+    // Word boundaries matter here: bare substrings match "collapse" (lap),
+    // "wheel" (heel), "stripes" (strip), and "inverted row" (invert).
     test: (q) =>
-      q.includes("pole") ||
-      q.includes("strip") ||
-      q.includes("invert") ||
-      q.includes("amateur") ||
-      q.includes("exotic") ||
-      q.includes("nyx") ||
-      q.includes("lap") ||
-      q.includes("heel"),
+      hasWord(q, "pole") ||
+      /\bstrip(?:per|tease)?s?\b/.test(q) ||
+      /\binver(?:t|ts|sion|sions)\b/.test(q) ||
+      hasWord(q, "amateur") ||
+      hasWord(q, "exotic") ||
+      hasWord(q, "nyx") ||
+      /\blap ?dances?\b/.test(q) ||
+      /\bheels?\b/.test(q),
     reply: () =>
       "Nyx’s amateur-night course is actual exotic skill in training-course format: walk, heels, hands, stage map, commercial hips, floor crawls, chair phrases on furniture (approach, body, close — not on a person), costume peels, rail visits, two-song map, and a close. Pair it with Couch to amateur night (5 days). Intermediate pole class is the other course — hangs, both-side spins, sit, climb, invert prep. Crash mat. Studio for inverts. No kipping. Open Course from You.",
   },
   {
-    test: (q) => q.includes("ruck") || q.includes("rucking") || q.includes("pack"),
+    // "pack" alone matches "six pack" and "ruck" matches "truck".
+    test: (q) => /\bruck(?:ing|s|sack|sacks)?\b/.test(q) || hasWord(q, "backpack"),
     reply: () =>
       "Start around 10–15% bodyweight, talking pace. Add distance or load, not both, in the same week. Stay under ~30% bodyweight unless you have a real event and a base.",
   },
   {
-    test: (q) => q.includes("stretch") || q.includes("split") || q.includes("flexib"),
+    // "splits" (plural) is the flexibility skill; bare "split" is usually a
+    // split squat or a training split.
+    test: (q) => q.includes("stretch") || /\b(?:front |middle |side )?splits\b/.test(q) || q.includes("flexib"),
     reply: () =>
       "Warm first. Hinge at the hip. 30–45 second holds. No bounce. No behind-the-neck stretches. Do not sit in long static stretches right before a heavy lift.",
   },
   {
-    test: (q) => q.includes("barre") || q.includes("ballet") || q.includes("turnout") || q.includes("plie"),
+    test: (q) => hasWord(q, "barre") || q.includes("ballet") || q.includes("turnout") || hasWord(q, "plie") || q.includes("plié"),
     reply: () =>
       "Turnout from the hips. Knees track toes. About 45 degrees is honest. A chair is a barre. This is balance and a smoother walk, not vocational ballet.",
   },

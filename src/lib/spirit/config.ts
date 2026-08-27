@@ -1,28 +1,21 @@
 // Spirit coach deployment config — SuperByte-inspired gates without the dental cage detail.
 
-export const SPIRIT_UNAVAILABLE =
-  "*ears flatten* Signal lost on the mountain. Rules engine has you — log the set and keep moving.";
-
 export type SpiritConfig = {
   enabled: boolean;
   liveModel: string;
   chatModel: string;
-  hfFallbackModel: string | null;
   reads: number;
-  semanticSearch: boolean;
 };
 
 export function getSpiritConfig(env: Record<string, string | undefined> = process.env): SpiritConfig {
-  const gateway = Boolean(env.AI_GATEWAY_API_KEY);
-  const openai = Boolean(env.OPENAI_API_KEY);
-  const hf = Boolean(env.HF_TOKEN || env.HUGGINGFACE_HUB_TOKEN);
   return {
-    enabled: gateway || openai,
+    // Only a Vercel AI Gateway key enables live mode; other provider keys
+    // (OpenAI, HF) cannot authenticate against the gateway and would make
+    // every AI call fail while the app claims AI is on.
+    enabled: Boolean(env.AI_GATEWAY_API_KEY),
     liveModel: env.GARANIMAL_LIVE_MODEL ?? env.GARANIMAL_AI_MODEL ?? "openai/gpt-5.4",
     chatModel: env.GARANIMAL_CHAT_MODEL ?? env.GARANIMAL_AI_MODEL ?? "openai/gpt-5.4",
-    hfFallbackModel: hf ? (env.GARANIMAL_HF_MODEL ?? "Qwen/Qwen2.5-7B-Instruct") : null,
     reads: resolveReads(env),
-    semanticSearch: hf,
   };
 }
 

@@ -35,44 +35,67 @@ function cosine(a: number[], b: number[]) {
   return denom === 0 ? 0 : dot / denom;
 }
 
-/** HF Inference feature-extraction — returns mean-pooled normalized vector. */
-export async function embedText(text: string): Promise<number[] | null> {
+/**
+ * One entry per input: either an already-pooled sentence vector ([dim]) or a
+ * token matrix ([seq_len][dim]) that needs mean pooling. Returns a normalized
+ * vector either way.
+ */
+function toVector(entry: unknown): number[] | null {
+  if (!Array.isArray(entry) || entry.length === 0) return null;
+  const matrix = Array.isArray(entry[0]) ? (entry as number[][]) : [entry as number[]];
+  const dim = matrix[0]?.length ?? 0;
+  if (!dim) return null;
+  const mean = new Array<number>(dim).fill(0);
+  for (const row of matrix) {
+    for (let i = 0; i < dim; i++) mean[i] += row[i]!;
+  }
+  for (let i = 0; i < dim; i++) mean[i] /= matrix.length;
+  const norm = Math.sqrt(mean.reduce((s, v) => s + v * v, 0));
+  return norm === 0 ? mean : mean.map((v) => v / norm);
+}
+
+/** HF Inference feature-extraction for a batch of texts, one round trip. */
+async function embedBatch(texts: string[]): Promise<(number[] | null)[] | null> {
   const token = hfToken();
-  if (!token) return null;
+  if (!token || texts.length === 0) return null;
   try {
-    const res = await fetch(`https://api-inference.huggingface.co/pipeline/feature-extraction/${HF_MODEL}`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
+    const res = await fetch(
+      `https://router.huggingface.co/hf-inference/models/${HF_MODEL}/pipeline/feature-extraction`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          inputs: texts.map((t) => t.slice(0, 2000)),
+          options: { wait_for_model: true },
+        }),
       },
-      body: JSON.stringify({ inputs: text.slice(0, 2000), options: { wait_for_model: true } }),
-    });
+    );
     if (!res.ok) return null;
-    const raw = (await res.json()) as number[][] | number[][][];
-    // Response: [seq_len][384] or [[seq_len][384]] for batch
-    const tokens = Array.isArray(raw[0]?.[0]) ? (raw[0] as number[][]) : (raw as number[][]);
-    if (!tokens?.length || !tokens[0]?.length) return null;
-    const dim = tokens[0].length;
-    const mean = new Array(dim).fill(0);
-    for (const tok of tokens) {
-      for (let i = 0; i < dim; i++) mean[i] += tok[i]!;
-    }
-    for (let i = 0; i < dim; i++) mean[i] /= tokens.length;
-    const norm = Math.sqrt(mean.reduce((s, v) => s + v * v, 0));
-    return norm === 0 ? mean : mean.map((v) => v / norm);
+    const raw = (await res.json()) as unknown[];
+    if (!Array.isArray(raw) || raw.length !== texts.length) return null;
+    return raw.map(toVector);
   } catch {
     return null;
   }
 }
 
+async function embedText(text: string): Promise<number[] | null> {
+  const vectors = await embedBatch([text]);
+  return vectors?.[0] ?? null;
+}
+
 async function loadArticleEmbeddings(): Promise<EmbeddingCache> {
   const cache: EmbeddingCache = new Map();
   if (!hfToken()) return cache;
-  for (const article of KNOWLEDGE_ARTICLES) {
-    const vec = await embedText(articleText(article));
+  const vectors = await embedBatch(KNOWLEDGE_ARTICLES.map(articleText));
+  if (!vectors) return cache;
+  KNOWLEDGE_ARTICLES.forEach((article, i) => {
+    const vec = vectors[i];
     if (vec) cache.set(article.id, vec);
-  }
+  });
   return cache;
 }
 

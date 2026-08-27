@@ -5,20 +5,14 @@ let gateway: ReturnType<typeof createGateway> | null = null;
 
 function getGateway() {
   if (!gateway) {
-    gateway = createGateway({
-      apiKey: process.env.AI_GATEWAY_API_KEY ?? process.env.OPENAI_API_KEY,
-    });
+    gateway = createGateway({ apiKey: process.env.AI_GATEWAY_API_KEY });
   }
   return gateway;
 }
 
-export function resolveModelId(tier: "live" | "chat", env: Record<string, string | undefined> = process.env) {
-  const cfg = getSpiritConfig(env);
-  return tier === "live" ? cfg.liveModel : cfg.chatModel;
-}
-
 export function modelForTier(tier: "live" | "chat") {
-  const id = resolveModelId(tier);
+  const cfg = getSpiritConfig();
+  const id = tier === "live" ? cfg.liveModel : cfg.chatModel;
   const normalized = id.includes("/") ? id : `openai/${id}`;
   return getGateway()(normalized);
 }

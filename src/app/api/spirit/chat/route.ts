@@ -41,19 +41,21 @@ export async function POST(request: Request) {
     return new Response("Question required", { status: 400 });
   }
 
-  const lastStored = db
-    .select()
-    .from(coachMessages)
-    .where(eq(coachMessages.userId, user.id))
-    .orderBy(desc(coachMessages.createdAt))
-    .get();
-
-  if (!lastStored || lastStored.role !== "user" || lastStored.content !== question) {
-    storeCoachMessage(user.id, "user", question);
-  }
+  const storeUserQuestion = () => {
+    const lastStored = db
+      .select()
+      .from(coachMessages)
+      .where(eq(coachMessages.userId, user.id))
+      .orderBy(desc(coachMessages.createdAt))
+      .get();
+    if (!lastStored || lastStored.role !== "user" || lastStored.content !== question) {
+      storeCoachMessage(user.id, "user", question);
+    }
+  };
 
   const optIn = await getAiOptIn();
   if (!optIn || !aiEnabled()) {
+    storeUserQuestion();
     const text = generateCoachReply(user.id, profile, question);
     storeCoachMessage(user.id, "coach", text);
 
@@ -70,7 +72,10 @@ export async function POST(request: Request) {
     return createUIMessageStreamResponse({ stream });
   }
 
+  // Prepare before storing the question so the prompt's history block does not
+  // duplicate the question that is already in `messages`.
   const { system, citeIds } = await prepareSpiritChatStream(profile, user.id, question);
+  storeUserQuestion();
 
   let modelMessages;
   try {
@@ -92,5 +97,9 @@ export async function POST(request: Request) {
     },
   });
 
-  return result.toUIMessageStreamResponse();
+  return result.toUIMessageStreamResponse({
+    // Lets the chat UI render knowledge-base citation links on the live reply,
+    // matching the citeIds persisted with the stored copy.
+    messageMetadata: ({ part }) => (part.type === "finish" ? { citeIds } : undefined),
+  });
 }
