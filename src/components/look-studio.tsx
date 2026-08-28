@@ -53,7 +53,7 @@ function LookChoice({
   );
 }
 
-export function LookStudio({ initial }: { initial: LookState }) {
+export function LookStudio({ initial, embedded = false }: { initial: LookState; embedded?: boolean }) {
   const [look, setLook] = useState(initial);
   const persist = useRef(false);
   const selected = avatarById(look.avatar);
@@ -76,7 +76,7 @@ export function LookStudio({ initial }: { initial: LookState }) {
       onSubmit={() => {
         persist.current = true;
       }}
-      className="relative z-10 space-y-6 rounded-3xl border border-line bg-surface p-5"
+      className={`relative z-10 space-y-6 ${embedded ? "p-5 pt-2" : "rounded-3xl border border-line bg-surface p-5"}`}
     >
       <input type="hidden" name="avatar" value={look.avatar} />
       <input type="hidden" name="palette" value={look.palette} />
@@ -84,15 +84,21 @@ export function LookStudio({ initial }: { initial: LookState }) {
       <input type="hidden" name="font" value={look.font} />
       <input type="hidden" name="accent" value={look.accent} />
       <input type="hidden" name="theme" value={look.theme} />
-      <div className="flex items-center gap-4">
-        <KawaiiAvatar id={look.avatar} size={72} />
-        <div>
-          <h2 className="display text-2xl">Look</h2>
-          <p className="mt-1 text-sm text-muted">
-            {selected.name} · colors, type, cute face. Preview now. Save to keep.
-          </p>
+      {embedded ? (
+        <p className="text-sm text-muted">
+          {selected.name} · colors, type, cute face. Preview now. Save look to keep. The header face stays.
+        </p>
+      ) : (
+        <div className="flex items-center gap-4">
+          <KawaiiAvatar id={look.avatar} size={72} />
+          <div>
+            <h2 className="display text-2xl">Look</h2>
+            <p className="mt-1 text-sm text-muted">
+              {selected.name} · colors, type, cute face. Preview now. Save to keep.
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       {AVATAR_GROUPS.map((group) => (
         <fieldset key={group.id}>

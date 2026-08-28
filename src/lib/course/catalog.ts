@@ -1,6 +1,7 @@
 import type { Course } from "./types";
 import { SKILLS } from "./skills";
 
+/** Nyx courses stay in the app. Gate adult modules if needed; do not delete the syllabus. */
 export const COURSES: Course[] = [
   {
     id: "exotic_amateur_night",

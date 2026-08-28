@@ -25,16 +25,15 @@ export default async function SettingsPage() {
       <h1 className="display text-4xl">You</h1>
       <p className="mt-2 text-muted">This is {user.displayName}&apos;s log. Other people in the house stay separate.</p>
 
-      <div className="mt-6">
-        <LookStudio initial={{ ...look, theme }} />
-      </div>
-
+      {/* Product rails: Nyx stays a first-class link. Kawaii avatars and the
+          Goggins / Garanimal voice stay in the product — they may live in a
+          drill-down, they are never removed. */}
       <nav className="mt-6 grid grid-cols-2 gap-2">
         {[
+          ["/course", "Nyx course", "Amateur night and pole class"],
           ["/programs", "Plans", "Every drill, listed"],
           ["/assess", "Fitness check", "Scale from a baseline"],
           ["/diets", "Diet", "Cut, bulk, reverse, peak"],
-          ["/course", "Nyx course", "Amateur night and pole class"],
           ["/progress", "Calendar", "Green trained, red rest"],
           ["/coach", "Coach", "Ask why a lift is banned"],
           ["/pioneer", "Draft", "Pioneer watches. It never writes"],
@@ -121,13 +120,13 @@ export default async function SettingsPage() {
         </label>
 
         <details>
-          <summary className="cursor-pointer text-sm text-muted">More</summary>
+          <summary className="cursor-pointer text-sm text-muted">More · coach voice, joints, gear</summary>
           <div className="mt-4 space-y-4">
             <label className="text-sm text-muted block">
               Coach voice
               <select name="persona" defaultValue={profile.persona} className="mt-1">
                 <option value="scientist">Calm (Scientist)</option>
-                <option value="garanimal">Tough (Garanimal)</option>
+                <option value="garanimal">Tough (Goggins / Garanimal)</option>
               </select>
             </label>
             <label className="text-sm text-muted block">
@@ -188,6 +187,16 @@ export default async function SettingsPage() {
           Save
         </button>
       </form>
+
+      <details className="mt-6 rounded-3xl border border-line bg-surface">
+        <summary className="cursor-pointer px-5 py-4">
+          <span className="block text-sm font-semibold text-ink">Look and kawaii avatars</span>
+          <span className="mt-0.5 block text-xs text-muted">
+            Momo, Gyoza, and the rest stay. Open to change colors, type, and the header face.
+          </span>
+        </summary>
+        <LookStudio embedded initial={{ ...look, theme }} />
+      </details>
 
       <form action={logoutAction} className="mt-6">
         <button className="btn-quiet w-full" type="submit">

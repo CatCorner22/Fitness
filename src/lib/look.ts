@@ -1,3 +1,4 @@
+/** Kawaii avatars are a product rail. They may sit behind a drill-down. Do not remove the set. */
 export const PALETTES = [
   { id: "copper", label: "Copper", hint: "Warm charcoal" },
   { id: "sakura", label: "Sakura", hint: "Pink blossom" },

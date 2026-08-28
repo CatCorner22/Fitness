@@ -120,28 +120,11 @@ for eid in nyx_cover:
     if eid not in programmed:
         errors.append(f"Nyx course drill {eid} is not programmed")
 
-stills = [
-    ROOT / "public/instructor/nyx-portrait.webp",
-    ROOT / "public/instructor/nyx-walk.webp",
-    ROOT / "public/instructor/nyx-wave.webp",
-    ROOT / "public/instructor/nyx-chair.webp",
-    ROOT / "public/instructor/nyx-sit.webp",
-    ROOT / "public/instructor/nyx-pole.webp",
-    ROOT / "public/instructor/nyx-hang.webp",
-    ROOT / "public/instructor/nyx-floor.webp",
-    ROOT / "public/instructor/nyx-climb.webp",
-    ROOT / "public/instructor/nyx-heels.webp",
-    ROOT / "public/instructor/nyx-hands.webp",
-    ROOT / "public/instructor/nyx-mermaid.webp",
-    ROOT / "public/instructor/nyx-fireman.webp",
-    ROOT / "public/instructor/nyx-kick.webp",
-    ROOT / "public/instructor/nyx-grind.webp",
-    ROOT / "public/instructor/nyx-crawl.webp",
-    ROOT / "public/instructor/nyx-peel.webp",
-    ROOT / "public/instructor/nyx-turn.webp",
-]
+stills = sorted(p for p in (ROOT / "public/instructor").glob("nyx-*.webp") if p.is_file())
+if len(stills) < 30:
+    errors.append(f"expected clothed + nude stills, only {len(stills)}")
 for still in stills:
-    if not still.exists() or still.stat().st_size < 40_000:
+    if still.stat().st_size < 40_000:
         errors.append(f"photoreal still missing or still tiny: {still.name}")
     plate = ROOT / "public/instructor/plates" / still.name.replace("nyx-", "nyx-plate-")
     if not plate.exists() or plate.stat().st_size < 40_000:
@@ -155,7 +138,7 @@ for block in re.findall(r"skillIds:\s*\[([^\]]+)\]", catalog):
 mapped_ids = {
     key
     for key, _still in re.findall(
-        r'(?:^|\n)\s+"?([A-Za-z][\w-]*)"?:\s+"(portrait|walk|wave|floor|chair|sit|pole|hang|climb|heels|hands|mermaid|fireman|kick|grind|crawl|peel|turn)"',
+        r'(?:^|\n)\s+"?([A-Za-z][\w-]*)"?:\s+"([a-z]+)"',
         still_map,
     )
 }
@@ -173,14 +156,34 @@ for path in (*(SRC / "lib/course").glob("*-skills.ts"), SRC / "lib/course/skills
         errors.append(f"{path.name} still hardcodes stills instead of SKILL_STILL")
 
 instructor_src = read(SRC / "lib/course/instructor.ts")
+keys_block = re.search(r"const STILL_KEYS = \[([^\]]+)\]", instructor_src)
 gallery_block = re.search(r"NYX_GALLERY: NyxStill\[\] = \[([^\]]+)\]", instructor_src)
-photos_block = re.search(r"photos:\s*\{([^}]+)\}", instructor_src)
-if gallery_block and photos_block:
+if keys_block and gallery_block:
+    photo_keys = set(re.findall(r'"([a-z]+)"', keys_block.group(1)))
     shown = set(re.findall(r'"([^"]+)"', gallery_block.group(1)))
-    photo_keys = set(re.findall(r"^\s+([a-z]+):", photos_block.group(1), re.M))
     missing_gallery = sorted(photo_keys - shown - {"portrait"})
     if missing_gallery:
         errors.append(f"NYX_GALLERY omits stills: {missing_gallery}")
+    file_keys = {p.stem.removeprefix("nyx-") for p in stills}
+    missing_files = sorted(photo_keys - file_keys)
+    extra_files = sorted(file_keys - photo_keys)
+    if missing_files:
+        errors.append(f"STILL_KEYS missing files: {missing_files}")
+    if extra_files:
+        errors.append(f"instructor still files not in STILL_KEYS: {extra_files}")
+    unknown_stills = sorted(
+        still for still in re.findall(r':\s+"([a-z]+)"', still_map) if still not in photo_keys
+    )
+    if unknown_stills:
+        errors.append(f"SKILL_STILL points at unknown Nyx stills: {unknown_stills}")
+look_ids = re.findall(r'id:\s*"(stand|chair|floor|pole|top|heels)"', instructor_src)
+if len(set(look_ids)) < 5:
+    errors.append(f"need several nude looks, found {look_ids}")
+set_keys = re.findall(r'key:\s*"(n[a-z]+)"', instructor_src)
+if len(set_keys) < 15:
+    errors.append(f"need several sets per look, found {len(set_keys)} nude set keys")
+if "adult nude and topless" not in instructor_src:
+    errors.append("Nyx look copy should mention adult nude and topless sets")
 
 banned_ids = set()
 for path in exercise_files:
