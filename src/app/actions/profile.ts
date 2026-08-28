@@ -160,7 +160,7 @@ export async function saveSettingsAction(formData: FormData) {
     .where(eq(users.id, user.id))
     .run();
 
-  await setPrefCookies(formString(formData, "aiOptIn") === "1", await getTheme());
+  await setPrefCookies(formString(formData, "aiOptIn") === "1", await getTheme(), undefined, user.id);
 
   revalidatePath("/");
   revalidatePath("/settings");

@@ -17,13 +17,19 @@ function textResponse(text: string) {
   );
 }
 
-export async function POST() {
+export async function POST(request: Request) {
   const user = await getSession();
   if (!user) return new Response("Unauthorized", { status: 401 });
   const profile = getProfile(user.id);
   if (!profile) return new Response("Profile missing", { status: 400 });
 
-  if (!aiEnabled() || !(await getAiOptIn())) {
+  // Same JSON content-type gate as chat / log-set / Pioneer: a cross-origin
+  // form POST cannot set this header, so it fails CORS preflight on Replit.
+  if (!request.headers.get("content-type")?.includes("application/json")) {
+    return new Response("Invalid request", { status: 415 });
+  }
+
+  if (!aiEnabled() || !(await getAiOptIn(user.id))) {
     return textResponse("Coach is off. Open You to turn it on if you want a briefing.");
   }
 

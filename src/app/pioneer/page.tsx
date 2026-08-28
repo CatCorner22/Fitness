@@ -12,9 +12,9 @@ export default async function PioneerPage() {
   const { user, profile } = await requireAuthed();
   const draft = getPioneerDraft(user.id);
   const household = buildPioneerHousehold(user.id, profile);
-  const optIn = await getAiOptIn();
+  const optIn = await getAiOptIn(user.id);
   const cfg = getPioneerConfig();
-  const pioneerEnabled = optIn && cfg.enabled && !isPioneerKilled(readLadder());
+  const pioneerEnabled = optIn && cfg.enabled && !isPioneerKilled(readLadder(user.id));
 
   return (
     <AppShell user={user} profile={profile} wide>

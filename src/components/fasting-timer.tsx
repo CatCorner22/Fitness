@@ -77,6 +77,10 @@ function formatClock(iso: string) {
   });
 }
 
+function ClockText({ iso }: { iso: string }) {
+  return <span suppressHydrationWarning>{formatClock(iso)}</span>;
+}
+
 export function FastingTimer({
   running,
   recent,
@@ -203,8 +207,8 @@ function RunningFast({
             </div>
           </div>
         </div>
-        <p className="mt-3 text-sm text-muted" suppressHydrationWarning>
-          {formatClock(fast.startedAt)} → {formatClock(fast.plannedEndAt)}
+        <p className="mt-3 text-sm text-muted">
+          <ClockText iso={fast.startedAt} /> → <ClockText iso={fast.plannedEndAt} />
         </p>
       </div>
 
@@ -324,7 +328,7 @@ function RunningFast({
         <ul className="mt-4 space-y-1 text-xs text-muted">
           {adjustments.slice(0, 6).map((a) => (
             <li key={a.id}>
-              {formatClock(a.createdAt)} · {a.summary}
+              <ClockText iso={a.createdAt} /> · {a.summary}
             </li>
           ))}
         </ul>
@@ -342,7 +346,7 @@ function CompletedFast({ fast }: { fast: FastRow }) {
         {fast.status === "aborted" ? "stopped" : "done"}
       </p>
       <p className="text-xs text-muted">
-        {formatClock(fast.startedAt)} → {formatClock(ended)}
+        <ClockText iso={fast.startedAt} /> → <ClockText iso={ended} />
       </p>
       {fast.notes ? <p className="mt-1 text-xs text-muted">{fast.notes}</p> : null}
       <details className="mt-2">

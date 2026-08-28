@@ -43,6 +43,7 @@ export async function startWorkoutAction(dayId?: string) {
 
   const id = crypto.randomUUID();
   let resumeId: string | null = null;
+  let alreadyDone = false;
   db.transaction((tx) => {
     const open = tx
       .select()
@@ -51,6 +52,23 @@ export async function startWorkoutAction(dayId?: string) {
       .get();
     if (open) {
       resumeId = open.id;
+      return;
+    }
+
+    const prior = tx
+      .select()
+      .from(workouts)
+      .where(
+        and(
+          eq(workouts.userId, user.id),
+          eq(workouts.programId, planned.program.id),
+          eq(workouts.week, planned.week),
+          eq(workouts.dayId, planned.day.id),
+        ),
+      )
+      .all();
+    if (prior.some((row) => row.status === "completed" || row.status === "skipped")) {
+      alreadyDone = true;
       return;
     }
 
@@ -96,6 +114,10 @@ export async function startWorkoutAction(dayId?: string) {
   });
 
   if (resumeId) redirect(`/workout/${resumeId}`);
+  if (alreadyDone) {
+    revalidatePath("/");
+    redirect("/");
+  }
   revalidatePath("/");
   redirect(`/workout/${id}`);
 }
@@ -117,7 +139,7 @@ export async function swapExerciseAction(formData: FormData) {
       .from(workouts)
       .where(and(eq(workouts.id, workoutId), eq(workouts.userId, user.id)))
       .get();
-    if (!owned) return;
+    if (!owned || owned.status !== "in_progress") return;
     const rows = tx
       .select()
       .from(setLogs)
@@ -139,6 +161,8 @@ export async function completeWorkoutAction(formData: FormData) {
     .where(and(eq(workouts.id, workoutId), eq(workouts.userId, user.id)))
     .get();
   if (!existing) redirect("/");
+  if (existing.status === "completed") redirect(`/workout/${workoutId}/complete`);
+  if (existing.status !== "in_progress") redirect("/");
   const sessionRpe = Number(formString(formData, "sessionRpe") || NaN);
   const durationMinutes = Number(formData.get("durationMinutes"));
   const stopped = formString(formData, "stop") === "1";
@@ -170,6 +194,32 @@ export async function skipWorkoutAction(dayId: string, _dayName: string, program
   const program = getProgram(programId);
   const day = program?.days.find((d) => d.id === dayId);
   if (!program || !day) return;
+  const open = db
+    .select()
+    .from(workouts)
+    .where(and(eq(workouts.userId, user.id), eq(workouts.status, "in_progress")))
+    .get();
+  if (open) redirect(`/workout/${open.id}`);
+
+  const weekNumber = clampInt(week, 1, 1, program.durationWeeks);
+  const alreadyLogged = db
+    .select()
+    .from(workouts)
+    .where(
+      and(
+        eq(workouts.userId, user.id),
+        eq(workouts.programId, program.id),
+        eq(workouts.week, weekNumber),
+        eq(workouts.dayId, day.id),
+      ),
+    )
+    .all()
+    .some((row) => row.status === "skipped" || row.status === "completed");
+  if (alreadyLogged) {
+    revalidatePath("/");
+    redirect("/?toast=skipped");
+  }
+
   const date = todayISO();
   db.insert(workouts)
     .values({
@@ -178,7 +228,7 @@ export async function skipWorkoutAction(dayId: string, _dayName: string, program
       programId: program.id,
       dayId: day.id,
       dayName: day.name,
-      week: clampInt(week, 1, 1, program.durationWeeks),
+      week: weekNumber,
       date,
       startedAt: new Date().toISOString(),
       completedAt: new Date().toISOString(),

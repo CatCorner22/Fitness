@@ -25,7 +25,7 @@ function historyToUIMessages(
 export default async function CoachPage() {
   const { user, profile } = await requireAuthed();
   const history = historyForUser(user.id);
-  const optIn = await getAiOptIn();
+  const optIn = await getAiOptIn(user.id);
   const initialMessages = historyToUIMessages(history);
 
   return (

@@ -27,12 +27,17 @@ function linkClass(active: boolean, compact = false) {
 export function DesktopNav() {
   const pathname = usePathname();
   return (
-    <nav className="hidden items-center gap-1 lg:flex">
+    <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">
       {NAV_LINKS.map((l) => {
         const active = isActive(pathname, l.href);
         const Icon = l.icon;
         return (
-          <Link key={l.href} href={l.href} className={`${linkClass(active)} inline-flex items-center gap-1.5`}>
+          <Link
+            key={l.href}
+            href={l.href}
+            aria-current={active ? "page" : undefined}
+            className={`${linkClass(active)} inline-flex items-center gap-1.5`}
+          >
             <Icon className="h-4 w-4" aria-hidden />
             {l.label}
           </Link>
@@ -45,13 +50,18 @@ export function DesktopNav() {
 export function MobileNav() {
   const pathname = usePathname();
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-bg/95 px-2 py-1.5 backdrop-blur lg:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-bg/95 px-2 py-1.5 backdrop-blur lg:hidden" aria-label="Main">
       <div className="grid grid-cols-4 gap-1">
         {NAV_LINKS.map((l) => {
           const active = isActive(pathname, l.href);
           const Icon = l.icon;
           return (
-            <Link key={l.href} href={l.href} className={linkClass(active, true)}>
+            <Link
+              key={l.href}
+              href={l.href}
+              aria-current={active ? "page" : undefined}
+              className={linkClass(active, true)}
+            >
               <Icon className={`h-5 w-5 ${active ? "text-copper-2" : ""}`} aria-hidden />
               <span>{l.label}</span>
             </Link>

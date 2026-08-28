@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
 export function SkipWorkoutButton({
   dayId,
@@ -16,6 +16,7 @@ export function SkipWorkoutButton({
   skipAction: (dayId: string, dayName: string, programId: string, week: number) => Promise<void>;
 }) {
   const [confirming, setConfirming] = useState(false);
+  const [pending, startTransition] = useTransition();
 
   if (!confirming) {
     return (
@@ -27,15 +28,17 @@ export function SkipWorkoutButton({
 
   return (
     <form
-      action={async () => {
-        await skipAction(dayId, dayName, programId, week);
+      action={() => {
+        startTransition(async () => {
+          await skipAction(dayId, dayName, programId, week);
+        });
       }}
       className="flex flex-wrap items-center justify-center gap-3"
     >
-      <button className="rounded-2xl border border-line px-4 py-2 text-sm" type="submit">
-        Rest today
+      <button className="rounded-2xl border border-line px-4 py-2 text-sm" type="submit" disabled={pending}>
+        {pending ? "Saving…" : "Rest today"}
       </button>
-      <button className="btn-quiet" type="button" onClick={() => setConfirming(false)}>
+      <button className="btn-quiet" type="button" onClick={() => setConfirming(false)} disabled={pending}>
         Keep the workout
       </button>
     </form>

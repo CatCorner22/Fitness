@@ -299,8 +299,9 @@ function macrosForLines(items: PlanLine[]) {
   );
 }
 
-function snap(n: number) {
-  return Math.max(0.5, Math.round(n * 2) / 2);
+function snap(n: number, min = 0) {
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  return Math.max(min, Math.round(n * 2) / 2);
 }
 
 function isProteinFood(food: FoodRef) {
@@ -320,7 +321,7 @@ function trimProteinLines(items: PlanLine[], targetProtein: number, tolerance: n
     let smallest: { item: PlanLine; step: number } | null = null;
     for (const item of items) {
       const food = foodById(item.foodId);
-      if (!food || !isProteinFood(food) || item.servings <= 0.5) continue;
+      if (!food || !isProteinFood(food) || item.servings < 0.5) continue;
       const step = food.protein * 0.5;
       if (step <= excess + tolerance && (!best || step > best.step)) best = { item, step };
       if (!smallest || step < smallest.step) smallest = { item, step };
@@ -341,6 +342,99 @@ function isFatFood(food: FoodRef) {
   return food.fat >= 10 && food.protein < 12;
 }
 
+function stepwiseTrim(
+  items: PlanLine[],
+  shouldContinue: (macros: ReturnType<typeof macrosForLines>) => boolean,
+  eligible: (food: FoodRef, macros: ReturnType<typeof macrosForLines>) => boolean,
+) {
+  for (let guard = 0; guard < 80; guard++) {
+    const macros = macrosForLines(items);
+    if (!shouldContinue(macros)) return;
+    let best: { item: PlanLine; calStep: number } | null = null;
+    for (const item of items) {
+      const food = foodById(item.foodId);
+      if (!food || item.servings < 0.5) continue;
+      if (!eligible(food, macros)) continue;
+      const calStep = food.calories * 0.5;
+      if (!best || calStep > best.calStep) best = { item, calStep };
+    }
+    if (!best) return;
+    best.item.servings = Math.round((best.item.servings - 0.5) * 2) / 2;
+  }
+}
+
+function ensureLine(items: PlanLine[], foodId: string, meal: MealSlot) {
+  const existing = items.find((item) => item.foodId === foodId);
+  if (existing) return existing;
+  const created: PlanLine = { foodId, servings: 0, meal };
+  items.push(created);
+  return created;
+}
+
+/** Move protein grams onto whey/turkey so a high-protein cut can still fit calories. */
+function shiftProteinToLean(items: PlanLine[], targetCalories: number, calorieTol: number) {
+  const lean =
+    foodById("food-whey") && items.some((i) => i.foodId === "food-whey")
+      ? "food-whey"
+      : foodById("food-turkey")
+        ? "food-turkey"
+        : foodById("food-chicken")
+          ? "food-chicken"
+          : null;
+  if (!lean) return;
+  const leanFood = foodById(lean);
+  if (!leanFood) return;
+  const leanLine = ensureLine(items, lean, "snack");
+  for (let guard = 0; guard < 40; guard++) {
+    const macros = macrosForLines(items);
+    if (macros.calories <= targetCalories + calorieTol) return;
+    let worst: { item: PlanLine; food: FoodRef; density: number } | null = null;
+    for (const item of items) {
+      const food = foodById(item.foodId);
+      if (!food || !isProteinFood(food) || item.foodId === lean || item.servings < 0.5) continue;
+      const density = food.calories / Math.max(0.1, food.protein);
+      if (!worst || density > worst.density) worst = { item, food, density };
+    }
+    if (!worst) return;
+    worst.item.servings = Math.round((worst.item.servings - 0.5) * 2) / 2;
+    leanLine.servings = snap(leanLine.servings + (worst.food.protein * 0.5) / leanFood.protein);
+  }
+}
+
+function addProteinWithinCalories(
+  items: PlanLine[],
+  targetCalories: number,
+  targetProtein: number,
+  calorieTol: number,
+) {
+  const macros = macrosForLines(items);
+  if (macros.protein >= targetProtein - 8) return;
+  const fillerId = items.some((i) => i.foodId === "food-whey")
+    ? "food-whey"
+    : items.some((i) => i.foodId === "food-turkey")
+      ? "food-turkey"
+      : items.some((i) => i.foodId === "food-chicken")
+        ? "food-chicken"
+        : items.find((i) => {
+            const food = foodById(i.foodId);
+            return food ? isProteinFood(food) : false;
+          })?.foodId;
+  const fillerFood = fillerId ? foodById(fillerId) : undefined;
+  if (!fillerId || !fillerFood) return;
+  const line = ensureLine(items, fillerId, "snack");
+  const need = targetProtein - macros.protein;
+  const add = need / Math.max(1, fillerFood.protein);
+  const projected = macros.calories + add * fillerFood.calories;
+  if (projected <= targetCalories + calorieTol) {
+    line.servings = snap(line.servings + add, 0.5);
+    return;
+  }
+  const room = targetCalories + calorieTol - macros.calories;
+  if (room > 0 && fillerFood.calories > 0) {
+    line.servings = snap(line.servings + room / fillerFood.calories);
+  }
+}
+
 export function scalePlanToTargets(template: MealPlanTemplate, calories: number, protein: number): ScaledPlanItem[] {
   const items = template.items.map((i) => ({ ...i }));
   const base = macrosForLines(items);
@@ -348,13 +442,13 @@ export function scalePlanToTargets(template: MealPlanTemplate, calories: number,
     const pScale = protein / base.protein;
     for (const item of items) {
       const food = foodById(item.foodId);
-      if (food && isProteinFood(food)) item.servings = snap(item.servings * pScale);
+      if (food && isProteinFood(food)) item.servings = snap(item.servings * pScale, 0.5);
     }
   }
 
   trimProteinLines(items, protein, 6);
-  let current = macrosForLines(items);
 
+  let current = macrosForLines(items);
   if (current.calories > 0) {
     const cScale = calories / current.calories;
     for (const item of items) {
@@ -364,44 +458,38 @@ export function scalePlanToTargets(template: MealPlanTemplate, calories: number,
     }
   }
 
+  const calorieTol = 80;
+  stepwiseTrim(
+    items,
+    (macros) => macros.calories > calories + calorieTol,
+    (food) => !isProteinFood(food),
+  );
+  shiftProteinToLean(items, calories, calorieTol);
+
   current = macrosForLines(items);
-  const calorieGap = calories - current.calories;
   const rice = items.find((i) => i.foodId === "food-rice");
   const oil = items.find((i) => i.foodId === "food-olive-oil");
-  const proteinFiller =
-    items.find((i) => i.foodId === "food-whey") ??
-    items.find((i) => i.foodId === "food-chicken") ??
-    items.find((i) => i.foodId === "food-turkey") ??
-    items.find((i) => {
-      const food = foodById(i.foodId);
-      return food ? isProteinFood(food) : false;
-    });
-  const fillerProtein = proteinFiller ? (foodById(proteinFiller.foodId)?.protein ?? 24) : 24;
-  if (rice && Math.abs(calorieGap) > 80) {
-    rice.servings = snap(rice.servings + calorieGap / 130);
-  } else if (oil && calorieGap > 80) {
-    oil.servings = snap(oil.servings + calorieGap / 119);
-  }
-  current = macrosForLines(items);
-  if (proteinFiller && current.protein < protein - 8) {
-    proteinFiller.servings = snap(proteinFiller.servings + (protein - current.protein) / Math.max(1, fillerProtein));
+  const calorieGap = calories - current.calories;
+  if (calorieGap > calorieTol) {
+    if (rice) rice.servings = snap(rice.servings + calorieGap / 130);
+    else if (oil) oil.servings = snap(oil.servings + calorieGap / 119);
   }
 
+  addProteinWithinCalories(items, calories, protein, 120);
   trimProteinLines(items, protein, 3);
-  current = macrosForLines(items);
-
-  const finalGap = calories - current.calories;
-  if (rice && Math.abs(finalGap) > 60) {
-    rice.servings = snap(rice.servings + finalGap / 130);
-  } else if (oil && finalGap > 60) {
-    oil.servings = snap(oil.servings + finalGap / 119);
-  }
+  stepwiseTrim(
+    items,
+    (macros) => macros.calories > calories + 60 && macros.protein >= protein - 8,
+    (food) => !isProteinFood(food),
+  );
+  addProteinWithinCalories(items, calories, protein, 120);
 
   return items
     .map((item) => {
       const food = foodById(item.foodId);
       if (!food) return null;
       const servings = snap(item.servings);
+      if (servings <= 0) return null;
       return {
         ...item,
         servings,

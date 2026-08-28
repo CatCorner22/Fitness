@@ -5,7 +5,7 @@ import { runSpiritLiveAdvice } from "@/lib/spirit/service";
 import { allowedSubstitutes, getExercise } from "@/lib/exercises/registry";
 import { db } from "@/lib/db";
 import { dailyCheckins, setLogs, workouts } from "@/lib/db/schema";
-import { clamp, displayToKg, todayISO } from "@/lib/utils";
+import { clamp, displayToKg, optionalNumber, todayISO } from "@/lib/utils";
 import { getAiOptIn } from "@/lib/prefs";
 
 function withTimeout<T>(promise: Promise<T>, ms: number) {
@@ -32,18 +32,21 @@ export async function POST(request: Request) {
   if (!request.headers.get("content-type")?.includes("application/json")) {
     return NextResponse.json({ error: "Invalid request" }, { status: 415 });
   }
-  let body: Record<string, unknown>;
+  let parsed: unknown;
   try {
-    body = (await request.json()) as Record<string, unknown>;
+    parsed = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
+  const body = parsed as Record<string, unknown>;
   const setId = String(body.setId ?? "");
-  const weight = Number(body.weight);
-  const reps = Number(body.reps);
-  const rpe = body.rpe == null || body.rpe === "" ? Number.NaN : Number(body.rpe);
-  const elapsedMinutes = Number(body.elapsedMinutes) || 0;
-  const remainingExercises = Number(body.remainingExercises) || 0;
+  const weight = optionalNumber(body.weight);
+  const reps = optionalNumber(body.reps);
+  const rpe = optionalNumber(body.rpe);
+  const elapsedMinutes = Math.max(0, optionalNumber(body.elapsedMinutes) || 0);
 
   const row = db
     .select()
@@ -51,6 +54,18 @@ export async function POST(request: Request) {
     .where(and(eq(setLogs.id, setId), eq(setLogs.userId, user.id)))
     .get();
   if (!row) return NextResponse.json({ error: "Set not found" }, { status: 404 });
+
+  const workoutRow = db
+    .select()
+    .from(workouts)
+    .where(and(eq(workouts.id, row.workoutId), eq(workouts.userId, user.id)))
+    .get();
+  if (!workoutRow || workoutRow.status !== "in_progress") {
+    return NextResponse.json({ error: "Workout is closed" }, { status: 409 });
+  }
+  if (!Number.isFinite(weight) && !Number.isFinite(reps)) {
+    return NextResponse.json({ error: "Enter weight or reps" }, { status: 400 });
+  }
 
   const weightKg = Number.isFinite(weight) ? displayToKg(clamp(weight, 0, 1000), profile.units) : null;
 
@@ -81,7 +96,7 @@ export async function POST(request: Request) {
   };
 
   try {
-    const workout = db.select().from(workouts).where(eq(workouts.id, row.workoutId)).get();
+    const workout = workoutRow;
     const exercise = getExercise(row.exerciseId);
     const allSets = db.select().from(setLogs).where(eq(setLogs.workoutId, row.workoutId)).all();
     const exerciseSets = allSets.filter((s) => s.exerciseId === row.exerciseId);
@@ -95,10 +110,12 @@ export async function POST(request: Request) {
       }));
     const exerciseGroups = [...new Set(allSets.map((s) => s.exerciseId))];
     const currentIdx = exerciseGroups.indexOf(row.exerciseId);
-    const remaining =
-      remainingExercises || Math.max(0, exerciseGroups.length - currentIdx - 1);
+    const remainingRaw = optionalNumber(body.remainingExercises);
+    const remaining = Number.isFinite(remainingRaw)
+      ? Math.max(0, remainingRaw)
+      : Math.max(0, exerciseGroups.length - currentIdx - 1);
 
-    if (!(await getAiOptIn())) {
+    if (!(await getAiOptIn(user.id))) {
       return NextResponse.json({ advice: silentAdvice, workoutDay: workout?.dayName });
     }
 

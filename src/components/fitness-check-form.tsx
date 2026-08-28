@@ -68,11 +68,11 @@ export function FitnessCheckForm({
           uses knees. Record which you did. Stop when form breaks.
         </p>
         <div className="grid grid-cols-2 gap-2">
-          <label className="flex min-h-12 items-center justify-center rounded-2xl border border-line bg-surface has-[:checked]:border-copper">
+          <label className="flex min-h-12 items-center justify-center rounded-2xl border border-line bg-surface has-[:checked]:border-copper has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--copper)]">
             <input type="radio" name="pushupStyle" value="toes" defaultChecked className="sr-only" />
             Toes
           </label>
-          <label className="flex min-h-12 items-center justify-center rounded-2xl border border-line bg-surface has-[:checked]:border-copper">
+          <label className="flex min-h-12 items-center justify-center rounded-2xl border border-line bg-surface has-[:checked]:border-copper has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--copper)]">
             <input type="radio" name="pushupStyle" value="knees" className="sr-only" />
             Knees
           </label>

@@ -31,7 +31,7 @@ export default async function TodayPage() {
     : undefined;
   const open = plan?.open;
   const fast = runningFast(user.id);
-  const optIn = await getAiOptIn();
+  const optIn = await getAiOptIn(user.id);
   const openMismatch = Boolean(
     open && planned && (open.dayId !== planned.day.id || open.programId !== planned.program.id),
   );
@@ -47,6 +47,12 @@ export default async function TodayPage() {
   return (
     <AppShell user={user} profile={profile}>
       {weekDays.length ? <WeekProgressStrip days={weekDays} /> : null}
+      {plan && plan.scheduledDays.length < plan.program.days.length ? (
+        <p className="mb-4 text-sm text-muted">
+          {plan.scheduledDays.length} sessions this week so it matches days under You. The rest of{" "}
+          {plan.program.name} stays on the shelf.
+        </p>
+      ) : null}
 
       {!profile.activeProgramId ? (
         <section className="rounded-3xl border border-line bg-surface p-6">

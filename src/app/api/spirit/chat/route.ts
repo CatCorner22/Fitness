@@ -53,7 +53,7 @@ export async function POST(request: Request) {
     }
   };
 
-  const optIn = await getAiOptIn();
+  const optIn = await getAiOptIn(user.id);
   if (!optIn || !aiEnabled()) {
     storeUserQuestion();
     const text = generateCoachReply(user.id, profile, question);

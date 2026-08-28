@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { WorkoutPlayer } from "@/components/workout-player";
 import { allowedSubstitutes, getExercise } from "@/lib/exercises/registry";
@@ -18,6 +18,8 @@ export default async function WorkoutPage({ params }: { params: Promise<{ id: st
   const { user, profile } = await requireAuthed();
   const workout = db.select().from(workouts).where(eq(workouts.id, id)).get();
   if (!workout || workout.userId !== user.id) notFound();
+  if (workout.status === "completed") redirect(`/workout/${id}/complete`);
+  if (workout.status !== "in_progress") redirect("/");
 
   const sets = db.select().from(setLogs).where(eq(setLogs.workoutId, id)).all();
   const grouped = new Map<string, typeof sets>();
@@ -25,6 +27,9 @@ export default async function WorkoutPage({ params }: { params: Promise<{ id: st
     const list = grouped.get(row.exerciseId) ?? [];
     list.push(row);
     grouped.set(row.exerciseId, list);
+  }
+  for (const list of grouped.values()) {
+    list.sort((a, b) => a.setIndex - b.setIndex);
   }
   const exerciseIds = [...grouped.keys()];
   const exercises = Object.fromEntries(
@@ -48,7 +53,7 @@ export default async function WorkoutPage({ params }: { params: Promise<{ id: st
   const ghostSets = lastWorkingSets(user.id, exerciseIds);
   const sessionAdjust = planAdjustForSession(user.id, profile.assessment);
   const course = courseForProgram(workout.programId);
-  const optIn = await getAiOptIn();
+  const optIn = await getAiOptIn(user.id);
   const { decisions } = suggestionsForExercises(
     user.id,
     templateExercises.map(({ exerciseId, targetRpe, reps }) => ({ exerciseId, targetRpe, reps })),

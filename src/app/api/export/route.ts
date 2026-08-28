@@ -77,9 +77,10 @@ export async function GET() {
       row({
         type: "food",
         date: f.date,
-        exercise: f.foodName,
+        workout: f.meal,
         calories: f.calories,
         protein: f.protein,
+        notes: `${f.foodName} · ${f.servings} sv · C ${f.carbs} F ${f.fat}`,
       }),
     ),
     ...weights.map((w) => row({ type: "weight", date: w.date, weight_kg: w.weightKg })),
@@ -89,7 +90,7 @@ export async function GET() {
         date: f.startedAt.slice(0, 10),
         workout: f.protocol,
         status: f.status,
-        minutes: f.targetMinutes,
+        minutes: elapsedFastMinutes(f.startedAt, f.endedAt, f.targetMinutes),
         notes: f.notes,
       }),
     ),
@@ -105,6 +106,15 @@ export async function GET() {
   });
 }
 
+function elapsedFastMinutes(startedAt: string, endedAt: string | null, targetMinutes: number) {
+  if (!endedAt) return targetMinutes;
+  const ms = Date.parse(endedAt) - Date.parse(startedAt);
+  if (!Number.isFinite(ms) || ms < 0) return targetMinutes;
+  return Math.round(ms / 60000);
+}
+
 function csv(value: string) {
-  return `"${value.replaceAll('"', '""')}"`;
+  let out = value.replaceAll('"', '""');
+  if (/^[=+\-@|]/.test(out)) out = `'${out}`;
+  return `"${out}"`;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { completeWorkoutAction, swapExerciseAction } from "@/app/actions/workout";
 import { PlateCalc } from "@/components/plate-calc";
@@ -9,7 +9,7 @@ import { hardnessToRpe, parseRepTarget } from "@/lib/copy";
 import { lessonForExercise } from "@/lib/course/skills";
 import { restAfterLoggedSet } from "@/lib/rest";
 import type { Exercise } from "@/lib/types";
-import { displayToKg, formatRest, kgToDisplay } from "@/lib/utils";
+import { displayToKg, formatRest, kgToDisplay, optionalNumber } from "@/lib/utils";
 
 type SetRow = {
   id: string;
@@ -31,7 +31,45 @@ const HARDNESS = [
   ["hard", "Hard"],
 ] as const;
 
+const REST_MUTE_KEY = "garanimal_rest_mute";
+const muteListeners = new Set<() => void>();
+
+function restMuteSnapshot() {
+  try {
+    return localStorage.getItem(REST_MUTE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function subscribeRestMute(onStoreChange: () => void) {
+  muteListeners.add(onStoreChange);
+  return () => {
+    muteListeners.delete(onStoreChange);
+  };
+}
+
+function setRestMute(next: boolean) {
+  try {
+    localStorage.setItem(REST_MUTE_KEY, next ? "1" : "0");
+  } catch {
+    /* private mode */
+  }
+  for (const listener of muteListeners) listener();
+}
+
+function restAlertsAllowed() {
+  try {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
+    if (restMuteSnapshot()) return false;
+  } catch {
+    /* private mode / SSR */
+  }
+  return true;
+}
+
 function playRestBeep() {
+  if (!restAlertsAllowed()) return;
   try {
     const ctx = new AudioContext();
     const osc = ctx.createOscillator();
@@ -59,13 +97,13 @@ function HardnessButtons({
   onChange: (next: string) => void;
 }) {
   return (
-    <div className="flex gap-2">
-      {(
-        HARDNESS
-      ).map(([id, label]) => (
+    <div className="flex gap-2" role="group">
+      {HARDNESS.map(([id, label]) => (
         <button
           key={id}
           type="button"
+          aria-pressed={value === id}
+          aria-label={`${label} (about RPE ${hardnessToRpe(id)})`}
           onClick={() => onChange(value === id ? "" : id)}
           className={`min-h-11 flex-1 rounded-xl border px-2 text-sm ${
             value === id ? "border-copper bg-copper/15 text-copper-2" : "border-line text-muted"
@@ -126,10 +164,14 @@ export function WorkoutPlayer({
   }, [sets]);
 
   const [seconds, setSeconds] = useState(0);
-  // Deadline timestamp instead of a decrementing counter: browsers throttle
-  // intervals in background tabs / locked phones, which froze the countdown.
-  const [restEndsAt, setRestEndsAt] = useState<number | null>(null);
-  const resting = restEndsAt != null;
+  // One clock object so Pause cannot clear the deadline without keeping remaining time.
+  const [restClock, setRestClock] = useState<
+    { mode: "idle" } | { mode: "running"; endsAt: number } | { mode: "paused"; remaining: number }
+  >({ mode: "idle" });
+  const muteAlerts = useSyncExternalStore(subscribeRestMute, restMuteSnapshot, () => false);
+  const resting = restClock.mode !== "idle";
+  const paused = restClock.mode === "paused";
+  const restEndsAt = restClock.mode === "running" ? restClock.endsAt : null;
   const alertedRef = useRef(false);
   const loggingRef = useRef<string | null>(null);
   const [started] = useState(() => Date.now());
@@ -143,12 +185,13 @@ export function WorkoutPlayer({
   const why = current ? decisions.find((d) => d.exerciseId === current[0]) : undefined;
 
   useEffect(() => {
-    if (restEndsAt == null) return;
+    if (restClock.mode !== "running") return;
+    const endsAt = restClock.endsAt;
     const tick = () => {
-      const next = Math.max(0, Math.ceil((restEndsAt - Date.now()) / 1000));
+      const next = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
       setSeconds(next);
       if (next === 0) {
-        setRestEndsAt(null);
+        setRestClock({ mode: "idle" });
         if (!alertedRef.current) {
           alertedRef.current = true;
           playRestBeep();
@@ -157,13 +200,12 @@ export function WorkoutPlayer({
     };
     tick();
     const id = window.setInterval(tick, 250);
-    // Resync immediately when the tab wakes from background throttling.
     document.addEventListener("visibilitychange", tick);
     return () => {
       window.clearInterval(id);
       document.removeEventListener("visibilitychange", tick);
     };
-  }, [restEndsAt]);
+  }, [restClock]);
 
   // Keep the screen awake mid-workout; harmless no-op where unsupported.
   useEffect(() => {
@@ -195,11 +237,38 @@ export function WorkoutPlayer({
   function startRest(rest: number) {
     alertedRef.current = false;
     setSeconds(rest);
-    setRestEndsAt(Date.now() + rest * 1000);
+    setRestClock({ mode: "running", endsAt: Date.now() + rest * 1000 });
+  }
+
+  function pauseRest() {
+    if (restClock.mode !== "running") return;
+    const remaining = Math.max(0, Math.ceil((restClock.endsAt - Date.now()) / 1000));
+    setSeconds(remaining);
+    setRestClock({ mode: "paused", remaining });
+  }
+
+  function resumeRest() {
+    if (restClock.mode !== "paused") return;
+    if (restClock.remaining <= 0) {
+      setRestClock({ mode: "idle" });
+      setSeconds(0);
+      return;
+    }
+    alertedRef.current = false;
+    setRestClock({ mode: "running", endsAt: Date.now() + restClock.remaining * 1000 });
+  }
+
+  function skipRest() {
+    setRestClock({ mode: "idle" });
+    setSeconds(0);
+  }
+
+  function toggleMuteAlerts() {
+    setRestMute(!muteAlerts);
   }
 
   function stampDuration(form: HTMLFormElement) {
-    const minutes = Math.max(1, Math.round((Date.now() - started) / 60000) || estimatedMinutes);
+    const minutes = Math.max(0, Math.round((Date.now() - started) / 60000));
     const field = form.elements.namedItem("durationMinutes");
     if (field instanceof HTMLInputElement) field.value = String(minutes);
   }
@@ -209,8 +278,13 @@ export function WorkoutPlayer({
       if (loggingRef.current === set.id) return;
       loggingRef.current = set.id;
       const fd = new FormData(form);
-      const weight = Number(fd.get("weight"));
-      const reps = Number(fd.get("reps"));
+      const weight = optionalNumber(fd.get("weight"));
+      const reps = optionalNumber(fd.get("reps"));
+      if (!Number.isFinite(weight) && !Number.isFinite(reps)) {
+        loggingRef.current = null;
+        setLogError("Enter weight or reps before logging.");
+        return;
+      }
       const rpe = hardnessToRpe(hardness[set.id] ?? "") ?? Number.NaN;
       const elapsedMinutes = Math.max(1, Math.round((Date.now() - started) / 60000));
       const doneGroups = new Set(
@@ -309,14 +383,20 @@ export function WorkoutPlayer({
 
       <div
         className={`rounded-3xl border bg-surface px-5 py-4 text-center ${
-          resting && seconds <= 10 ? "border-copper" : "border-line"
+          resting && !paused && seconds <= 10 ? "border-copper" : "border-line"
         }`}
       >
-        <p className="text-sm text-muted">{resting ? "Rest" : "Rest starts after you log a set"}</p>
-        <p className={`display mt-1 text-5xl tabular-nums ${resting && seconds <= 10 ? "text-copper-2" : ""}`}>
+        <p className="text-sm text-muted">
+          {paused ? "Rest paused" : resting ? "Rest" : "Rest starts after you log a set"}
+        </p>
+        <p
+          className={`display mt-1 text-5xl tabular-nums ${resting && !paused && seconds <= 10 ? "text-copper-2" : ""}`}
+          aria-live="polite"
+          aria-atomic="true"
+        >
           {formatRest(seconds)}
         </p>
-        <div className="mt-3 flex justify-center gap-3">
+        <div className="mt-3 flex flex-wrap justify-center gap-3">
           {catalogRest > 0 && catalogRest !== 90 && catalogRest !== 180 ? (
             <button type="button" onClick={() => startRest(catalogRest)} className="min-h-11 rounded-xl border border-line px-4">
               {formatRest(catalogRest)}
@@ -328,12 +408,30 @@ export function WorkoutPlayer({
           <button type="button" onClick={() => startRest(180)} className="min-h-11 rounded-xl border border-line px-4">
             3:00
           </button>
-          {resting ? (
-            <button type="button" onClick={() => setRestEndsAt(null)} className="min-h-11 rounded-xl px-4 text-muted">
+          {restEndsAt != null ? (
+            <button type="button" onClick={pauseRest} className="min-h-11 rounded-xl px-4 text-muted">
               Pause
             </button>
           ) : null}
+          {paused ? (
+            <button type="button" onClick={resumeRest} className="min-h-11 rounded-xl border border-line px-4">
+              Resume
+            </button>
+          ) : null}
+          {resting ? (
+            <button type="button" onClick={skipRest} className="min-h-11 rounded-xl px-4 text-muted">
+              Skip rest
+            </button>
+          ) : null}
         </div>
+        <button
+          type="button"
+          aria-pressed={muteAlerts}
+          onClick={toggleMuteAlerts}
+          className="btn-quiet mt-3 mx-auto w-auto min-w-[12rem] px-4"
+        >
+          {muteAlerts ? "Alerts muted" : "Mute beep and vibrate"}
+        </button>
       </div>
 
       {logError ? <p className="text-sm text-danger">{logError}</p> : null}
@@ -445,9 +543,13 @@ export function WorkoutPlayer({
                   );
                 }
                 if (firstOpen && firstOpen.id !== set.id) {
+                  const waiting = rows.filter((s) => !s.completed && s.id !== firstOpen.id);
+                  if (waiting[0]?.id !== set.id) return null;
                   return (
                     <p key={set.id} className="px-1 text-sm text-muted">
-                      Set {set.setIndex + 1} waiting
+                      {waiting.length === 1
+                        ? `Set ${set.setIndex + 1} waiting`
+                        : `Set ${set.setIndex + 1} waiting · ${waiting.length - 1} more after that`}
                     </p>
                   );
                 }
@@ -489,7 +591,7 @@ export function WorkoutPlayer({
                       </label>
                     </div>
                     <div>
-                      <p className="mb-2 text-sm text-muted">How did that feel? Optional.</p>
+                      <p className="mb-2 text-sm text-muted">How did that feel? Optional. Easy / OK / Hard maps to about RPE 6 / 7.5 / 9.</p>
                       <HardnessButtons
                         value={hardness[set.id] ?? ""}
                         onChange={(next) => setHardness((prev) => ({ ...prev, [set.id]: next }))}
