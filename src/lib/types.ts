@@ -1,4 +1,5 @@
 export type Units = "lb" | "kg";
+/** `garanimal` is the Goggins-style tough voice. Keep both personas. */
 export type Persona = "scientist" | "garanimal";
 export type Experience = "novice" | "intermediate" | "advanced";
 export type Safety = "recommended" | "caution" | "banned";
