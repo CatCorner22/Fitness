@@ -221,6 +221,10 @@ expect(youPage.includes('value="garanimal"') && youPage.includes("Goggins"), "Go
 expect(youPage.includes("<details") && youPage.includes("Look and kawaii avatars"), "Look sits in a drill-down, not deleted");
 const courseIndex = fs.readFileSync(path.join("src", "app", "course", "page.tsx"), "utf8");
 expect(courseIndex.includes("Nyx courses"), "Nyx course index stays");
+expect(courseIndex.includes("NYX_LOOKS") && courseIndex.includes("look.sets"), "course gallery shows grouped nude looks");
+const instructorSrc = fs.readFileSync(path.join("src", "lib", "course", "instructor.ts"), "utf8");
+expect(instructorSrc.includes("Standing nude") && instructorSrc.includes("Topless in pants"), "Nyx registry has standing and topless looks");
+expect(instructorSrc.includes("Heels nude") && instructorSrc.includes("Floor nude"), "Nyx registry has heels and floor nude looks");
 expect(fs.existsSync(path.join("src", "components", "kawaii-avatar.tsx")), "kawaii avatar component stays");
 
 console.log("assert-daily-use: ok");

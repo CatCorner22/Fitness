@@ -16,26 +16,44 @@ COPPER = (227, 138, 74)
 CREAM = (244, 239, 230)
 MUTED = (186, 176, 164)
 
-PLATES: list[tuple[str, str, str]] = [
-    ("nyx-portrait.webp", "nyx-plate-portrait.webp", "Instructor"),
-    ("nyx-walk.webp", "nyx-plate-walk.webp", "Performance walk"),
-    ("nyx-wave.webp", "nyx-plate-wave.webp", "Body wave"),
-    ("nyx-floor.webp", "nyx-plate-floor.webp", "Floorwork"),
-    ("nyx-climb.webp", "nyx-plate-climb.webp", "Climb"),
-    ("nyx-chair.webp", "nyx-plate-chair.webp", "Chair phrase"),
-    ("nyx-sit.webp", "nyx-plate-sit.webp", "Pole sit"),
-    ("nyx-pole.webp", "nyx-plate-pole.webp", "On the pole"),
-    ("nyx-hang.webp", "nyx-plate-hang.webp", "Hang"),
-    ("nyx-heels.webp", "nyx-plate-heels.webp", "Heel walk"),
-    ("nyx-hands.webp", "nyx-plate-hands.webp", "Hands"),
-    ("nyx-mermaid.webp", "nyx-plate-mermaid.webp", "Mermaid sit"),
-    ("nyx-fireman.webp", "nyx-plate-fireman.webp", "High arm"),
-    ("nyx-kick.webp", "nyx-plate-kick.webp", "Fan kick"),
-    ("nyx-grind.webp", "nyx-plate-grind.webp", "Hip phrase"),
-    ("nyx-crawl.webp", "nyx-plate-crawl.webp", "Floor crawl"),
-    ("nyx-peel.webp", "nyx-plate-peel.webp", "Costume layer"),
-    ("nyx-turn.webp", "nyx-plate-turn.webp", "Balance turn"),
-]
+TITLES: dict[str, str] = {
+    "portrait": "Instructor",
+    "walk": "Performance walk",
+    "wave": "Body wave",
+    "floor": "Floorwork",
+    "climb": "Climb",
+    "chair": "Chair phrase",
+    "sit": "Pole sit",
+    "pole": "On the pole",
+    "hang": "Hang",
+    "heels": "Heel walk",
+    "hands": "Hands",
+    "mermaid": "Mermaid sit",
+    "fireman": "High arm",
+    "kick": "Fan kick",
+    "grind": "Hip phrase",
+    "crawl": "Floor crawl",
+    "peel": "Costume layer",
+    "turn": "Balance turn",
+    "nuda": "Standing nude A",
+    "nudb": "Standing nude B",
+    "nudc": "Standing nude C",
+    "ncha": "Chair nude A",
+    "nchb": "Chair nude B",
+    "nchd": "Chair nude C",
+    "nrea": "Floor nude A",
+    "nreb": "Floor nude B",
+    "nrec": "Floor nude C",
+    "npla": "Pole nude A",
+    "nplb": "Pole nude B",
+    "nplc": "Pole nude C",
+    "ntpa": "Topless A",
+    "ntpb": "Topless B",
+    "ntpc": "Topless C",
+    "nhea": "Heels nude A",
+    "nheb": "Heels nude B",
+    "nhec": "Heels nude C",
+}
 
 
 def font(size: int) -> ImageFont.ImageFont:
@@ -83,8 +101,13 @@ def plate(src_name: str, dest_name: str, title: str) -> None:
 
 
 def main() -> None:
-    for src, dest, title in PLATES:
-        plate(src, dest, title)
+    stills = sorted(p for p in STILLS.glob("nyx-*.webp") if p.is_file())
+    if not stills:
+        raise SystemExit("no nyx stills")
+    for still in stills:
+        key = still.stem.removeprefix("nyx-")
+        title = TITLES.get(key, key)
+        plate(still.name, f"nyx-plate-{key}.webp", title)
 
 
 if __name__ == "__main__":
