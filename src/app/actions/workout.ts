@@ -43,6 +43,7 @@ export async function startWorkoutAction(dayId?: string) {
 
   const id = crypto.randomUUID();
   let resumeId: string | null = null;
+  let alreadyDone = false;
   db.transaction((tx) => {
     const open = tx
       .select()
@@ -51,6 +52,23 @@ export async function startWorkoutAction(dayId?: string) {
       .get();
     if (open) {
       resumeId = open.id;
+      return;
+    }
+
+    const prior = tx
+      .select()
+      .from(workouts)
+      .where(
+        and(
+          eq(workouts.userId, user.id),
+          eq(workouts.programId, planned.program.id),
+          eq(workouts.week, planned.week),
+          eq(workouts.dayId, planned.day.id),
+        ),
+      )
+      .all();
+    if (prior.some((row) => row.status === "completed" || row.status === "skipped")) {
+      alreadyDone = true;
       return;
     }
 
@@ -96,6 +114,10 @@ export async function startWorkoutAction(dayId?: string) {
   });
 
   if (resumeId) redirect(`/workout/${resumeId}`);
+  if (alreadyDone) {
+    revalidatePath("/");
+    redirect("/");
+  }
   revalidatePath("/");
   redirect(`/workout/${id}`);
 }
