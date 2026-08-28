@@ -214,4 +214,13 @@ expect(hasWord("what should i eat for breakfast", "eat"), "eat word matches in b
 expect(!hasWord("how do i pass this class", "ass"), "class does not match glute ass word");
 expect(hasWord("build a bigger ass", "ass"), "ass word matches glute question");
 
+const youPage = fs.readFileSync(path.join("src", "app", "settings", "page.tsx"), "utf8");
+expect(youPage.includes('"/course"') && youPage.includes("Nyx course"), "You keeps a first-class Nyx course link");
+expect(youPage.includes("LookStudio"), "kawaii Look studio stays on You");
+expect(youPage.includes('value="garanimal"') && youPage.includes("Goggins"), "Goggins / Garanimal voice stays");
+expect(youPage.includes("<details") && youPage.includes("Look and kawaii avatars"), "Look sits in a drill-down, not deleted");
+const courseIndex = fs.readFileSync(path.join("src", "app", "course", "page.tsx"), "utf8");
+expect(courseIndex.includes("Nyx courses"), "Nyx course index stays");
+expect(fs.existsSync(path.join("src", "components", "kawaii-avatar.tsx")), "kawaii avatar component stays");
+
 console.log("assert-daily-use: ok");

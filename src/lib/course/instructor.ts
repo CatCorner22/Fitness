@@ -1,3 +1,4 @@
+/** Nyx is a product rail. Do not delete the instructor, courses, or /course routes. */
 const V = 7;
 
 export const NYX = {
