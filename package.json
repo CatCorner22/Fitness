@@ -9,7 +9,7 @@
     "lint": "eslint",
     "assert:programs": "python3 scripts/assert-untruncated.py",
     "assert:runtime": "node --experimental-strip-types scripts/assert-runtime.mjs",
-    "assert:daily-use": "node --experimental-strip-types scripts/assert-daily-use.mjs",
+    "assert:daily-use": "node --experimental-strip-types --import ./scripts/register-resolve-ts.mjs scripts/assert-daily-use.mjs",
     "assert:pioneer": "node --experimental-strip-types --import ./scripts/register-resolve-ts.mjs scripts/assert-pioneer.mjs",
     "perf:stability": "node scripts/perf-stability.mjs"
   },

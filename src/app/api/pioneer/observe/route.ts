@@ -27,7 +27,7 @@ export async function POST(request: Request) {
 
   const text = typeof body.text === "string" ? body.text.slice(0, PIONEER_MAX_CHARS) : "";
   const kind = KINDS.has(body.kind as PioneerKind) ? (body.kind as PioneerKind) : undefined;
-  const optIn = await getAiOptIn();
+  const optIn = await getAiOptIn(user.id);
   const cfg = getPioneerConfig();
   const household = buildPioneerHousehold(user.id, profile);
 
@@ -35,8 +35,9 @@ export async function POST(request: Request) {
     text,
     kind,
     household,
+    userId: user.id,
     extraNames: [user.displayName, user.username],
-    allowPioneer: optIn && cfg.enabled && !isPioneerKilled(readLadder()),
+    allowPioneer: optIn && cfg.enabled && !isPioneerKilled(readLadder(user.id)),
   });
 
   return Response.json(result, {

@@ -5,7 +5,8 @@ import { STARTER_FOODS } from "../src/lib/nutrition/starter-foods.ts";
 import { itemsForEmptyMeals } from "../src/lib/nutrition/copy-meals.ts";
 import { EQUIPMENT_OPTIONS } from "../src/lib/equipment.ts";
 import { restAfterLoggedSet } from "../src/lib/rest.ts";
-import { todayISO, yesterdayISO } from "../src/lib/utils.ts";
+import { todayISO, yesterdayISO, optionalNumber, convertDisplayHeight, convertDisplayWeight, displayHeightToCm, displayWeightToKg } from "../src/lib/utils.ts";
+import { getMealPlanTemplate, scalePlanToTargets } from "../src/lib/nutrition/meal-plans.ts";
 import { getSpiritConfig, resolveReads } from "../src/lib/spirit/config.ts";
 import { resolveAuthSecret } from "../src/lib/auth-secret.ts";
 import { scheduledProgramDays } from "../src/lib/programs/schedule.ts";
@@ -81,6 +82,44 @@ const copied = itemsForEmptyMeals(
 );
 expect(copied.length === 2 && copied.every((row) => row.meal === "lunch"), "copy skips meals already logged today");
 expect(itemsForEmptyMeals([{ meal: "snack" }], ["snack"]).length === 0, "fully overlapping day copies nothing");
+
+expect(Number.isNaN(optionalNumber("")), "blank string is not a number");
+expect(Number.isNaN(optionalNumber(null)), "null is not a number");
+expect(optionalNumber("8") === 8, "numeric string parses");
+expect(convertDisplayWeight(180, "lb", "kg") === 81.6, "180 lb converts to kg for the units fields");
+expect(Math.abs(convertDisplayHeight(70, "lb", "kg") - 177.8) < 0.2, "70 in converts to cm");
+expect(Math.abs((displayWeightToKg(82, "kg") ?? 0) - 82) < 0.01, "82 kg stores as 82 kg");
+expect(Math.abs((displayHeightToCm(178, "kg") ?? 0) - 178) < 0.01, "178 cm stores as 178 cm");
+
+function planTotals(id, calories, protein) {
+  const template = getMealPlanTemplate(id);
+  expect(Boolean(template), `meal plan ${id} exists`);
+  const items = scalePlanToTargets(template, calories, protein);
+  return items.reduce(
+    (acc, item) => {
+      acc.calories += item.calories;
+      acc.protein += item.protein;
+      return acc;
+    },
+    { calories: 0, protein: 0 },
+  );
+}
+
+for (const [id, calories, protein] of [
+  ["plant-forward", 1500, 168],
+  ["low-histamine-plate", 1500, 168],
+  ["strength-plate", 1600, 192],
+]) {
+  const totals = planTotals(id, calories, protein);
+  expect(
+    Math.abs(totals.calories - calories) <= 120,
+    `${id} calories stay near ${calories} (got ${Math.round(totals.calories)})`,
+  );
+  expect(
+    Math.abs(totals.protein - protein) <= 12,
+    `${id} protein stays near ${protein} (got ${Math.round(totals.protein)})`,
+  );
+}
 
 expect(scheduledProgramDays(["a", "b", "c", "d", "e", "f"], 3).join() === "a,b,c", "3-day week keeps the first three programmed days");
 expect(scheduledProgramDays(["a", "b"], 6).join() === "a,b", "days-per-week cannot invent extra sessions");

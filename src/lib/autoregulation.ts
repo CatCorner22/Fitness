@@ -79,7 +79,7 @@ export function lastWorkingSets(userId: string, exerciseIds?: string[]) {
     .all();
 
   for (const row of rows) {
-    if (map[row.exerciseId] || row.weightKg == null || row.reps == null) continue;
+    if (map[row.exerciseId] || row.weightKg == null || row.reps == null || row.reps <= 0) continue;
     map[row.exerciseId] = { weightKg: row.weightKg, reps: row.reps, rpe: row.rpe };
     if (ids && Object.keys(map).length === ids.length) break;
   }

@@ -139,7 +139,7 @@ export async function swapExerciseAction(formData: FormData) {
       .from(workouts)
       .where(and(eq(workouts.id, workoutId), eq(workouts.userId, user.id)))
       .get();
-    if (!owned) return;
+    if (!owned || owned.status !== "in_progress") return;
     const rows = tx
       .select()
       .from(setLogs)
@@ -161,6 +161,8 @@ export async function completeWorkoutAction(formData: FormData) {
     .where(and(eq(workouts.id, workoutId), eq(workouts.userId, user.id)))
     .get();
   if (!existing) redirect("/");
+  if (existing.status === "completed") redirect(`/workout/${workoutId}/complete`);
+  if (existing.status !== "in_progress") redirect("/");
   const sessionRpe = Number(formString(formData, "sessionRpe") || NaN);
   const durationMinutes = Number(formData.get("durationMinutes"));
   const stopped = formString(formData, "stop") === "1";

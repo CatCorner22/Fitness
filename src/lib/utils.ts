@@ -46,8 +46,26 @@ export function clampInt(raw: unknown, fallback: number, min: number, max: numbe
   return Math.round(clamp(n, min, max));
 }
 
+export function optionalNumber(raw: unknown) {
+  if (raw == null) return Number.NaN;
+  if (typeof raw === "string" && raw.trim() === "") return Number.NaN;
+  const n = typeof raw === "number" ? raw : Number(raw);
+  return Number.isFinite(n) ? n : Number.NaN;
+}
+
 export function pickEnum<T extends string>(raw: unknown, allowed: readonly T[], fallback: T): T {
   return allowed.includes(raw as T) ? (raw as T) : fallback;
+}
+
+export function convertDisplayWeight(value: number, from: "lb" | "kg", to: "lb" | "kg") {
+  if (from === to) return value;
+  return kgToDisplay(displayToKg(value, from), to);
+}
+
+export function convertDisplayHeight(value: number, from: "lb" | "kg", to: "lb" | "kg") {
+  if (from === to) return value;
+  const cm = from === "lb" ? value * 2.54 : value;
+  return to === "lb" ? Math.round((cm / 2.54) * 10) / 10 : Math.round(cm * 10) / 10;
 }
 
 export function formString(formData: FormData, key: string) {

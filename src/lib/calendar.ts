@@ -44,12 +44,21 @@ export function fillMapRange(fromISO: string, toISO: string, state: ReturnType<t
 
 export function upsertCalendarMark(userId: string, date: string, fill: CalendarMarkFill) {
   const now = new Date().toISOString();
+  if (fill === "skipped") {
+    const trained = db
+      .select({ id: workouts.id })
+      .from(workouts)
+      .where(and(eq(workouts.userId, userId), eq(workouts.date, date), eq(workouts.status, "completed")))
+      .get();
+    if (trained) return;
+  }
   const existing = db
     .select()
     .from(calendarMarks)
     .where(and(eq(calendarMarks.userId, userId), eq(calendarMarks.date, date)))
     .get();
   if (existing) {
+    if (fill === "skipped" && existing.fill === "did") return;
     db.update(calendarMarks)
       .set({ fill, updatedAt: now })
       .where(eq(calendarMarks.id, existing.id))

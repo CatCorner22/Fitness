@@ -9,7 +9,7 @@ import { hardnessToRpe, parseRepTarget } from "@/lib/copy";
 import { lessonForExercise } from "@/lib/course/skills";
 import { restAfterLoggedSet } from "@/lib/rest";
 import type { Exercise } from "@/lib/types";
-import { displayToKg, formatRest, kgToDisplay } from "@/lib/utils";
+import { displayToKg, formatRest, kgToDisplay, optionalNumber } from "@/lib/utils";
 
 type SetRow = {
   id: string;
@@ -268,7 +268,7 @@ export function WorkoutPlayer({
   }
 
   function stampDuration(form: HTMLFormElement) {
-    const minutes = Math.max(1, Math.round((Date.now() - started) / 60000) || estimatedMinutes);
+    const minutes = Math.max(0, Math.round((Date.now() - started) / 60000));
     const field = form.elements.namedItem("durationMinutes");
     if (field instanceof HTMLInputElement) field.value = String(minutes);
   }
@@ -278,8 +278,13 @@ export function WorkoutPlayer({
       if (loggingRef.current === set.id) return;
       loggingRef.current = set.id;
       const fd = new FormData(form);
-      const weight = Number(fd.get("weight"));
-      const reps = Number(fd.get("reps"));
+      const weight = optionalNumber(fd.get("weight"));
+      const reps = optionalNumber(fd.get("reps"));
+      if (!Number.isFinite(weight) && !Number.isFinite(reps)) {
+        loggingRef.current = null;
+        setLogError("Enter weight or reps before logging.");
+        return;
+      }
       const rpe = hardnessToRpe(hardness[set.id] ?? "") ?? Number.NaN;
       const elapsedMinutes = Math.max(1, Math.round((Date.now() - started) / 60000));
       const doneGroups = new Set(

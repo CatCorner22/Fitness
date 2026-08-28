@@ -8,6 +8,7 @@ import { PROGRAMS } from "@/lib/programs/catalog";
 import { DIET_PROGRAMS } from "@/lib/nutrition/diets";
 import { getAiOptIn, getLook, getTheme } from "@/lib/prefs";
 import { requireAuthed } from "@/lib/session-page";
+import { SettingsUnitsFields } from "@/components/settings-units-fields";
 import { kgToDisplay } from "@/lib/utils";
 
 export default async function SettingsPage() {
@@ -17,7 +18,7 @@ export default async function SettingsPage() {
       ? Math.round((profile.heightCm / 2.54) * 10) / 10
       : profile.heightCm ?? "";
   const weightDisplay = profile.weightKg ? kgToDisplay(profile.weightKg, profile.units) : "";
-  const [aiOptIn, theme, look] = await Promise.all([getAiOptIn(), getTheme(), getLook()]);
+  const [aiOptIn, theme, look] = await Promise.all([getAiOptIn(user.id), getTheme(), getLook()]);
 
   return (
     <AppShell user={user} profile={profile}>
@@ -55,10 +56,8 @@ export default async function SettingsPage() {
       </nav>
 
       <form action={saveSettingsAction} className="mt-8 space-y-5 rounded-3xl border border-line bg-surface p-5">
-        {/* Weight/height are pre-filled in the current units; the action needs
-            to know that so switching the Units dropdown doesn't reinterpret
-            the unedited numbers in the new units. */}
-        <input type="hidden" name="displayUnits" value={profile.units} />
+        {/* Units, weight, and height stay in sync in the browser so flipping
+            Pounds → Kilograms then typing 82 stores 82 kg, not 82 lb. */}
         <label className="block text-sm text-muted">
           Name
           <input name="displayName" defaultValue={user.displayName} className="mt-1" />
@@ -111,17 +110,11 @@ export default async function SettingsPage() {
           <input name="daysPerWeek" type="number" min={2} max={7} defaultValue={profile.daysPerWeek} className="mt-1" />
         </label>
         <p className="text-sm text-muted">Today only asks for this many sessions, even if the plan card lists more days.</p>
-        <label className="text-sm text-muted block">
-          Units
-          <select name="units" defaultValue={profile.units} className="mt-1">
-            <option value="lb">Pounds</option>
-            <option value="kg">Kilograms</option>
-          </select>
-        </label>
-        <label className="text-sm text-muted block">
-          Weight
-          <input name="weight" type="number" step="0.1" defaultValue={weightDisplay} className="mt-1" />
-        </label>
+        <SettingsUnitsFields
+          initialUnits={profile.units}
+          initialWeight={weightDisplay}
+          initialHeight={heightDisplay}
+        />
         <label className="flex items-start gap-3 text-sm">
           <input type="checkbox" name="aiOptIn" value="1" defaultChecked={aiOptIn} className="mt-1 w-auto" />
           <span>Send workouts and drafts to a model. Off unless you check this. Draft instruments still run on this device.</span>
@@ -156,10 +149,6 @@ export default async function SettingsPage() {
             <label className="text-sm text-muted block">
               Age
               <input name="age" type="number" defaultValue={profile.age ?? ""} className="mt-1" />
-            </label>
-            <label className="text-sm text-muted block">
-              Height
-              <input name="height" type="number" step="0.1" defaultValue={heightDisplay} className="mt-1" />
             </label>
             <fieldset className="space-y-2">
               <legend className="text-sm text-muted">Sore joints (not a medical screen)</legend>

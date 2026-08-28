@@ -7,18 +7,36 @@ const AI_COOKIE = "garanimal_ai";
 const THEME_COOKIE = "garanimal_theme";
 const LOOK_COOKIE = "garanimal_look";
 
-function prefCookieOpts() {
+function prefCookieOpts(httpOnly: boolean) {
   const policy = cookiePolicy();
   return {
     path: "/",
     maxAge: 60 * 60 * 24 * 365,
     sameSite: policy.sameSite,
     secure: policy.secure,
+    httpOnly,
   };
 }
 
-export const getAiOptIn = cache(async () => {
-  return (await cookies()).get(AI_COOKIE)?.value === "1";
+function parseAiMap(raw: string | undefined): Record<string, boolean> {
+  if (!raw || raw === "1" || raw === "0") return {};
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    const out: Record<string, boolean> = {};
+    for (const [id, value] of Object.entries(parsed as Record<string, unknown>)) {
+      out[id] = value === true || value === 1 || value === "1";
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+export const getAiOptIn = cache(async (userId: string) => {
+  if (!userId) return false;
+  const map = parseAiMap((await cookies()).get(AI_COOKIE)?.value);
+  return map[userId] === true;
 });
 
 export const getTheme = cache(async (): Promise<"dark" | "light"> => {
@@ -33,14 +51,16 @@ export async function setPrefCookies(
   aiOptIn: boolean | undefined,
   theme: "dark" | "light",
   look?: LookPrefs,
+  userId?: string,
 ) {
   const jar = await cookies();
-  const opts = prefCookieOpts();
-  if (aiOptIn !== undefined) {
-    jar.set(AI_COOKIE, aiOptIn ? "1" : "0", opts);
+  if (aiOptIn !== undefined && userId) {
+    const map = parseAiMap(jar.get(AI_COOKIE)?.value);
+    map[userId] = aiOptIn;
+    jar.set(AI_COOKIE, JSON.stringify(map), prefCookieOpts(true));
   }
-  jar.set(THEME_COOKIE, theme, opts);
+  jar.set(THEME_COOKIE, theme, prefCookieOpts(false));
   if (look) {
-    jar.set(LOOK_COOKIE, JSON.stringify(look), opts);
+    jar.set(LOOK_COOKIE, JSON.stringify(look), prefCookieOpts(false));
   }
 }

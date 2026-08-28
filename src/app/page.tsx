@@ -31,7 +31,7 @@ export default async function TodayPage() {
     : undefined;
   const open = plan?.open;
   const fast = runningFast(user.id);
-  const optIn = await getAiOptIn();
+  const optIn = await getAiOptIn(user.id);
   const openMismatch = Boolean(
     open && planned && (open.dayId !== planned.day.id || open.programId !== planned.program.id),
   );

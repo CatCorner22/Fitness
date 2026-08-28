@@ -69,6 +69,7 @@ export async function observePioneer(input: {
   text: string;
   kind?: PioneerKind;
   household: PioneerHousehold;
+  userId: string;
   extraNames?: string[];
   allowPioneer: boolean;
 }): Promise<PioneerObserveResult> {
@@ -77,7 +78,7 @@ export async function observePioneer(input: {
   const kind = input.kind ?? parseDraftSignals(text).kind;
   const base = { text, kind, household: input.household, minChars: cfg.minChars };
 
-  const ladder = readLadder();
+  const ladder = readLadder(input.userId);
   if (isPioneerKilled(ladder) || !cfg.enabled) {
     return instrumentOnly("unavailable", base);
   }
@@ -144,7 +145,7 @@ export async function observePioneer(input: {
   });
 
   if (escaped) {
-    const next = recordPioneerEscape();
+    const next = recordPioneerEscape(input.userId);
     return instrumentOnly(isPioneerKilled(next) ? "unavailable" : "refused", base);
   }
 
