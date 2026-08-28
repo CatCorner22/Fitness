@@ -164,13 +164,14 @@ export function WorkoutPlayer({
   }, [sets]);
 
   const [seconds, setSeconds] = useState(0);
-  // Deadline timestamp instead of a decrementing counter: browsers throttle
-  // intervals in background tabs / locked phones, which froze the countdown.
-  const [restEndsAt, setRestEndsAt] = useState<number | null>(null);
-  const [pausedRemaining, setPausedRemaining] = useState<number | null>(null);
+  // One clock object so Pause cannot clear the deadline without keeping remaining time.
+  const [restClock, setRestClock] = useState<
+    { mode: "idle" } | { mode: "running"; endsAt: number } | { mode: "paused"; remaining: number }
+  >({ mode: "idle" });
   const muteAlerts = useSyncExternalStore(subscribeRestMute, restMuteSnapshot, () => false);
-  const resting = restEndsAt != null || pausedRemaining != null;
-  const paused = pausedRemaining != null;
+  const resting = restClock.mode !== "idle";
+  const paused = restClock.mode === "paused";
+  const restEndsAt = restClock.mode === "running" ? restClock.endsAt : null;
   const alertedRef = useRef(false);
   const loggingRef = useRef<string | null>(null);
   const [started] = useState(() => Date.now());
@@ -184,12 +185,13 @@ export function WorkoutPlayer({
   const why = current ? decisions.find((d) => d.exerciseId === current[0]) : undefined;
 
   useEffect(() => {
-    if (restEndsAt == null) return;
+    if (restClock.mode !== "running") return;
+    const endsAt = restClock.endsAt;
     const tick = () => {
-      const next = Math.max(0, Math.ceil((restEndsAt - Date.now()) / 1000));
+      const next = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
       setSeconds(next);
       if (next === 0) {
-        setRestEndsAt(null);
+        setRestClock({ mode: "idle" });
         if (!alertedRef.current) {
           alertedRef.current = true;
           playRestBeep();
@@ -198,13 +200,12 @@ export function WorkoutPlayer({
     };
     tick();
     const id = window.setInterval(tick, 250);
-    // Resync immediately when the tab wakes from background throttling.
     document.addEventListener("visibilitychange", tick);
     return () => {
       window.clearInterval(id);
       document.removeEventListener("visibilitychange", tick);
     };
-  }, [restEndsAt]);
+  }, [restClock]);
 
   // Keep the screen awake mid-workout; harmless no-op where unsupported.
   useEffect(() => {
@@ -235,32 +236,30 @@ export function WorkoutPlayer({
 
   function startRest(rest: number) {
     alertedRef.current = false;
-    setPausedRemaining(null);
     setSeconds(rest);
-    setRestEndsAt(Date.now() + rest * 1000);
+    setRestClock({ mode: "running", endsAt: Date.now() + rest * 1000 });
   }
 
   function pauseRest() {
-    if (restEndsAt == null) return;
-    const remaining = Math.max(0, Math.ceil((restEndsAt - Date.now()) / 1000));
-    setRestEndsAt(null);
-    setPausedRemaining(remaining);
+    if (restClock.mode !== "running") return;
+    const remaining = Math.max(0, Math.ceil((restClock.endsAt - Date.now()) / 1000));
     setSeconds(remaining);
+    setRestClock({ mode: "paused", remaining });
   }
 
   function resumeRest() {
-    if (pausedRemaining == null || pausedRemaining <= 0) {
-      setPausedRemaining(null);
+    if (restClock.mode !== "paused") return;
+    if (restClock.remaining <= 0) {
+      setRestClock({ mode: "idle" });
+      setSeconds(0);
       return;
     }
     alertedRef.current = false;
-    setRestEndsAt(Date.now() + pausedRemaining * 1000);
-    setPausedRemaining(null);
+    setRestClock({ mode: "running", endsAt: Date.now() + restClock.remaining * 1000 });
   }
 
   function skipRest() {
-    setRestEndsAt(null);
-    setPausedRemaining(null);
+    setRestClock({ mode: "idle" });
     setSeconds(0);
   }
 
@@ -424,7 +423,7 @@ export function WorkoutPlayer({
           type="button"
           aria-pressed={muteAlerts}
           onClick={toggleMuteAlerts}
-          className="mt-3 text-sm text-muted underline-offset-2 hover:underline"
+          className="btn-quiet mt-3 mx-auto w-auto min-w-[12rem] px-4"
         >
           {muteAlerts ? "Alerts muted" : "Mute beep and vibrate"}
         </button>
@@ -539,9 +538,13 @@ export function WorkoutPlayer({
                   );
                 }
                 if (firstOpen && firstOpen.id !== set.id) {
+                  const waiting = rows.filter((s) => !s.completed && s.id !== firstOpen.id);
+                  if (waiting[0]?.id !== set.id) return null;
                   return (
                     <p key={set.id} className="px-1 text-sm text-muted">
-                      Set {set.setIndex + 1} waiting
+                      {waiting.length === 1
+                        ? `Set ${set.setIndex + 1} waiting`
+                        : `Set ${set.setIndex + 1} waiting · ${waiting.length - 1} more after that`}
                     </p>
                   );
                 }
