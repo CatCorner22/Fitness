@@ -7,7 +7,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
-ROOT = Path("/workspace")
+ROOT = Path(__file__).resolve().parents[1]
 STILLS = ROOT / "public/instructor"
 OUT = STILLS / "plates"
 OUT.mkdir(parents=True, exist_ok=True)

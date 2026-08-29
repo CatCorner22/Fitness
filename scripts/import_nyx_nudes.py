@@ -7,7 +7,7 @@ from pathlib import Path
 
 from PIL import Image
 
-ROOT = Path("/workspace")
+ROOT = Path(__file__).resolve().parents[1]
 SRC = Path("/tmp/nyx-edit/out")
 DEST = ROOT / "public/instructor"
 SIZE = (1024, 1536)

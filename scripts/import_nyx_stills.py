@@ -11,7 +11,7 @@ from pathlib import Path
 
 from PIL import Image, ImageEnhance, ImageFilter
 
-ROOT = Path("/workspace")
+ROOT = Path(__file__).resolve().parents[1]
 DEST = ROOT / "public/instructor"
 ASSETS = Path("/opt/cursor/artifacts/assets")
 

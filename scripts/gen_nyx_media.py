@@ -8,7 +8,7 @@ import re
 import subprocess
 from pathlib import Path
 
-ROOT = Path("/workspace")
+ROOT = Path(__file__).resolve().parents[1]
 COURSE = ROOT / "src/lib/course"
 AUDIO = ROOT / "public/instructor/audio"
 VIDEO = ROOT / "public/instructor/video"

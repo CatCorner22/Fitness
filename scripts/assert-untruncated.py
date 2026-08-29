@@ -7,7 +7,7 @@ import re
 import sys
 from pathlib import Path
 
-ROOT = Path("/workspace")
+ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
 
 errors: list[str] = []
