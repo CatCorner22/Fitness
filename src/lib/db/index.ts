@@ -288,6 +288,23 @@ export function ensureMigrated() {
   if (globalForDb.sqlite) migrate(globalForDb.sqlite);
 }
 
+/**
+ * Cheap liveness probe for /api/health: confirms the file opens, a read works,
+ * and the newest profile columns exist (so a stale schema fails loudly instead
+ * of at first save).
+ */
+export function pingDatabase(): { ok: true; path: string; journalMode: string } {
+  const sqlite = globalForDb.sqlite;
+  if (!sqlite) throw new Error("SQLite connection is not initialised.");
+  sqlite.prepare("SELECT 1").get();
+  const cols = sqlite.prepare("PRAGMA table_info(profiles)").all() as { name: string }[];
+  const names = new Set(cols.map((c) => c.name));
+  const missing = PROFILE_COLUMNS.filter((c) => !names.has(c.name)).map((c) => c.name);
+  if (missing.length) throw new Error(`profiles table is missing columns: ${missing.join(", ")}`);
+  const mode = sqlite.pragma("journal_mode", { simple: true });
+  return { ok: true, path: dbPath, journalMode: String(mode) };
+}
+
 if (!globalForDb.seeded) {
   seedIfNeeded(db);
   globalForDb.seeded = true;
