@@ -32,14 +32,20 @@ export default async function LoginPage({
           Password
           <input id="password" name="password" type="password" autoComplete="current-password" required className="mt-1" />
         </label>
-        {params.error ? <p className="text-sm text-danger">Wrong username or password.</p> : null}
+        {params.error === "locked" ? (
+          <p className="text-sm text-danger">Too many attempts. Wait a few minutes and try again.</p>
+        ) : params.error ? (
+          <p className="text-sm text-danger">Wrong username or password.</p>
+        ) : null}
         <button type="submit" className="btn-primary">
           Enter
         </button>
-        <details className="text-sm text-muted">
-          <summary className="cursor-pointer">Demo house</summary>
-          <p className="mt-2">alex or jordan, password household. Logs stay separate.</p>
-        </details>
+        {process.env.NODE_ENV !== "production" ? (
+          <details className="text-sm text-muted">
+            <summary className="cursor-pointer">Demo house</summary>
+            <p className="mt-2">alex or jordan, password household. Logs stay separate.</p>
+          </details>
+        ) : null}
       </form>
     </div>
   );

@@ -4,7 +4,7 @@ A private, two-user web app for evidence-based strength training and simple nutr
 
 ## What it does
 
-- Two isolated logins (`alex` / `household` and `jordan` / `household`)
+- Two isolated logins, `alex` and `jordan`. First-boot passwords come from `GARANIMAL_ALEX_PASSWORD` / `GARANIMAL_JORDAN_PASSWORD` (or `GARANIMAL_HOUSEHOLD_PASSWORD`), default `household` for local dev; each person changes theirs under You. Login is throttled (10 failures per 15 minutes per address and per username).
 - Fourteen programs: powerlifting, conjugate, bodybuilding split, PPL, upper/lower, strength + endurance, pole class prep, amateur night, yoga, stretch, barre, ballet, rucking, and the Big Ass Program
 - Every listed drill stays in the session — the clock never deletes work
 - Set RPE (Helms–Zourdos RIR scale) plus session RPE
@@ -46,10 +46,12 @@ curl -s localhost:3000/api/health   # {"ok":true,...,"db":{"ok":true,"journalMod
 
 `/api/health` opens the database, runs a read, and verifies the profile schema is current. It returns HTTP 503 with a reason if any of that fails, so point your uptime monitor at it.
 
+Serving a production build over plain `http://` on the home network (no TLS)? Set `GARANIMAL_ALLOW_INSECURE_COOKIE=1`, otherwise browsers drop the `Secure` session cookie and login loops. Never set it on a public host.
+
 ## Replit
 
 1. Import the GitHub repo. Replit picks up `.replit` (`npm run dev` on `0.0.0.0`) and `replit.nix` (gcc/python so `better-sqlite3` can compile).
-2. Add Secrets: `AUTH_SECRET` (32+ random characters). Optional: `TZ`, `AI_GATEWAY_API_KEY` (Spirit + Pioneer).
+2. Add Secrets: `AUTH_SECRET` (32+ random characters) and `GARANIMAL_HOUSEHOLD_PASSWORD` (or per-user `GARANIMAL_ALEX_PASSWORD` / `GARANIMAL_JORDAN_PASSWORD`) before the first run — the deployment URL is public. Optional: `TZ`, `AI_GATEWAY_API_KEY` (Spirit + Pioneer).
 3. Press Run. Preview uses `*.replit.dev`; session cookies use `SameSite=None; Secure` so the IDE iframe keeps the login.
 4. Health check: `/api/health` (no login). 200 means the app and SQLite are up; 503 means the database could not be opened or migrated.
 

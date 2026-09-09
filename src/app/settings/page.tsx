@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { logoutAction } from "@/app/actions/auth";
+import { changePasswordAction, logoutAction } from "@/app/actions/auth";
 import { saveSettingsAction } from "@/app/actions/profile";
+import { MAX_DISPLAY_NAME, MAX_PASSWORD, MIN_PASSWORD, hasDefaultPassword } from "@/lib/auth";
 import { AppShell } from "@/components/app-shell";
 import { LookStudio } from "@/components/look-studio";
 import { EQUIPMENT_OPTIONS } from "@/lib/equipment";
@@ -11,8 +12,18 @@ import { requireAuthed } from "@/lib/session-page";
 import { SettingsUnitsFields } from "@/components/settings-units-fields";
 import { kgToDisplay } from "@/lib/utils";
 
-export default async function SettingsPage() {
+const PASSWORD_ERRORS: Record<string, string> = {
+  "wrong-current": "Current password is wrong.",
+  "too-short": `New password needs at least ${MIN_PASSWORD} characters.`,
+  "too-long": `New password is too long (max ${MAX_PASSWORD}).`,
+  mismatch: "The two new passwords do not match.",
+  same: "New password is the same as the current one.",
+};
+
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ password?: string }> }) {
   const { user, profile } = await requireAuthed();
+  const params = await searchParams;
+  const defaultPassword = hasDefaultPassword(user.id);
   const heightDisplay =
     profile.heightCm && profile.units === "lb"
       ? Math.round((profile.heightCm / 2.54) * 10) / 10
@@ -60,7 +71,7 @@ export default async function SettingsPage() {
             Pounds → Kilograms then typing 82 stores 82 kg, not 82 lb. */}
         <label className="block text-sm text-muted">
           Name
-          <input name="displayName" defaultValue={user.displayName} className="mt-1" />
+          <input name="displayName" defaultValue={user.displayName} maxLength={MAX_DISPLAY_NAME} className="mt-1" />
         </label>
         <label className="block text-sm text-muted">
           Goal
@@ -197,6 +208,41 @@ export default async function SettingsPage() {
           </span>
         </summary>
         <LookStudio embedded initial={{ ...look, theme }} />
+      </details>
+
+      <details
+        id="password"
+        open={Boolean(params.password) || defaultPassword}
+        className="mt-6 rounded-3xl border border-line bg-surface"
+      >
+        <summary className="cursor-pointer px-5 py-4">
+          <span className="block text-sm font-semibold text-ink">Password</span>
+          <span className="mt-0.5 block text-xs text-muted">
+            {defaultPassword
+              ? "You are still on the household default. Change it before this app is reachable from outside the house."
+              : "Change the password for this login. You stay signed in on this device."}
+          </span>
+        </summary>
+        <form action={changePasswordAction} className="space-y-3 px-5 pb-5">
+          <label className="block text-sm text-muted">
+            Current password
+            <input name="currentPassword" type="password" autoComplete="current-password" required maxLength={MAX_PASSWORD} className="mt-1" />
+          </label>
+          <label className="block text-sm text-muted">
+            New password (at least {MIN_PASSWORD} characters)
+            <input name="newPassword" type="password" autoComplete="new-password" required minLength={MIN_PASSWORD} maxLength={MAX_PASSWORD} className="mt-1" />
+          </label>
+          <label className="block text-sm text-muted">
+            Repeat new password
+            <input name="confirmPassword" type="password" autoComplete="new-password" required minLength={MIN_PASSWORD} maxLength={MAX_PASSWORD} className="mt-1" />
+          </label>
+          {params.password && params.password in PASSWORD_ERRORS ? (
+            <p className="text-sm text-danger">{PASSWORD_ERRORS[params.password]}</p>
+          ) : null}
+          <button className="btn-primary" type="submit">
+            Change password
+          </button>
+        </form>
       </details>
 
       <form action={logoutAction} className="mt-6">
