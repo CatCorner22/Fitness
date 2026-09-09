@@ -30,8 +30,19 @@ export async function POST(request: Request) {
   } catch {
     return new Response("Invalid request", { status: 400 });
   }
+  // Only text parts reach the model, each capped, so a client cannot ship a
+  // megabyte of history (or file parts) into a paid completion.
   const messages: UIMessage[] = Array.isArray(body.messages)
-    ? body.messages.slice(-MAX_MESSAGES)
+    ? body.messages
+        .filter((m) => m && (m.role === "user" || m.role === "assistant") && Array.isArray(m.parts))
+        .slice(-MAX_MESSAGES)
+        .map((m) => ({
+          ...m,
+          parts: m.parts
+            .filter((p): p is Extract<UIMessage["parts"][number], { type: "text" }> => p?.type === "text" && typeof (p as { text?: unknown }).text === "string")
+            .map((p) => ({ type: "text" as const, text: p.text.slice(0, MAX_QUESTION) })),
+        }))
+        .filter((m) => m.parts.length > 0)
     : [];
   const lastUser = [...messages].reverse().find((m) => m.role === "user");
   const parts = lastUser && Array.isArray(lastUser.parts) ? lastUser.parts : [];

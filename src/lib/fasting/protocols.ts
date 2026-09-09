@@ -43,11 +43,32 @@ export function isoToLocalInput(iso: string) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-export function localInputToIso(value: string) {
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return null;
-  return d.toISOString();
+const MAX_PAST_MS = 14 * 86_400_000;
+const MAX_FUTURE_MS = 6 * 3_600_000;
+
+/**
+ * Parse a datetime-local field. Rejects unparseable values and anything more
+ * than two weeks back or six hours ahead — a fast cannot start next year, and
+ * extreme dates make Date#toISOString throw.
+ */
+export function localInputToIso(value: string, opts: { maxFutureMs?: number; now?: number } = {}) {
+  if (!value || value.length > 40) return null;
+  const now = opts.now ?? Date.now();
+  const maxFuture = opts.maxFutureMs ?? MAX_FUTURE_MS;
+  const t = Date.parse(value);
+  if (!Number.isFinite(t)) return null;
+  if (t < now - MAX_PAST_MS || t > now + maxFuture) return null;
+  return new Date(t).toISOString();
 }
+
+/** Planned ends may sit a full fast window ahead of now. */
+export const MAX_PLANNED_END_FUTURE_MS = MAX_FAST_MINUTES * 60_000 + MAX_FUTURE_MS;
+
+export function isFastProtocolId(id: string): id is (typeof FAST_PROTOCOLS)[number]["id"] {
+  return FAST_PROTOCOLS.some((p) => p.id === id);
+}
+
+export const MAX_FAST_NOTE = 280;
 
 export function formatDuration(ms: number) {
   const abs = Math.abs(ms);

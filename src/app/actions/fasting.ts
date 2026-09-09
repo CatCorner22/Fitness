@@ -8,14 +8,22 @@ import { fastAdjustments, fasts } from "@/lib/db/schema";
 import {
   clampFastMinutes,
   elapsedFastMinutes,
+  isFastProtocolId,
   localInputToIso,
   MAX_FAST_MINUTES,
+  MAX_FAST_NOTE,
+  MAX_PLANNED_END_FUTURE_MS,
   plannedEndIso,
   protocolHours,
   type FastAdjustmentKind,
 } from "@/lib/fasting/protocols";
 import { fastOwnedBy, runningFast } from "@/lib/fasting/queries";
 import { revalidateFasting } from "@/lib/revalidate";
+
+function fastNote(raw: FormDataEntryValue | null): string | null {
+  const text = String(raw || "").trim().slice(0, MAX_FAST_NOTE);
+  return text || null;
+}
 
 function recordAdjustment(
   fastId: string,
@@ -41,7 +49,8 @@ export async function startFastAction(formData: FormData) {
   const user = await requireUser();
   if (runningFast(user.id)) redirect("/nutrition?toast=fast-open");
 
-  const protocol = String(formData.get("protocol") || "16:8");
+  const protocolRaw = String(formData.get("protocol") || "16:8");
+  const protocol = isFastProtocolId(protocolRaw) ? protocolRaw : "custom";
   const customHours = Number(formData.get("hours"));
   const hours = protocolHours(protocol, customHours);
   const targetMinutes = clampFastMinutes(hours * 60);
@@ -55,13 +64,13 @@ export async function startFastAction(formData: FormData) {
     .values({
       id,
       userId: user.id,
-      protocol: protocol === "custom" ? `${hours}h` : protocol,
+      protocol: protocol === "custom" ? `${Math.round((targetMinutes / 60) * 10) / 10}h` : protocol,
       targetMinutes,
       startedAt,
       plannedEndAt,
       endedAt: null,
       status: "running",
-      notes: String(formData.get("notes") || "") || null,
+      notes: fastNote(formData.get("notes")),
       createdAt: now,
       updatedAt: now,
     })
@@ -104,14 +113,14 @@ export async function adjustFastAction(formData: FormData) {
   const endRaw = String(formData.get("plannedEndAt") || "");
   const hoursRaw = Number(formData.get("hours"));
   const mode = String(formData.get("mode") || "");
-  const notes = String(formData.get("notes") || "");
+  const notes = fastNote(formData.get("notes")) ?? "";
   const startedAt = localInputToIso(startedRaw) ?? row.startedAt;
   let targetMinutes = row.targetMinutes;
   let plannedEndAt = row.plannedEndAt;
 
   const useEnd = mode === "end" || (row.status !== "running" && endRaw);
   if (useEnd && endRaw) {
-    const endIso = localInputToIso(endRaw);
+    const endIso = localInputToIso(endRaw, { maxFutureMs: MAX_PLANNED_END_FUTURE_MS });
     if (endIso) {
       plannedEndAt = endIso;
       const delta = Date.parse(endIso) - Date.parse(startedAt);

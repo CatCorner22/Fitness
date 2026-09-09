@@ -76,14 +76,20 @@ export function formatRest(sec: number) {
   return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
 }
 
+/** Plausible adult ranges. Outside them the value is treated as a typo and ignored. */
+export const WEIGHT_KG_RANGE = { min: 25, max: 400 } as const;
+export const HEIGHT_CM_RANGE = { min: 100, max: 250 } as const;
+
 export function displayWeightToKg(value: number, units: "lb" | "kg") {
   if (!Number.isFinite(value) || value <= 0) return null;
-  return displayToKg(value, units);
+  const kg = displayToKg(value, units);
+  return kg >= WEIGHT_KG_RANGE.min && kg <= WEIGHT_KG_RANGE.max ? kg : null;
 }
 
 export function displayHeightToCm(value: number, units: "lb" | "kg") {
   if (!Number.isFinite(value) || value <= 0) return null;
-  return units === "lb" ? value * 2.54 : value;
+  const cm = units === "lb" ? value * 2.54 : value;
+  return cm >= HEIGHT_CM_RANGE.min && cm <= HEIGHT_CM_RANGE.max ? cm : null;
 }
 
 export function optionalCheckinInt(
