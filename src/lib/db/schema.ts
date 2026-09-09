@@ -34,6 +34,10 @@ export const profiles = sqliteTable("profiles", {
   activeDietId: text("active_diet_id"),
   dietStartDate: text("diet_start_date"),
   dietWeek: integer("diet_week").notNull().default(1),
+  bodyCompGoal: text("body_comp_goal"),
+  bodyFatPct: real("body_fat_pct"),
+  mealsPerDay: integer("meals_per_day").notNull().default(4),
+  dietaryPattern: text("dietary_pattern").notNull().default("omnivore"),
 });
 
 export const workouts = sqliteTable("workouts", {

@@ -88,6 +88,15 @@ export type ProgramId =
   | "rucking"
   | "big_ass";
 
+/**
+ * Body-composition goal. This is the primary variable for the meal-plan module:
+ * `lean` runs a deficit, `gain` a surplus, `recomp` and `maintain` sit at TDEE.
+ */
+export type BodyCompGoal = "lean" | "recomp" | "maintain" | "gain";
+
+/** Food-source pattern used to filter menus. Not a medical diet. */
+export type DietaryPattern = "omnivore" | "pescatarian" | "vegetarian" | "vegan";
+
 export type DietId =
   | "steady_cut"
   | "mini_cut"

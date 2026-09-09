@@ -168,6 +168,49 @@ Rotate ME lifts to avoid accommodation. This household template skips specialty-
 Glute/pole/strength goals still need fuel. Enroll a diet block (cut, bulk, reverse, beach week, or low-histamine plates) under Eat if you want periodized calories or a fresh-cook food pattern. The app will not praise crash dieting.`,
   },
   {
+    id: "body-composition-nutrition",
+    title: "Meal plan — leaner vs mass, and why the diets differ",
+    tags: ["meal plan", "body composition", "lean", "fat loss", "gain", "mass", "bulk", "recomp", "protein", "fiber", "meals per day", "vegan", "pescatarian"],
+    summary:
+      "Get leaner: deficit sized to body fat (0.5–1% BW/week), capped near 500 kcal, protein 2.3–3.1 g/kg lean mass. Gain mass: 10–20% surplus at 0.25–0.5% BW/week, protein 1.6–2.2 g/kg, carbs ≥3–5 g/kg. Recomp/maintain: expenditure with the highest protein. Spread protein 0.4–0.55 g/kg per meal.",
+    body: `Expenditure. Resting energy from Mifflin-St Jeor (1990, University of Nevada) times an activity factor; the Academy of Nutrition and Dietetics review (Frankenfield 2005) found it the most reliable equation, and still off by ±10% for many people — so weigh-ins correct it after ~8 mornings.
+
+Leaner. The ISSN diets position stand (Aragon 2017) and Helms, Aragon & Fitschen (2014) put the honest fat-loss rate at ~0.5–1% of bodyweight per week: faster when body fat is high, slower when lean, because slower loss keeps more muscle. Murphy & Koehler (2022, Nebraska) showed a ~500 kcal/day deficit fully blunts lean-mass gains from lifting, so the module caps the deficit near 500 kcal unless body fat is high, where the AHA/ACC/TOS 2013 guideline's 500–750 kcal range applies. Protein rises to 2.3–3.1 g/kg of fat-free mass (ISSN 2017; Helms 2014) — Hudson (2020, Purdue) and Weinheimer (2010, Purdue) show protein above the RDA plus resistance training is what keeps the weight loss from being 20–35% muscle. Fat stays at ≥0.8 g/kg and ≥20% of calories (IOM 2005); carbs take the rest and sit around training. The NIH energy-balance work (Hall 2008, 2011) is why the 7,700 kcal/kg rule is treated as an estimate and re-checked weekly.
+
+Mass. Iraki, Fitschen, Espinar & Helms (2019) and the ISSN stand recommend a ~10–20% surplus with 0.25–0.5% of bodyweight gained per week — the low end for experienced lifters, since larger surpluses mostly add fat. Protein 1.6–2.2 g/kg, fat 0.5–1.5 g/kg, carbs ≥3–5 g/kg from what remains.
+
+Recomp and maintain. Barakat (2020, Tampa/CSU San Bernardino/USF): simultaneous fat loss and muscle gain is realistic at maintenance calories with high protein and progressive lifting, mostly in newer lifters, returners, and people with more fat to lose.
+
+Per meal. Schoenfeld & Aragon (2018, CUNY): ~0.4 g/kg per meal over at least four meals reaches 1.6 g/kg/day; 0.55 g/kg reaches 2.2. Mamerow (2014, UTMB) found an even 30-g pattern produced ~25% more 24-h muscle protein synthesis than the same total skewed to dinner. Schoenfeld, Aragon & Krieger (2015): meal frequency itself does not change fat loss once calories match — pick the count you keep.
+
+Everything else. Fiber 14 g per 1,000 kcal and total water ~2.7 L (women) / ~3.7 L (men) from the Institute of Medicine DRIs; saturated fat and added sugars each under 10% of calories, sodium under 2,300 mg from the Dietary Guidelines for Americans 2020–2025. Body-fat bands use the American Council on Exercise norms; essential fat (women ~10–13%, men ~2–5%) or BMI under 18.5 turns off any deficit.
+
+Weekly check. Compare the 7-day average weight with the target rate. Off two weeks running: move ±100–150 kcal, mostly carbs. Under 18, pregnant or breastfeeding, insulin or glucose-lowering medication, or an eating-disorder history: this is a clinician's job, not a menu.`,
+    citations: [
+      "Mifflin et al. 1990 AJCN",
+      "Frankenfield et al. 2005 JADA",
+      "Jensen et al. 2013 AHA/ACC/TOS Circulation",
+      "Aragon et al. 2017 ISSN diets & body composition",
+      "Jäger et al. 2017 ISSN protein",
+      "Kerksick et al. 2017 ISSN nutrient timing",
+      "Helms, Aragon & Fitschen 2014 JISSN",
+      "Iraki et al. 2019 Sports",
+      "Schoenfeld & Aragon 2018 JISSN",
+      "Mamerow et al. 2014 J Nutr",
+      "Schoenfeld, Aragon & Krieger 2015 Nutr Rev",
+      "Murphy & Koehler 2022 Scand J Med Sci Sports",
+      "Hall 2008 Int J Obes; Hall et al. 2011 Lancet",
+      "Weinheimer et al. 2010 Nutr Rev",
+      "Hudson et al. 2020 Adv Nutr",
+      "Antonio et al. 2015 JISSN",
+      "Barakat et al. 2020 Strength Cond J",
+      "Institute of Medicine 2005 (macronutrient DRIs); 2004 (water)",
+      "Dietary Guidelines for Americans 2020–2025",
+      "American Council on Exercise body-fat norms",
+      "Supporting (non-US): Garthe 2011; Longland 2016; Morton 2018",
+    ],
+  },
+  {
     id: "diet-periodization",
     title: "Diet periodization — cut, bulk, reverse, peak",
     tags: ["diet", "cut", "bulk", "reverse", "periodization", "calories", "peak", "beach", "histamine"],

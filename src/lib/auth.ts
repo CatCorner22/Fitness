@@ -9,7 +9,7 @@ import { cookiePolicy } from "@/lib/runtime";
 import { profiles, users } from "@/lib/db/schema";
 import type { AssessmentResult, FitnessTier } from "@/lib/assessment/types";
 import { parseAssessment } from "@/lib/assessment/parse";
-import type { Experience, Goal, Injury, Persona, Units } from "@/lib/types";
+import type { BodyCompGoal, DietaryPattern, Experience, Goal, Injury, Persona, Units } from "@/lib/types";
 
 const COOKIE = "garanimal_session";
 const SESSION_MAX_AGE = 60 * 60 * 24 * 30;
@@ -94,7 +94,15 @@ export type ProfileRow = {
   activeDietId: string | null;
   dietStartDate: string | null;
   dietWeek: number;
+  /** Null until the user answers the body-composition question on /meal-plan. */
+  bodyCompGoal: BodyCompGoal | null;
+  bodyFatPct: number | null;
+  mealsPerDay: number;
+  dietaryPattern: DietaryPattern;
 };
+
+const BODY_COMP_GOALS: readonly BodyCompGoal[] = ["lean", "recomp", "maintain", "gain"];
+const DIETARY_PATTERNS: readonly DietaryPattern[] = ["omnivore", "pescatarian", "vegetarian", "vegan"];
 
 function parseStringList(raw: string | null | undefined): string[] {
   if (!raw) return [];
@@ -144,5 +152,16 @@ function readProfile(userId: string): ProfileRow | null {
     activeDietId: row.activeDietId ?? null,
     dietStartDate: row.dietStartDate ?? null,
     dietWeek: row.dietWeek ?? 1,
+    bodyCompGoal: BODY_COMP_GOALS.includes(row.bodyCompGoal as BodyCompGoal)
+      ? (row.bodyCompGoal as BodyCompGoal)
+      : null,
+    bodyFatPct:
+      typeof row.bodyFatPct === "number" && Number.isFinite(row.bodyFatPct) && row.bodyFatPct > 0
+        ? row.bodyFatPct
+        : null,
+    mealsPerDay: Math.min(6, Math.max(3, Math.round(row.mealsPerDay ?? 4))),
+    dietaryPattern: DIETARY_PATTERNS.includes(row.dietaryPattern as DietaryPattern)
+      ? (row.dietaryPattern as DietaryPattern)
+      : "omnivore",
   };
 }

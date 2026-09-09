@@ -11,6 +11,9 @@
     "assert:runtime": "node --experimental-strip-types scripts/assert-runtime.mjs",
     "assert:daily-use": "node --experimental-strip-types --import ./scripts/register-resolve-ts.mjs scripts/assert-daily-use.mjs",
     "assert:pioneer": "node --experimental-strip-types --import ./scripts/register-resolve-ts.mjs scripts/assert-pioneer.mjs",
+    "assert:meal-plan": "node --experimental-strip-types --import ./scripts/register-resolve-ts.mjs scripts/assert-meal-plan.mjs",
+    "typecheck": "next typegen && tsc --noEmit",
+    "check": "npm run lint && npm run typecheck && npm run assert:programs && npm run assert:daily-use && npm run assert:pioneer && npm run assert:meal-plan",
     "perf:stability": "node scripts/perf-stability.mjs"
   },
   "engines": {

@@ -19,6 +19,7 @@ const MESSAGES: Record<string, string> = {
   copied: "Copied yesterday's meals.",
   assess: "Fitness check saved. Sessions will follow it.",
   diet: "Diet block on.",
+  "meal-plan": "Plan updated.",
   "diet-off": "Using training-goal calories again.",
   "fast-on": "Fast started.",
   "fast-off": "Fast ended.",

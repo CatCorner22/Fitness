@@ -5,11 +5,11 @@ function revalidateAll(paths: readonly string[]) {
 }
 
 export function revalidateNutrition() {
-  revalidateAll(["/", "/nutrition", "/diets", "/settings", "/progress"]);
+  revalidateAll(["/", "/nutrition", "/meal-plan", "/diets", "/settings", "/progress"]);
 }
 
 export function revalidateFasting() {
-  revalidateAll(["/", "/nutrition", "/progress"]);
+  revalidateAll(["/", "/nutrition", "/meal-plan", "/progress"]);
 }
 
 export function revalidateAssessment() {
