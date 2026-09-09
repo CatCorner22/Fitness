@@ -214,6 +214,11 @@ expect(hasWord("what should i eat for breakfast", "eat"), "eat word matches in b
 expect(!hasWord("how do i pass this class", "ass"), "class does not match glute ass word");
 expect(hasWord("build a bigger ass", "ass"), "ass word matches glute question");
 
+const healthRoute = fs.readFileSync(path.join("src", "app", "api", "health", "route.ts"), "utf8");
+expect(healthRoute.includes("pingDatabase") && healthRoute.includes("503"), "health check pings the database and reports 503 on failure");
+expect(fs.readFileSync("src/lib/db/index.ts", "utf8").includes("export function pingDatabase"), "db exports pingDatabase");
+expect(fs.readFileSync("src/proxy.ts", "utf8").includes('"/api/health"'), "health check stays public in the proxy");
+
 const youPage = fs.readFileSync(path.join("src", "app", "settings", "page.tsx"), "utf8");
 expect(youPage.includes('"/course"') && youPage.includes("Nyx course"), "You keeps a first-class Nyx course link");
 expect(youPage.includes("LookStudio"), "kawaii Look studio stays on You");

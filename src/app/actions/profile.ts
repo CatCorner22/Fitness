@@ -165,6 +165,7 @@ export async function saveSettingsAction(formData: FormData) {
   revalidatePath("/");
   revalidatePath("/settings");
   revalidatePath("/nutrition");
+  revalidatePath("/meal-plan");
   revalidatePath("/diets");
   redirect("/settings?toast=settings");
 }
@@ -213,9 +214,11 @@ export async function logBodyweightAction(formData: FormData) {
   db.update(profiles).set({ weightKg }).where(eq(profiles.userId, user.id)).run();
   revalidatePath("/");
   revalidatePath("/nutrition");
+  revalidatePath("/meal-plan");
   revalidatePath("/progress");
   const next = String(formData.get("next") || "/");
   if (next === "/progress") redirect("/progress?toast=weight");
+  if (next === "/meal-plan") redirect("/meal-plan?toast=weight");
   redirect("/?toast=weight");
 }
 

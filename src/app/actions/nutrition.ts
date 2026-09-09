@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { getProfile, requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { foods, nutritionLogs } from "@/lib/db/schema";
-import { getMealPlanTemplate, scalePlanToTargets } from "@/lib/nutrition/meal-plans";
+import { foldToMealsPerDay, getMealPlanTemplate, scalePlanToTargets } from "@/lib/nutrition/meal-plans";
 import { adaptiveCalories } from "@/lib/nutrition/targets";
 import { todayNutrition } from "@/lib/today";
 import { itemsForEmptyMeals } from "@/lib/nutrition/copy-meals";
@@ -118,10 +118,14 @@ export async function applyMealPlanAction(formData: FormData) {
   const profile = getProfile(user.id);
   if (!profile) redirect("/onboarding");
 
+  const back = formString(formData, "next") === "/meal-plan" ? "/meal-plan" : "/nutrition";
   const targets = adaptiveCalories(user.id, profile);
   const template = getMealPlanTemplate(planId);
-  if (!template) redirect("/nutrition?toast=plan-missing");
-  const items = scalePlanToTargets(template, targets.calories, targets.protein);
+  if (!template) redirect(`${back}?toast=plan-missing`);
+  const items = foldToMealsPerDay(
+    scalePlanToTargets(template, targets.calories, targets.protein),
+    profile.mealsPerDay,
+  );
 
   const date = todayISO();
   const existing = todayNutrition(user.id);
@@ -142,8 +146,9 @@ export async function applyMealPlanAction(formData: FormData) {
   });
 
   revalidatePath("/nutrition");
+  revalidatePath("/meal-plan");
   revalidatePath("/");
-  redirect(inserted > 0 ? "/nutrition?toast=food" : "/nutrition?toast=plan-full");
+  redirect(inserted > 0 ? `${back}?toast=food` : `${back}?toast=plan-full`);
 }
 
 export async function copyYesterdayFoodAction() {

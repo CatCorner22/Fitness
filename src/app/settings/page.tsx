@@ -33,6 +33,7 @@ export default async function SettingsPage() {
           ["/course", "Nyx course", "Amateur night and pole class"],
           ["/programs", "Plans", "Every drill, listed"],
           ["/assess", "Fitness check", "Scale from a baseline"],
+          ["/meal-plan", "Meal plan", "Leaner or mass — a week of plates"],
           ["/diets", "Diet", "Cut, bulk, reverse, peak"],
           ["/progress", "Calendar", "Green trained, red rest"],
           ["/coach", "Coach", "Ask why a lift is banned"],

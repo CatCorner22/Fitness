@@ -16,7 +16,8 @@ import { isoToLocalInput } from "@/lib/fasting/protocols";
 import { adjustmentsForFast, recentFasts, runningFast } from "@/lib/fasting/queries";
 import { HISTAMINE_LABEL, histamineLoad } from "@/lib/nutrition/foods";
 import { isLowHistamineDiet } from "@/lib/nutrition/diets";
-import { suggestedPlans } from "@/lib/nutrition/meal-plans";
+import { foldToMealsPerDay, suggestedPlans } from "@/lib/nutrition/meal-plans";
+import { bodyCompOption } from "@/lib/nutrition/body-comp";
 import { adaptiveCalories } from "@/lib/nutrition/targets";
 import { requireAuthed } from "@/lib/session-page";
 import { todayNutrition } from "@/lib/today";
@@ -40,14 +41,18 @@ export default async function NutritionPage() {
     favorite: f.favorite,
     histamine: histamineLoad(f.id),
   }));
-  const plans = suggestedPlans(profile.goal, targets.calories, targets.protein, profile.activeDietId);
+  const lowHistamine = isLowHistamineDiet(profile.activeDietId);
+  const plans = suggestedPlans(profile.goal, targets.calories, targets.protein, profile.activeDietId, {
+    phase: profile.bodyCompGoal,
+    pattern: profile.dietaryPattern,
+    lowHistamine,
+  }).map((plan) => ({ ...plan, items: foldToMealsPerDay(plan.items, profile.mealsPerDay) }));
   const featured = plans[0];
   const extras = plans.slice(1);
   const openFast = runningFast(user.id);
   const fasts = recentFasts(user.id);
   const adjustments = openFast ? adjustmentsForFast(openFast.id, user.id) : [];
   const diet = targets.diet;
-  const lowHistamine = isLowHistamineDiet(profile.activeDietId);
   const household = buildPioneerHousehold(user.id, profile);
   const plateDraft = serializePlateDraft(day.logs, household);
 
@@ -125,6 +130,21 @@ export default async function NutritionPage() {
           </p>
         )}
       </section>
+
+      <Link
+        href="/meal-plan"
+        className="mt-4 block rounded-3xl border border-line bg-surface p-5 transition-colors hover:border-copper/40 hover:bg-surface-2"
+      >
+        <p className="text-xs uppercase tracking-[0.16em] text-copper">Meal plan</p>
+        <p className="mt-1 text-lg font-semibold text-ink">
+          {profile.bodyCompGoal
+            ? `${bodyCompOption(profile.bodyCompGoal).label} · your week, scaled to ${targets.calories} kcal`
+            : "Get leaner or gain mass? Build a week around the answer"}
+        </p>
+        <p className="mt-1 text-sm text-muted">
+          Seven scaled days, a grocery list, weekly check, and the peer-reviewed sources behind every number.
+        </p>
+      </Link>
 
       <div className="mt-6 space-y-3">
         <PioneerWatch text={plateDraft} household={household} />
