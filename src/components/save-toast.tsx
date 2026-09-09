@@ -10,6 +10,7 @@ const MESSAGES: Record<string, string> = {
   food: "Food logged.",
   workout: "Workout complete!",
   settings: "Settings updated.",
+  password: "Password changed.",
   look: "Look saved.",
   skipped: "Rest is fine.",
   "plan-full": "Today already has food — tap Replace if you want a new menu.",

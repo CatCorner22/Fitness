@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { authSecretBytes } from "@/lib/auth-secret";
 import { db, ensureMigrated } from "@/lib/db";
+import { usesDefaultPassword } from "@/lib/db/seed";
 import { cookiePolicy } from "@/lib/runtime";
 import { profiles, users } from "@/lib/db/schema";
 import type { AssessmentResult, FitnessTier } from "@/lib/assessment/types";
@@ -25,8 +26,20 @@ export type SessionUser = {
   displayName: string;
 };
 
+export const MAX_DISPLAY_NAME = 40;
+export const MAX_USERNAME = 64;
+export const MAX_PASSWORD = 256;
+export const MIN_PASSWORD = 8;
+
+export function cleanDisplayName(raw: string, fallback: string): string {
+  const trimmed = raw.replace(/\s+/g, " ").trim().slice(0, MAX_DISPLAY_NAME);
+  return trimmed || fallback;
+}
+
 export async function createSession(user: SessionUser) {
-  const token = await new SignJWT({ id: user.id, username: user.username, displayName: user.displayName })
+  // Only the id goes in the token; getSession re-reads name and username from
+  // the users table so a long display name can never push the cookie past 4 KB.
+  const token = await new SignJWT({ id: user.id })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("30d")
@@ -60,14 +73,32 @@ export async function getSession(): Promise<SessionUser | null> {
 }
 
 export function verifyLogin(username: string, password: string): SessionUser | null {
-  const user = db
-    .select()
-    .from(users)
-    .where(eq(users.username, username.trim().toLowerCase()))
-    .get();
+  const name = username.trim().toLowerCase().slice(0, MAX_USERNAME);
+  if (!name || !password || password.length > MAX_PASSWORD) return null;
+  const user = db.select().from(users).where(eq(users.username, name)).get();
   if (!user) return null;
   if (!bcrypt.compareSync(password, user.passwordHash)) return null;
   return { id: user.id, username: user.username, displayName: user.displayName };
+}
+
+export type PasswordChangeResult = "ok" | "wrong-current" | "too-short" | "too-long" | "mismatch" | "same";
+
+/** Verify the current password, then store a new bcrypt hash. Sessions stay valid. */
+export function changePassword(userId: string, current: string, next: string, confirm: string): PasswordChangeResult {
+  if (next.length < MIN_PASSWORD) return "too-short";
+  if (next.length > MAX_PASSWORD) return "too-long";
+  if (next !== confirm) return "mismatch";
+  const user = db.select().from(users).where(eq(users.id, userId)).get();
+  if (!user || current.length > MAX_PASSWORD || !bcrypt.compareSync(current, user.passwordHash)) return "wrong-current";
+  if (current === next) return "same";
+  db.update(users).set({ passwordHash: bcrypt.hashSync(next, 10) }).where(eq(users.id, userId)).run();
+  return "ok";
+}
+
+/** True while a user is still on the seeded default password. */
+export function hasDefaultPassword(userId: string): boolean {
+  const user = db.select({ passwordHash: users.passwordHash }).from(users).where(eq(users.id, userId)).get();
+  return Boolean(user && usesDefaultPassword(user.passwordHash));
 }
 
 export type ProfileRow = {

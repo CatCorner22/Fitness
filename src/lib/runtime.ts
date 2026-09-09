@@ -10,10 +10,13 @@ export function cookiePolicy(env: NodeJS.ProcessEnv = process.env): {
   secure: boolean;
 } {
   const replit = isReplitRuntime(env);
+  // A production build served over plain HTTP on the home LAN (no TLS) cannot
+  // set Secure cookies; GARANIMAL_ALLOW_INSECURE_COOKIE=1 opts out. Replit's
+  // IDE preview is an iframe on a different site, so it keeps SameSite=None + Secure.
+  const allowInsecure = !replit && env.GARANIMAL_ALLOW_INSECURE_COOKIE === "1";
   return {
     sameSite: replit ? "none" : "lax",
-    // Replit's IDE preview is an iframe on a different site; SameSite=None requires Secure.
-    secure: replit || env.NODE_ENV === "production",
+    secure: replit || (env.NODE_ENV === "production" && !allowInsecure),
   };
 }
 
