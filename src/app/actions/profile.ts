@@ -3,7 +3,7 @@
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getProfile, requireUser } from "@/lib/auth";
+import { cleanDisplayName, getProfile, requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { bodyweightLogs, dailyCheckins, profiles, users } from "@/lib/db/schema";
 import { clampInt, displayHeightToCm, displayWeightToKg, formString, optionalCheckinInt, pickEnum, todayISO } from "@/lib/utils";
@@ -96,7 +96,7 @@ export async function saveOnboardingAction(formData: FormData) {
   }
 
   db.update(users)
-    .set({ displayName: formString(formData, "displayName") || user.displayName })
+    .set({ displayName: cleanDisplayName(formString(formData, "displayName"), user.displayName) })
     .where(eq(users.id, user.id))
     .run();
 
@@ -118,7 +118,8 @@ export async function saveSettingsAction(formData: FormData) {
   const displayUnits = pickEnum(formData.get("displayUnits"), UNITS, units);
   const weightKg = displayWeightToKg(Number(formData.get("weight")), displayUnits);
   const heightCm = displayHeightToCm(Number(formData.get("height")), displayUnits);
-  const programId = formString(formData, "programId");
+  // Unknown ids would render "undefined · week 1" on Today; keep the current program instead.
+  const programId = getProgram(formString(formData, "programId"))?.id ?? "";
   const existing = db.select().from(profiles).where(eq(profiles.userId, user.id)).get();
   const dietField = formData.get("dietId");
   const nextDietId =
@@ -156,7 +157,7 @@ export async function saveSettingsAction(formData: FormData) {
     .run();
 
   db.update(users)
-    .set({ displayName: formString(formData, "displayName") || user.displayName })
+    .set({ displayName: cleanDisplayName(formString(formData, "displayName"), user.displayName) })
     .where(eq(users.id, user.id))
     .run();
 

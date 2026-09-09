@@ -10,6 +10,9 @@ import { getMealPlanTemplate, scalePlanToTargets } from "../src/lib/nutrition/me
 import { getSpiritConfig, resolveReads } from "../src/lib/spirit/config.ts";
 import { resolveAuthSecret } from "../src/lib/auth-secret.ts";
 import { scheduledProgramDays } from "../src/lib/programs/schedule.ts";
+import { cookiePolicy } from "../src/lib/runtime.ts";
+import { localInputToIso, isFastProtocolId } from "../src/lib/fasting/protocols.ts";
+import { LOGIN_LIMITS, clearLoginFailures, loginLocked, recordLoginFailure } from "../src/lib/login-limiter.ts";
 
 function expect(condition, message) {
   assert.ok(condition, message);
@@ -90,6 +93,40 @@ expect(convertDisplayWeight(180, "lb", "kg") === 81.6, "180 lb converts to kg fo
 expect(Math.abs(convertDisplayHeight(70, "lb", "kg") - 177.8) < 0.2, "70 in converts to cm");
 expect(Math.abs((displayWeightToKg(82, "kg") ?? 0) - 82) < 0.01, "82 kg stores as 82 kg");
 expect(Math.abs((displayHeightToCm(178, "kg") ?? 0) - 178) < 0.01, "178 cm stores as 178 cm");
+expect(displayWeightToKg(1000000, "lb") === null, "absurd bodyweight is rejected");
+expect(displayWeightToKg(10, "kg") === null, "10 kg bodyweight is rejected");
+expect(displayHeightToCm(3000, "kg") === null && displayHeightToCm(12, "lb") === null, "absurd heights are rejected");
+expect(Math.abs((displayHeightToCm(70, "lb") ?? 0) - 177.8) < 0.01, "70 in still converts to cm");
+
+const nowMs = Date.parse("2026-08-26T12:00:00Z");
+expect(localInputToIso("2026-08-26T08:00", { now: nowMs }) !== null, "a start earlier today is accepted");
+expect(localInputToIso("2099-01-01T00:00", { now: nowMs }) === null, "a start next century is rejected");
+expect(localInputToIso("+275760-09-13T00:00", { now: nowMs }) === null, "max JS date does not throw and is rejected");
+expect(localInputToIso("garbage", { now: nowMs }) === null, "garbage start is rejected");
+expect(isFastProtocolId("16:8") && !isFastProtocolId("zzz"), "fast protocol ids are whitelisted");
+
+expect(cookiePolicy({ NODE_ENV: "production" }).secure, "production cookies are Secure by default");
+expect(!cookiePolicy({ NODE_ENV: "production", GARANIMAL_ALLOW_INSECURE_COOKIE: "1" }).secure, "LAN opt-out disables Secure");
+expect(cookiePolicy({ NODE_ENV: "production", REPL_ID: "x", GARANIMAL_ALLOW_INSECURE_COOKIE: "1" }).secure, "Replit ignores the insecure opt-out");
+
+const limiterKeys = ["ip:test", "user:test"];
+clearLoginFailures(limiterKeys);
+for (let i = 0; i < LOGIN_LIMITS.MAX_FAILURES - 1; i++) recordLoginFailure(limiterKeys);
+expect(!loginLocked(limiterKeys), "one under the failure cap is not locked");
+recordLoginFailure(limiterKeys);
+expect(loginLocked(limiterKeys), "hitting the failure cap locks the key");
+expect(!loginLocked(limiterKeys, Date.now() + LOGIN_LIMITS.WINDOW_MS + 1000), "the lock expires after the window");
+clearLoginFailures(limiterKeys);
+expect(!loginLocked(limiterKeys), "a successful login clears the counter");
+
+const authSrc = fs.readFileSync("src/lib/auth.ts", "utf8");
+expect(authSrc.includes("new SignJWT({ id: user.id })"), "session JWT carries only the user id");
+expect(authSrc.includes("export function changePassword"), "password can be changed");
+const loginSrc = fs.readFileSync("src/app/login/page.tsx", "utf8");
+expect(loginSrc.includes('process.env.NODE_ENV !== "production"') && loginSrc.includes("Demo house"), "demo credentials hint is hidden in production");
+const replit = fs.readFileSync(".replit", "utf8");
+expect(/\[deployment\][\s\S]*build = /.test(replit), ".replit deployment has a build step");
+expect(fs.readFileSync(".gitignore", "utf8").includes("/data/pioneer-ladder.json"), "pioneer ladder state is gitignored");
 
 function planTotals(id, calories, protein) {
   const template = getMealPlanTemplate(id);
@@ -171,6 +208,10 @@ for (const name of [
   "PIONEER_KILL",
   "PIONEER_LADDER_RESET",
   "HUGGINGFACE_HUB_TOKEN",
+  "GARANIMAL_HOUSEHOLD_PASSWORD",
+  "GARANIMAL_ALEX_PASSWORD",
+  "GARANIMAL_JORDAN_PASSWORD",
+  "GARANIMAL_ALLOW_INSECURE_COOKIE",
 ]) {
   expect(example.includes(name), `.env.example documents ${name}`);
 }
@@ -183,6 +224,8 @@ const code = [
   fs.readFileSync("src/lib/spirit/embeddings.ts", "utf8"),
   fs.readFileSync("src/lib/pioneer/config.ts", "utf8"),
   fs.readFileSync("src/lib/pioneer/persist-ladder.ts", "utf8"),
+  fs.readFileSync("src/lib/db/seed.ts", "utf8"),
+  fs.readFileSync("src/lib/runtime.ts", "utf8"),
 ].join("\n");
 for (const name of [
   "AUTH_SECRET",
@@ -200,6 +243,10 @@ for (const name of [
   "PIONEER_DISABLED",
   "PIONEER_KILL",
   "PIONEER_LADDER_RESET",
+  "GARANIMAL_HOUSEHOLD_PASSWORD",
+  "GARANIMAL_ALEX_PASSWORD",
+  "GARANIMAL_JORDAN_PASSWORD",
+  "GARANIMAL_ALLOW_INSECURE_COOKIE",
 ]) {
   expect(code.includes(name), `runtime code reads ${name}`);
 }
