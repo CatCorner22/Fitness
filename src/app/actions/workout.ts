@@ -163,17 +163,22 @@ export async function completeWorkoutAction(formData: FormData) {
   if (!existing) redirect("/");
   if (existing.status === "completed") redirect(`/workout/${workoutId}/complete`);
   if (existing.status !== "in_progress") redirect("/");
-  const sessionRpe = Number(formString(formData, "sessionRpe") || NaN);
-  const durationMinutes = Number(formData.get("durationMinutes"));
+  // Session RPE feeds deload detection, so an out-of-range value would bias
+  // every future session; clamp to the 1–10 scale and treat blanks as null.
+  const rpeRaw = Number(formString(formData, "sessionRpe") || NaN);
+  const sessionRpe = Number.isFinite(rpeRaw) ? Math.min(10, Math.max(1, Math.round(rpeRaw * 2) / 2)) : null;
+  const durationRaw = formString(formData, "durationMinutes");
+  const durationParsed = durationRaw ? Number(durationRaw) : NaN;
+  const durationMinutes = Number.isFinite(durationParsed) ? Math.min(600, Math.max(0, Math.round(durationParsed))) : null;
   const stopped = formString(formData, "stop") === "1";
-  const notes = stopped ? "Stopped early — something hurt." : formString(formData, "notes");
+  const notes = (stopped ? "Stopped early — something hurt." : formString(formData, "notes")).trim().slice(0, 500) || null;
 
   db.update(workouts)
     .set({
       status: "completed",
       completedAt: new Date().toISOString(),
-      sessionRpe: Number.isFinite(sessionRpe) ? sessionRpe : null,
-      durationMinutes: Number.isFinite(durationMinutes) ? durationMinutes : null,
+      sessionRpe,
+      durationMinutes,
       notes,
     })
     .where(and(eq(workouts.id, workoutId), eq(workouts.userId, user.id)))

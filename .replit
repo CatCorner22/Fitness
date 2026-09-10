@@ -7,7 +7,9 @@ channel = "stable-24_11"
 # SQLite lives on the workspace disk. Do not set deploymentTarget = "cloudrun"
 # (Autoscale) — that filesystem is ephemeral and household logs would vanish.
 [deployment]
+build = ["sh", "-c", "npm run build"]
 run = ["sh", "-c", "npm run start"]
+deploymentTarget = "vm"
 
 [[ports]]
 localPort = 3000
